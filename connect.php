@@ -8,10 +8,11 @@ $password = "Success100%";
 $dbname = "gkblvzmy_student-portal";
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
+    $pdo = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
     // set the PDO error mode to exception
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connected successfully";
+    return $pdo;
   } catch(PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
   }
