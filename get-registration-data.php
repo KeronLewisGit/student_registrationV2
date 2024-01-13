@@ -19,6 +19,8 @@ VALUES (:student_passport_photo, :student_form, :student_name, :student_gender, 
 :father_email_address, :emergency_contact_name, :emergency_contact_address_line1, :emergency_contact_city, :emergency_contact_village, :emergency_contact_relation_to_student, :emergency_contact_number, :registration_date,
 :registrant_relationship_to_student, :registrant_name, :registrant_identification_type, :registrant_identification_number, :registrant_nationality, :registrant_email)";
 
+echo $sql;
+
 $stmt=$pdo->prepare($sql);
 
 $stmt->execute([
