@@ -4,7 +4,7 @@ ini_set('display_errors', 'On');
 
 $pdo = require_once 'connect.php';
 
-$sql="INSERT INTO student_registration_data (student_passport_photo, student_form, student_name, student_gender, student_address_line1, student_village, student_city, student_dob, student_birth_certificate, student_birth_certficate_pin,
+$sql="INSERT INTO student_registration_data (student_passport_photo, form_1_class, student_name, student_gender, student_address_line1, student_village, student_city, student_dob, student_birth_certificate, student_birth_certficate_pin,
 student_religion, student_country_of_birth, student_nationality, student_contact, student_email, student_sea_date, student_primary_school, student_sea_slip, student_sea_number, student_medical_condition, student_bloodtype,
 student_allergies, student_immunization_status, student_school_feeding_option, student_social_welfare_status, student_mode_of_transport, student_access_to_device, is_mother_active_or_deceased, mother_name, mother_identification_type,
 mother_identification_number, mother_address_line1, mother_city, mother_village, mother_contact, mother_profession, mother_work_address_line1, mother_work_city, mother_work_village, mother_email, is_father_active_or_deceased,
@@ -24,7 +24,7 @@ $stmt=$pdo->prepare($sql);
 $stmt->execute([
   ":student_passport_photo" => $_POST['fields']['student_passport']['value'],
   ":student_form" => $_POST['fields']['student_class']['value'],
-  ":student_name" => $_POST['fields']['student_name']['value'],
+  ":student_name" => $_POST['fields']['student_first_name']['value'] . " " . $_POST['fields']['student_last_name']['value'],
   ":student_gender" => $_POST['fields']['student_gender']['value'],
   ":student_address_line1" => $_POST['fields']['student_address_line1']['value'],
   ":student_village" => $_POST['fields']['student_village']['value'],
@@ -50,7 +50,7 @@ $stmt->execute([
   ":student_mode_of_transport" => $_POST['fields']['student_transport_method']['value'],
   ":student_access_to_device" => $_POST['fields']['student_continuos_access']['value'],
   ":is_mother_active_or_deceased" => $_POST['fields']['mother_status']['value'],
-  ":mother_name" => $_POST['fields']['mother_name']['value'],
+  ":mother_name" => $_POST['fields']['mother_first_name']['value'] . " " . $_POST['fields']['mother_last_name']['value'],
   ":mother_identification_type" => $_POST['fields']['mother_identification']['value'],
   ":mother_identification_number" => $_POST['fields']['mother_identification_number']['value'],
   ":mother_address_line1" => $_POST['fields']['mother_address_line1']['value'],
@@ -63,7 +63,7 @@ $stmt->execute([
   ":mother_work_village" => $_POST['fields']['mother_work_village']['value'],
   ":mother_email" => $_POST['fields']['mother_email']['value'],
   ":is_father_active_or_deceased" => $_POST['fields']['father_status']['value'],
-  ":father_name" => $_POST['fields']['father_name']['value'],
+  ":father_name" => $_POST['fields']['father_first_name']['value'] . " " . $_POST['fields']['father_last_name']['value'],
   ":father_identification_type" => $_POST['fields']['father_identification_type']['value'],
   ":father_identification_number" => $_POST['fields']['father_identification_no']['value'],
   ":father_address_line1" => $_POST['fields']['father_address_line1']['value'],
@@ -75,7 +75,7 @@ $stmt->execute([
   ":father_work_city" => $_POST['fields']['father_work_city']['value'],
   ":father_work_village" => $_POST['fields']['father_work_village']['value'],
   ":father_email_address" => $_POST['fields']['father_email']['value'],
-  ":emergency_contact_name" => $_POST['fields']['emergency_name']['value'],
+  ":emergency_contact_name" => $_POST['fields']['emergency_first_name']['value'] . " " . $_POST['fields']['emergency_last_name']['value'],
   ":emergency_contact_address_line1" => $_POST['fields']['emergency_address_line1']['value'],
   ":emergency_contact_city" => $_POST['fields']['emergency_city']['value'],
   ":emergency_contact_village" => $_POST['fields']['emergency_village']['value'],
@@ -83,7 +83,7 @@ $stmt->execute([
   ":emergency_contact_number" => $_POST['fields']['emergency_contact']['value'],
   ":registration_date" => $_POST['fields']['registrant_date']['value'],
   ":registrant_relationship_to_student" => $_POST['fields']['registrant_relationsip_to_student']['value'],
-  ":registrant_name" => $_POST['fields']['registrant_name']['value'], 
+  ":registrant_name" => $_POST['fields']['registrant_first_name']['value'] . " " . $_POST['fields']['registrant_last_name']['value'], 
   ":registrant_identification_type" => $_POST['fields']['registrant_identification_type']['value'], 
   ":registrant_identification_number" => $_POST['fields']['registrant_identification_number']['value'], 
   ":registrant_nationality" => $_POST['fields']['registrant_nationality']['value'], 
