@@ -5,14 +5,15 @@ ini_set('display_errors', 'On');
 $pdo = require_once 'connect.php';
 
 $sql="INSERT INTO student_registration_data (student_passport_photo, form_1_class, student_name, student_gender, student_current_address, student_dob, student_birth_certificate, student_birth_certficate_pin,
-student_religion, student_country_of_birth, student_nationality, student_ethnicity, student_contact, student_email, student_sea_date, student_primary_school, student_sea_slip, student_sea_number, student_medical_condition, student_bloodtype,
+student_religion, student_country_of_birth, student_nationality, student_ethnicity, student_contact, student_email, student_sea_date, student_primary_school, student_sea_slip, student_sea_number, student_transfer_status, student_transfer_slip, student_transfer_date, student_previous_secondary_school, student_previous_school_location, student_medical_condition, student_bloodtype,
 student_allergies, student_immunization_status, student_school_feeding_option, student_social_welfare_status, student_mode_of_transport, student_access_to_device, is_mother_active_or_deceased, mother_name, mother_identification_type,
 mother_identification_number, mother_home_address, mother_contact, mother_profession, mother_work_address, mother_email, is_father_active_or_deceased,
 father_name, father_identification_type, father_identification_number, father_home_address, father_contact, father_profession, father_work_address,
 father_email_address, emergency_contact_name, emergency_contact_address, emergency_contact_relation_to_student, emergency_contact_number, registration_date,
 registrant_relationship_to_student, registrant_name, registrant_identification_type, registrant_identification_number, registrant_nationality, registrant_email) 
 VALUES (:student_passport_photo, :student_form, :student_name, :student_gender, :student_current_address, :student_dob, :student_birth_certificate, :student_birth_certficate_pin,
-:student_religion, :student_country_of_birth, :student_nationality, :student_ethnicity, :student_contact, :student_email, :student_sea_date, :student_primary_school, :student_sea_slip, :student_sea_number, :student_medical_condition, :student_bloodtype,
+:student_religion, :student_country_of_birth, :student_nationality, :student_ethnicity, :student_contact, :student_email, :student_sea_date, :student_primary_school, :student_sea_slip, :student_sea_number, :student_transfer_status, :student_transfer_slip,
+:student_transfer_date, :student_previous_secondary_school, :student_previous_school_location, :student_medical_condition, :student_bloodtype,
 :student_allergies, :student_immunization_status, :student_school_feeding_option, :student_social_welfare_status, :student_mode_of_transport, :student_access_to_device, :is_mother_active_or_deceased, :mother_name, :mother_identification_type,
 :mother_identification_number, :mother_home_address, :mother_contact, :mother_profession, :mother_work_address, :mother_email, :is_father_active_or_deceased,
 :father_name, :father_identification_type, :father_identification_number, :father_home_address, :father_contact, :father_profession, :father_work_address,
