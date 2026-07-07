@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(composer create-project:*)",
+      "Bash(php:*)",
+      "Bash(mkdir:*)",
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(tree:*)",
+      "Bash(awk:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

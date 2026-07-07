@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/keronlewis/Documents/SLSS-App/**)",
+      "Bash(test -f /Users/keronlewis/Documents/SLSS-App/forgot_password.php)",
+      "Bash(test -f /Users/keronlewis/Documents/SLSS-App/generate_pdf.php)",
+      "Bash(rm -f records.php index.html .htaccess.phpupgrader.68256c8d .htaccess.phpupgrader.initial error_log webhook_debug.log git.zip slss.sql student2025.csv student20252.csv install_auth_tables.php seed_admin.php pull.php)",
+      "Bash(test -f /Users/keronlewis/Documents/SLSS-App/records_pdf.php)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

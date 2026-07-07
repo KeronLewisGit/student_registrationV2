@@ -2,88 +2,202 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 'On');
 
-$pdo = require_once 'connect.php';
+// —– Bootstrap your PDO connection (returns a $pdo)
+$pdo = require 'connect.php';
 
-$sql="INSERT INTO student_registration_data (student_passport_photo, form_1_class, student_name, student_gender, student_current_address, student_dob, student_birth_certificate, student_birth_certficate_pin,
-student_religion, student_country_of_birth, student_nationality, student_ethnicity, student_contact, student_email, student_sea_date, student_primary_school, student_sea_slip, student_sea_number, student_transfer_status, student_transfer_slip, student_transfer_date, student_previous_secondary_school, student_previous_school_location, student_medical_condition, student_bloodtype,
-student_allergies, student_immunization_status, student_school_feeding_option, student_social_welfare_status, student_mode_of_transport, student_access_to_device, is_mother_active_or_deceased, mother_name, mother_identification_type,
-mother_identification_number, mother_home_address, mother_contact, mother_profession, mother_work_address, mother_email, is_father_active_or_deceased,
-father_name, father_identification_type, father_identification_number, father_home_address, father_contact, father_profession, father_work_address,
-father_email_address, emergency_contact_name, emergency_contact_address, emergency_contact_relation_to_student, emergency_contact_number, registration_date,
-registrant_relationship_to_student, registrant_name, registrant_identification_type, registrant_identification_number, registrant_nationality, registrant_email) 
-VALUES (:student_passport_photo, :student_form, :student_name, :student_gender, :student_current_address, :student_dob, :student_birth_certificate, :student_birth_certficate_pin,
-:student_religion, :student_country_of_birth, :student_nationality, :student_ethnicity, :student_contact, :student_email, :student_sea_date, :student_primary_school, :student_sea_slip, :student_sea_number, :student_transfer_status, :student_transfer_slip,
-:student_transfer_date, :student_previous_secondary_school, :student_previous_school_location, :student_medical_condition, :student_bloodtype,
-:student_allergies, :student_immunization_status, :student_school_feeding_option, :student_social_welfare_status, :student_mode_of_transport, :student_access_to_device, :is_mother_active_or_deceased, :mother_name, :mother_identification_type,
-:mother_identification_number, :mother_home_address, :mother_contact, :mother_profession, :mother_work_address, :mother_email, :is_father_active_or_deceased,
-:father_name, :father_identification_type, :father_identification_number, :father_home_address, :father_contact, :father_profession, :father_work_address,
-:father_email_address, :emergency_contact_name, :emergency_contact_address, :emergency_contact_relation_to_student, :emergency_contact_number, :registration_date,
-:registrant_relationship_to_student, :registrant_name, :registrant_identification_type, :registrant_identification_number, :registrant_nationality, :registrant_email)";
+// —– Helpers —–
+/**
+ * Return the raw field value, or a default if it's missing/empty.
+ */
+function field(string $key, $default = 'N/A'): string {
+    return $_POST['fields'][$key]['value'] ?? $default;
+}
 
-$stmt=$pdo->prepare($sql);
+/**
+ * Concatenate multiple fields, skipping empties.
+ * If none exist, return $default.
+ */
+function multi_field(array $keys, string $default = 'N/A', string $sep = ' '): string {
+    $vals = [];
+    foreach ($keys as $k) {
+        if (!empty($_POST['fields'][$k]['value'])) {
+            $vals[] = $_POST['fields'][$k]['value'];
+        }
+    }
+    return $vals ? implode($sep, $vals) : $default;
+}
 
-$stmt->execute([
-  ":student_passport_photo" => $_POST['fields']['student_passport']['value'],
-  ":student_form" => $_POST['fields']['student_class']['value'],
-  ":student_name" => $_POST['fields']['student_first_name']['value'] . " " . $_POST['fields']['student_last_name']['value'],
-  ":student_gender" => $_POST['fields']['student_gender']['value'],
-  ":student_current_address" => $_POST['fields']['student_address_line1']['value'] . " " . $_POST['fields']['student_city']['value'] . " " . $_POST['fields']['student_village']['value'],
-  ":student_dob" => $_POST['fields']['student_dob']['value'], 
-  ":student_birth_certificate" => $_POST['fields']['student_birth_certificate']['value'],
-  ":student_birth_certficate_pin" => $_POST['fields']['student_birth_pin']['value'],
-  ":student_religion" => $_POST['fields']['student_religion']['value'],
-  ":student_country_of_birth" => $_POST['fields']['student_country_of_birth']['value'],
-  ":student_nationality" => $_POST['fields']['student_nationality']['value'],
-  ":student_ethnicity" => $_POST['fields']['student_ethnicity']['value'],
-  ":student_contact" => $_POST['fields']['student_contact_no']['value'],
-  ":student_email" => $_POST['fields']['student_email']['value'],
-  ":student_sea_date" => $_POST['fields']['student_sea_date']['value'],
-  ":student_primary_school" => $_POST['fields']['student_primary_school']['value'],
-  ":student_sea_slip" => $_POST['fields']['student_sea_slip']['value'],
-  ":student_sea_number" => $_POST['fields']['student_sea_number']['value'],
-  ":student_transfer_status" => $_POST['fields']['transfer_status']['value'],
-  ":student_transfer_slip" => $_POST['fields']['student_transfer_slip']['value'],
-  ":student_transfer_date" => $_POST['fields']['student_transfer_year']['value'],
-  ":student_previous_secondary_school" => $_POST['fields']['student_transfer_school']['value'],
-  ":student_previous_school_location" => $_POST['fields']['transfer_address_line1']['value'] . " " . $_POST['fields']['transfer_city']['value'] . " " . $_POST['fields']['transfer_village']['value'],
-  ":student_medical_condition" => $_POST['fields']['student_medical_condition']['value'],
-  ":student_bloodtype" => $_POST['fields']['student_blood_type']['value'],
-  ":student_allergies" => $_POST['fields']['student_allergies']['value'],
-  ":student_immunization_status" => $_POST['fields']['student_immunisation_status']['value'],
-  ":student_school_feeding_option" => $_POST['fields']['student_school_feeding_option']['value'],
-  ":student_social_welfare_status" => $_POST['fields']['student_social_services']['value'],
-  ":student_mode_of_transport" => $_POST['fields']['student_transport_method']['value'],
-  ":student_access_to_device" => $_POST['fields']['student_continuos_access']['value'],
-  ":is_mother_active_or_deceased" => $_POST['fields']['mother_status']['value'],
-  ":mother_name" => $_POST['fields']['mother_first_name']['value'] . " " . $_POST['fields']['mother_last_name']['value'],
-  ":mother_identification_type" => $_POST['fields']['mother_identification']['value'],
-  ":mother_identification_number" => $_POST['fields']['mother_identification_number']['value'],
-  ":mother_home_address" => $_POST['fields']['mother_address_line1']['value'] . " " . $_POST['fields']['mother_city']['value'] . " " . $_POST['fields']['mother_village']['value'],
-  ":mother_contact" => $_POST['fields']['mother_contact']['value'],
-  ":mother_profession" => $_POST['fields']['mother_profession']['value'],
-  ":mother_work_address" => $_POST['fields']['mother_work_address_line1']['value'] . " " . $_POST['fields']['mother_work_city']['value'] . " " . $_POST['fields']['mother_work_village']['value'],
-  ":mother_email" => $_POST['fields']['mother_email']['value'],
-  ":is_father_active_or_deceased" => $_POST['fields']['father_status']['value'],
-  ":father_name" => $_POST['fields']['father_first_name']['value'] . " " . $_POST['fields']['father_last_name']['value'],
-  ":father_identification_type" => $_POST['fields']['father_identification_type']['value'],
-  ":father_identification_number" => $_POST['fields']['father_identification_no']['value'],
-  ":father_home_address" => $_POST['fields']['father_address_line1']['value'] . " " . $_POST['fields']['father_city']['value'] . " " . $_POST['fields']['father_village']['value'],
-  ":father_contact" => $_POST['fields']['father_contact']['value'],
-  ":father_profession" => $_POST['fields']['father_profession']['value'],
-  ":father_work_address" => $_POST['fields']['father_work_address_line1']['value'] . " " . $_POST['fields']['father_work_city']['value'] . " " . $_POST['fields']['father_work_village']['value'],
-  ":father_email_address" => $_POST['fields']['father_email']['value'],
-  ":emergency_contact_name" => $_POST['fields']['emergency_first_name']['value'] . " " . $_POST['fields']['emergency_last_name']['value'],
-  ":emergency_contact_address" => $_POST['fields']['emergency_address_line1']['value'] . " " . $_POST['fields']['emergency_city']['value'] . " " . $_POST['fields']['emergency_village']['value'],
-  ":emergency_contact_relation_to_student" => $_POST['fields']['emergency_relation']['value'],
-  ":emergency_contact_number" => $_POST['fields']['emergency_contact']['value'],
-  ":registration_date" => $_POST['fields']['registrant_date']['value'],
-  ":registrant_relationship_to_student" => $_POST['fields']['registrant_relationsip_to_student']['value'],
-  ":registrant_name" => $_POST['fields']['registrant_first_name']['value'] . " " . $_POST['fields']['registrant_last_name']['value'], 
-  ":registrant_identification_type" => $_POST['fields']['registrant_identification_type']['value'], 
-  ":registrant_identification_number" => $_POST['fields']['registrant_identification_number']['value'], 
-  ":registrant_nationality" => $_POST['fields']['registrant_nationality']['value'], 
-  ":registrant_email" => $_POST['fields']['registrant_email']['value']
-]);
+// —– Prepare SQL —–
+$sql = "
+INSERT INTO student_registration_data (
+  student_passport_photo, form_1_class, student_name, student_gender, citizen_type,
+  student_current_address, student_dob, student_birth_certificate, student_birth_certficate_pin,
+  student_religion, student_country_of_birth, student_nationality, student_ethnicity,
+  student_contact, student_email, student_sea_date, student_primary_school,
+  student_sea_slip, student_sea_number, student_transfer_status, student_transfer_slip,
+  student_transfer_date, student_previous_secondary_school, student_previous_school_location,
+  student_medical_condition, student_bloodtype, student_allergies, student_immunization_status,
+  student_family_crisis, student_recieving_counselling, student_physical_disibilities,
+  student_learning_disabilities, student_educational_aid, student_special_sea_concessions,
+  student_emotional_factors, student_other_intervention_information,
+  student_school_feeding_option, student_social_welfare_status, student_mode_of_transport,
+  student_access_to_device, is_mother_active_or_deceased, mother_name,
+  mother_identification_type, mother_identification_number, mother_home_address,
+  mother_contact, mother_profession, mother_work_address, mother_email,
+  is_father_active_or_deceased, father_name, father_identification_type,
+  father_identification_number, father_home_address, father_contact,
+  father_profession, father_work_address, father_email_address,
+  emergency_contact_name, emergency_contact_address,
+  emergency_contact_relation_to_student, emergency_contact_number,
+  registration_date, registrant_relationship_to_student,
+  registrant_name, registrant_identification_type, registrant_identification_number,
+  registrant_nationality, registrant_email
+)
+VALUES (
+  :student_passport_photo, :student_form, :student_name, :student_gender, :citizen_type,
+  :student_current_address, :student_dob, :student_birth_certificate, :student_birth_certficate_pin,
+  :student_religion, :student_country_of_birth, :student_nationality, :student_ethnicity,
+  :student_contact, :student_email, :student_sea_date, :student_primary_school,
+  :student_sea_slip, :student_sea_number, :student_transfer_status, :student_transfer_slip,
+  :student_transfer_date, :student_previous_secondary_school, :student_previous_school_location,
+  :student_medical_condition, :student_bloodtype, :student_allergies, :student_immunization_status,
+  :student_family_crisis, :student_recieving_counselling, :student_physical_disibilities,
+  :student_learning_disabilities, :student_educational_aid, :student_special_sea_concessions,
+  :student_emotional_factors, :student_other_intervention_information,
+  :student_school_feeding_option, :student_social_welfare_status, :student_mode_of_transport,
+  :student_access_to_device, :is_mother_active_or_deceased, :mother_name,
+  :mother_identification_type, :mother_identification_number, :mother_home_address,
+  :mother_contact, :mother_profession, :mother_work_address, :mother_email,
+  :is_father_active_or_deceased, :father_name, :father_identification_type,
+  :father_identification_number, :father_home_address, :father_contact,
+  :father_profession, :father_work_address, :father_email_address,
+  :emergency_contact_name, :emergency_contact_address,
+  :emergency_contact_relation_to_student, :emergency_contact_number,
+  :registration_date, :registrant_relationship_to_student,
+  :registrant_name, :registrant_identification_type, :registrant_identification_number,
+  :registrant_nationality, :registrant_email
+)
+";
 
-$conn = null;
-?>
+$stmt = $pdo->prepare($sql);
+
+// —– Bind parameters with defaults and conditional logic —–
+$params = [
+  ':student_passport_photo'                => field('student_passport'),
+  ':student_form'                          => field('student_class'),
+  ':student_name'                          => multi_field(['student_first_name','student_last_name'], ''),
+  ':student_gender'                        => field('student_gender'),
+  ':citizen_type'                          => field('student_citizenship_type'),
+  ':student_current_address'               => multi_field([
+                                              'student_house_no','student_address_line1',
+                                              'student_community','student_village',
+                                              'student_city','student_corporartion'
+                                            ], ''),
+  ':student_dob'                           => field('student_dob','1900-01-01'),
+  ':student_birth_certificate'             => field('student_birth_certificate'),
+  ':student_birth_certficate_pin'          => field('student_birth_pin'),
+  ':student_religion'                      => field('student_religion'),
+  ':student_country_of_birth'              => field('student_country_of_birth'),
+  ':student_nationality'                   => ( ($n = field('student_nationality','')) === 'Other'
+                                              ? field('other_student_nationality')
+                                              : $n ),
+  ':student_ethnicity'                     => field('student_ethnicity'),
+  ':student_contact'                       => field('student_contact_no'),
+  ':student_email'                         => field('student_email'),
+  ':student_sea_date'                      => field('student_sea_date','1900-01-01'),
+  ':student_primary_school'                => field('student_primary_school'),
+  ':student_sea_slip'                      => field('student_sea_slip'),
+  ':student_sea_number'                    => field('student_sea_number'),
+  ':student_transfer_status'               => field('transfer_status'),
+  ':student_transfer_slip'                 => field('student_transfer_slip'),
+  ':student_transfer_date'                 => field('student_transfer_year','1900-01-01'),
+  ':student_previous_secondary_school'     => field('student_transfer_school'),
+  ':student_previous_school_location'      => multi_field([
+                                              'transfer_address_line1',
+                                              'transfer_city','transfer_village'
+                                            ], ''),
+  ':student_medical_condition'             => field('student_medical_condition'),
+  ':student_bloodtype'                     => field('student_blood_type'),
+  ':student_allergies'                     => field('student_allergies'),
+  ':student_immunization_status'           => field('student_immunisation_status'),
+  ':student_family_crisis'                 => ( ($c = field('student_family_crisis','')) === 'Other'
+                                              ? field('student_other_crisis')
+                                              : $c ),
+  ':student_recieving_counselling'         => (field('recieved_counselling') === 'Yes'
+                                              ? field('counselling_explanation')
+                                              : 'N/A'),
+  ':student_physical_disibilities'         => (field('physical_disabilities') === 'Yes'
+                                              ? field('stated_physical_disabilities')
+                                              : 'N/A'),
+  ':student_learning_disabilities'         => (field('learning_disabilities') === 'Yes'
+                                              ? field('stated_learning_disabilities')
+                                              : 'N/A'),
+  ':student_educational_aid'               => field('educational_aid'),
+  ':student_special_sea_concessions'       => field('special_concessions'),
+  ':student_emotional_factors'             => (field('developmental_factors') === 'Yes'
+                                              ? field('stated_developmental_factors')
+                                              : 'N/A'),
+  ':student_other_intervention_information'=> field('other_intervention_information'),
+  ':student_school_feeding_option'         => field('student_school_feeding_option'),
+  ':student_social_welfare_status'         => field('student_social_services'),
+  ':student_mode_of_transport'             => field('student_transport_method'),
+  ':student_access_to_device'              => field('student_continuos_access'),
+  ':is_mother_active_or_deceased'          => (field('mother_living_status') === 'Deceased'
+                                              ? 'Deceased'
+                                              : 'Alive'),
+  ':mother_name'                           => multi_field(['mother_first_name','mother_last_name'], ''),
+  ':mother_identification_type'            => field('mother_identification'),
+  ':mother_identification_number'          => field('mother_identification_number'),
+  ':mother_home_address'                   => multi_field([
+                                              'mother_house_no','mother_address_line1',
+                                              'mother_community','mother_village',
+                                              'mother_city','mother_corporartion'
+                                            ], ''),
+  ':mother_contact'                        => field('mother_contact'),
+  ':mother_profession'                     => field('mother_profession'),
+  ':mother_work_address'                   => multi_field([
+                                              'mother_work_address_line1',
+                                              'mother_work_city','mother_work_village'
+                                            ], ''),
+  ':mother_email'                          => field('mother_email'),
+  ':is_father_active_or_deceased'          => (field('father_living_status') === 'Deceased'
+                                              ? 'Deceased'
+                                              : 'Alive'),
+  ':father_name'                           => multi_field(['father_first_name','father_last_name'], ''),
+  ':father_identification_type'            => field('father_identification_type'),
+  ':father_identification_number'          => field('father_identification_no'),
+  ':father_home_address'                   => multi_field([
+                                              'father_house_no','father_address_line1',
+                                              'father_community','father_village',
+                                              'father_city','father_corporartion'
+                                            ], ''),
+  ':father_contact'                        => field('father_contact'),
+  ':father_profession'                     => field('father_profession'),
+  ':father_work_address'                   => multi_field([
+                                              'father_work_address_line1',
+                                              'father_work_city','father_work_village'
+                                            ], ''),
+  ':father_email_address'                  => field('father_email'),
+  ':emergency_contact_name'                => multi_field(['emergency_first_name','emergency_last_name'], ''),
+  ':emergency_contact_address'             => multi_field([
+                                              'emergency_address_line1',
+                                              'emergency_city','emergency_village'
+                                            ], ''),
+  ':emergency_contact_relation_to_student' => (field('emergency_relation') === 'Other'
+                                              ? field('other_emergency_contact')
+                                              : field('emergency_relation')),
+  ':emergency_contact_number'              => field('emergency_contact'),
+  ':registration_date'                     => date('Y-m-d'),
+  ':registrant_relationship_to_student'    => (field('registrant_relationsip_to_student') === 'Other'
+                                              ? field('registrant_other_relationship')
+                                              : field('registrant_relationsip_to_student')),
+  ':registrant_name'                       => multi_field(['registrant_first_name','registrant_last_name'], ''),
+  ':registrant_identification_type'        => field('registrant_identification_type'),
+  ':registrant_identification_number'      => field('registrant_identification_number'),
+  ':registrant_nationality'                => (field('registrant_nationality') === 'Other'
+                                              ? field('registrant_other_nationality')
+                                              : field('registrant_nationality')),
+  ':registrant_email'                      => field('registrant_email')
+];
+
+$stmt->execute($params);
