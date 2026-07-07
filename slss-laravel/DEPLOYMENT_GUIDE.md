@@ -24,28 +24,33 @@
 
 This is the fastest and most reliable method for Hostinger Business, Cloud, or VPS plans.
 
-#### Step 1: Enable SSH Access
+**📌 Your Setup Details:**
 
-1. Login to **Hostinger hPanel**
-2. Go to **Advanced → SSH Access**
-3. Enable SSH access
-4. Note your SSH credentials:
-   - Host: `ssh.hostinger.com` or your server IP
-   - Port: Usually `22` or `65002`
-   - Username: Your Hostinger username
-   - Password: Your Hostinger password
+- **Domain:** `darkcyan-whale-509153.hostingersite.com`
+- **User:** `u269010508`
+- **SSH Port:** `65002`
+- **Laravel Path:** `~/public_html/student_registrationV2/slss-laravel`
+- **SSH Command:** `ssh -p 65002 u269010508@31.97.97.131`
 
-#### Step 2: Connect via SSH
+When you see `~/public_html/slss-laravel` in commands below, use the path above.
+
+#### Step 1: Connect via SSH
+
+SSH is already enabled for your account. Connect using:
 
 ```bash
-# Connect to your Hostinger server
-ssh username@ssh.hostinger.com -p 65002
-
-# Or if using a VPS:
-ssh root@your-server-ip
+ssh -p 65002 u269010508@31.97.97.131
 ```
 
-#### Step 3: Navigate to Web Root
+Enter your Hostinger password when prompted.
+
+**You're connected when you see:**
+
+```
+[u269010508@us-bos-web1685 ~]$
+```
+
+#### Step 3: Navigate to Web Root and Create Directory
 
 ```bash
 # For shared hosting (Business plan):
@@ -56,6 +61,10 @@ cd /home/username/public_html
 
 # Or for subdomain:
 cd ~/domains/yourdomain.com/public_html
+
+# Create your project directory
+mkdir -p student_registrationV2
+cd student_registrationV2
 ```
 
 #### Step 4: Upload Project Files
@@ -63,15 +72,15 @@ cd ~/domains/yourdomain.com/public_html
 **Option A: Using Git (Recommended)**
 
 ```bash
-# Install/use git on Hostinger
-cd ~/public_html
+# Navigate to your directory
+cd ~/public_html/student_registrationV2
 
 # Clone your repository
-git clone https://github.com/yourusername/slss-app.git slss
-cd slss
+git clone https://github.com/yourusername/slss-app.git slss-laravel
+cd slss-laravel
 
 # Or upload via SCP from local machine:
-# scp -P 65002 -r slss-laravel username@ssh.hostinger.com:~/public_html/
+# scp -P 65002 -r slss-laravel username@ssh.hostinger.com:~/public_html/student_registrationV2/
 ```
 
 **Option B: Upload Archive**
@@ -87,18 +96,19 @@ tar -czf slss-deploy.tar.gz \
   .
 
 # Upload to Hostinger:
-scp -P 65002 slss-deploy.tar.gz username@ssh.hostinger.com:~/public_html/
+scp -P 65002 slss-deploy.tar.gz username@ssh.hostinger.com:~/public_html/student_registrationV2/
 
 # On server, extract:
-cd ~/public_html
-tar -xzf slss-deploy.tar.gz
+cd ~/public_html/student_registrationV2
+mkdir -p slss-laravel
+tar -xzf slss-deploy.tar.gz -C slss-laravel
 rm slss-deploy.tar.gz
 ```
 
 #### Step 5: Install Composer Dependencies
 
 ```bash
-cd ~/public_html/slss-laravel
+cd ~/public_html/student_registrationV2/slss-laravel
 
 # Check if Composer is available
 composer --version
@@ -184,7 +194,7 @@ DB_PASSWORD=YourSecurePassword123!
 #### Step 8: Configure Environment
 
 ```bash
-cd ~/public_html/slss-laravel
+cd ~/public_html/student_registrationV2/slss-laravel
 
 # Copy environment file
 cp .env.example .env
@@ -199,14 +209,14 @@ nano .env
 APP_NAME="SLSS Student Management"
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://yourdomain.com
+APP_URL=https://darkcyan-whale-509153.hostingersite.com
 
 # Database (use credentials from hPanel)
 DB_CONNECTION=mysql
 DB_HOST=localhost
 DB_PORT=3306
-DB_DATABASE=u123456789_slss
-DB_USERNAME=u123456789_user
+DB_DATABASE=u269010508_slss
+DB_USERNAME=u269010508_user
 DB_PASSWORD=YourSecurePassword123!
 
 # Session & Cache
@@ -258,35 +268,69 @@ chmod -R 775 storage/app storage/framework storage/logs
 
 **Important:** Laravel's public directory must be your document root.
 
+Your app is located at: `public_html/student_registrationV2/slss-laravel`
+
 **Option A: Using .htaccess Redirect (if Laravel is in subdirectory)**
 
-If your Laravel app is in `public_html/slss-laravel`, create `.htaccess` in `public_html`:
+Create/edit `.htaccess` in your `public_html` directory:
 
 ```apache
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*)$ slss-laravel/public/$1 [L]
+    RewriteRule ^(.*)$ student_registrationV2/slss-laravel/public/$1 [L]
 </IfModule>
 ```
 
-**Option B: Change Document Root (Recommended)**
+This redirects all traffic to your Laravel public folder.
 
-1. Go to **hPanel → Domains**
-2. Click **Manage** next to your domain
-3. Find **Document Root** setting
-4. Change from `public_html` to `public_html/slss-laravel/public`
-5. Save changes
+**Option B: Change Document Root via hPanel (Recommended)**
 
-**Option C: Use Subdomain**
+1. Go to **hPanel → Websites**
+2. Find your domain: `darkcyan-whale-509153.hostingersite.com`
+3. Click **Manage**
+4. Scroll to **Website root** or **Document Root** setting
+5. Change from:
+
+   ```
+   public_html
+   ```
+
+   To:
+   ```
+   public_html/student_registrationV2/slss-laravel/public
+   ```
+6. Click **Save** or **Update**
+7. Wait 2-3 minutes for changes to take effect
+
+Then access your site at: `https://darkcyan-whale-509153.hostingersite.com`
+
+**Option C: Use Subdomain (When You Have a Custom Domain)**
+
+When you add your custom domain later:
 
 1. Go to **hPanel → Domains → Subdomains**
-2. Create subdomain: `students.yourdomain.com`
-3. Set document root to: `public_html/slss-laravel/public`
+2. Create subdomain: `students.yourdomain.com` or `portal.yourdomain.com`
+3. Set document root to: `public_html/student_registrationV2/slss-laravel/public`
+4. Save and wait for DNS propagation (5-10 minutes)
+
+For now, use the Hostinger temporary domain: `darkcyan-whale-509153.hostingersite.com`
+
+**Option D: Access via subdirectory (Quick test - not for production)**
+
+Temporarily access via:
+
+```
+https://darkcyan-whale-509153.hostingersite.com/student_registrationV2/slss-laravel/public
+```
+
+Then use Option A or B to make it the root domain.
+
+**Note:** Your Hostinger domain is `darkcyan-whale-509153.hostingersite.com`. Once you connect your custom domain, update these URLs accordingly.
 
 #### Step 13: Optimize for Production
 
 ```bash
-cd ~/public_html/slss-laravel
+cd ~/public_html/student_registrationV2/slss-laravel
 
 # Cache configuration
 php artisan config:cache
@@ -306,7 +350,17 @@ composer dump-autoload --optimize
 
 #### Step 15: Test Your Application
 
-Visit: `https://yourdomain.com`
+**Test URL (before document root configuration):**
+
+```
+https://darkcyan-whale-509153.hostingersite.com/student_registrationV2/slss-laravel/public
+```
+
+**After document root configuration:**
+
+```
+https://darkcyan-whale-509153.hostingersite.com
+```
 
 Default login:
 
@@ -698,6 +752,7 @@ composer --version
 ### Issue: Composer install dir does not exist
 
 **Error:**
+
 ```
 The defined install dir (/home/u269010508/bin) does not exist.
 ```
@@ -717,6 +772,7 @@ rm composer-setup.php
 ### Issue: PHP version compatibility error
 
 **Error:**
+
 ```
 maennchen/zipstream-php requires php-64bit ^8.3
 Your PHP version (8.2.30) does not satisfy that requirement.
@@ -765,6 +821,7 @@ composer install --optimize-autoloader --no-dev
 ### Issue: Security advisories blocking installation
 
 **Error:**
+
 ```
 Your requirements could not be resolved to an installable set of packages.
 Problem 1
