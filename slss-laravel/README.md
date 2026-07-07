@@ -42,12 +42,25 @@ A modern, secure, and user-friendly Laravel 11 student management system for Suc
 
 **Note:** If using PHP 8.2, you may need to run `composer update` after installation to regenerate the lock file.
 
-## 🚀 Quick Start Installation
+## 🚀 Deployment Options
 
-### Prerequisites
+### Hostinger Web Hosting (Production)
+
+**For Hostinger deployment, see:** [HOSTINGER_DEPLOYMENT.md](HOSTINGER_DEPLOYMENT.md)
+
+Complete step-by-step guide for deploying to Hostinger shared hosting with:
+- Pre-configured for your Hostinger account
+- Database setup instructions
+- Document root configuration
+- Troubleshooting guide
+- Security checklist
+
+### Local Development Installation
+
+#### Prerequisites
 
 Ensure you have:
-- PHP 8.1 or higher
+- PHP 8.2 or higher (8.3 recommended)
 - Composer
 - MySQL or MariaDB
 - Web server (Apache/Nginx) or PHP's built-in server
