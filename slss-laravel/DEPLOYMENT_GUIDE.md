@@ -3,11 +3,13 @@
 ## 📋 Hostinger Requirements
 
 ### Recommended Hosting Plan
+
 - **Minimum:** Business Web Hosting or higher
 - **Recommended:** Cloud Startup or VPS for better performance
 - **Why:** Laravel requires SSH access and Composer, available on Business plans and above
 
 ### What You Need
+
 - [ ] Hostinger hosting account (Business plan or higher)
 - [ ] Domain name (can purchase through Hostinger)
 - [ ] FTP client (FileZilla) or SSH client
@@ -102,15 +104,49 @@ cd ~/public_html/slss-laravel
 composer --version
 
 # If not available, install Composer:
+# First, create bin directory if it doesn't exist
+mkdir -p $HOME/bin
+
+# Download and install Composer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
 php composer-setup.php --install-dir=$HOME/bin --filename=composer
 rm composer-setup.php
 
-# Add to PATH (add to ~/.bashrc for persistence)
-export PATH="$HOME/bin:$PATH"
+# Add to PATH permanently
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+
+# Verify Composer installation
+composer --version
 
 # Install dependencies
 composer install --optimize-autoloader --no-dev
+```
+
+**If you get a PHP version compatibility error:**
+
+```
+Error: maennchen/zipstream-php requires php-64bit ^8.3
+Your PHP version (8.2.30) does not satisfy that requirement.
+```
+
+**Solution A: Upgrade to PHP 8.3** (Recommended if available)
+
+1. Go to **hPanel → Advanced → PHP Configuration**
+2. Select **PHP 8.3** from dropdown
+3. Save changes
+4. Run `composer install --optimize-autoloader --no-dev` again
+
+**Solution B: Update composer.lock for PHP 8.2**
+
+If PHP 8.3 is not available on your hosting plan:
+
+```bash
+# Remove existing lock file
+rm composer.lock
+
+# Update dependencies to match your PHP version
+composer update --optimize-autoloader --no-dev
 ```
 
 #### Step 6: Configure PHP Version
@@ -137,6 +173,7 @@ Hostinger allows PHP version selection:
 5. Click **Create**
 
 **Database Credentials Example:**
+
 ```
 DB_HOST=localhost
 DB_DATABASE=u123456789_slss
@@ -272,6 +309,7 @@ composer dump-autoload --optimize
 Visit: `https://yourdomain.com`
 
 Default login:
+
 - Email: `admin@slss.edu.tt`
 - Password: `admin123`
 
@@ -458,6 +496,7 @@ Hostinger integrates with Cloudflare:
 ### Backup Database
 
 **Via hPanel:**
+
 1. Go to **phpMyAdmin**
 2. Select your database
 3. Click **Export** → **Go**
@@ -475,6 +514,7 @@ mysql -u u123456789_user -p u123456789_slss < backup_20250107.sql
 ### Import Existing Data
 
 **Method 1: Via phpMyAdmin**
+
 1. Open phpMyAdmin
 2. Select database
 3. Click **Import**
@@ -482,6 +522,7 @@ mysql -u u123456789_user -p u123456789_slss < backup_20250107.sql
 5. Click **Go**
 
 **Method 2: Via SSH**
+
 ```bash
 mysql -u u123456789_user -p u123456789_slss < slss.sql
 ```
@@ -514,6 +555,7 @@ php artisan cache:clear
 ### 3. Optimize Images
 
 Ensure student photos are optimized:
+
 - Max 500KB per photo
 - 800x800px max resolution
 - Use JPEG format
@@ -552,6 +594,7 @@ Already in Laravel's `.htaccess`, verify:
 **Solutions:**
 
 1. **Check error logs:**
+
    ```bash
    # Via SSH:
    tail -f ~/public_html/slss-laravel/storage/logs/laravel.log
@@ -559,15 +602,16 @@ Already in Laravel's `.htaccess`, verify:
    # Via hPanel:
    # Go to: Files → File Manager → Navigate to storage/logs/laravel.log
    ```
-
 2. **Check PHP error logs:**
-   - hPanel → Advanced → Error Logs
 
+   - hPanel → Advanced → Error Logs
 3. **Verify .htaccess:**
+
    ```bash
    # Ensure mod_rewrite is working
    # Check public/.htaccess has:
    ```
+
    ```apache
    <IfModule mod_rewrite.c>
        RewriteEngine On
@@ -575,8 +619,8 @@ Already in Laravel's `.htaccess`, verify:
        # ... rest of rules
    </IfModule>
    ```
-
 4. **Check file permissions:**
+
    ```bash
    chmod -R 755 storage bootstrap/cache
    ```
@@ -584,6 +628,7 @@ Already in Laravel's `.htaccess`, verify:
 ### Issue: "Application key not set"
 
 **Solution:**
+
 ```bash
 # Via SSH:
 php artisan key:generate
@@ -633,6 +678,9 @@ echo "Storage linked!";
 **Solution:**
 
 ```bash
+# Create bin directory first
+mkdir -p $HOME/bin
+
 # Install Composer locally:
 cd ~
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -645,6 +693,119 @@ source ~/.bashrc
 
 # Verify:
 composer --version
+```
+
+### Issue: Composer install dir does not exist
+
+**Error:**
+```
+The defined install dir (/home/u269010508/bin) does not exist.
+```
+
+**Solution:**
+
+```bash
+# Create the directory first
+mkdir -p $HOME/bin
+
+# Then install Composer
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --install-dir=$HOME/bin --filename=composer
+rm composer-setup.php
+```
+
+### Issue: PHP version compatibility error
+
+**Error:**
+```
+maennchen/zipstream-php requires php-64bit ^8.3
+Your PHP version (8.2.30) does not satisfy that requirement.
+```
+
+**Solutions:**
+
+**Option 1: Upgrade PHP (Recommended)**
+
+1. Go to **hPanel → Advanced → PHP Configuration**
+2. Select **PHP 8.3** or higher
+3. Click **Save**
+4. Wait 2-3 minutes for changes to apply
+5. Verify: `php -v`
+6. Run: `composer install --optimize-autoloader --no-dev`
+
+**Option 2: Update composer.lock for current PHP version**
+
+```bash
+# Navigate to project
+cd ~/public_html/slss-laravel
+
+# Remove lock file
+rm composer.lock
+
+# Update all dependencies to match PHP 8.2
+composer update --optimize-autoloader --no-dev
+
+# This will regenerate composer.lock with PHP 8.2 compatible versions
+```
+
+**Option 3: Use PHP 8.3 via command line (if available but not default)**
+
+```bash
+# Check available PHP versions
+ls /opt/alt/php*/usr/bin/php
+
+# Use PHP 8.3 specifically for composer
+/opt/alt/php83/usr/bin/php $(which composer) install --optimize-autoloader --no-dev
+
+# Or alias it temporarily
+alias php='/opt/alt/php83/usr/bin/php'
+composer install --optimize-autoloader --no-dev
+```
+
+### Issue: Security advisories blocking installation
+
+**Error:**
+```
+Your requirements could not be resolved to an installable set of packages.
+Problem 1
+- Root composer.json requires laravel/framework ^10.0, found laravel/framework[v10.0.0, ..., 10.50.2]
+  but these were not loaded, because they are affected by security advisories
+```
+
+**This happens when:** Composer 2.9+ blocks packages with known security vulnerabilities.
+
+**Solutions:**
+
+**Option 1: Upgrade to Laravel 11 (Recommended - Already done in composer.json)**
+
+The project has been updated to Laravel 11 which addresses security issues:
+
+```bash
+cd ~/public_html/slss-laravel
+
+# Install with updated dependencies
+composer install --optimize-autoloader --no-dev
+```
+
+**Option 2: Temporarily disable security audit (NOT recommended for production)**
+
+Only use this if you absolutely need Laravel 10:
+
+```bash
+# Disable audit temporarily
+composer install --optimize-autoloader --no-dev --no-audit
+
+# Or configure composer to not block insecure packages
+composer config --no-plugins allow-plugins.composer/package-versions-deprecated true
+composer config audit.abandoned ignore
+```
+
+**Option 3: Install from existing composer.lock (if you have one)**
+
+```bash
+# Upload your working composer.lock file from local/development
+# Then run:
+composer install --optimize-autoloader --no-dev --ignore-platform-reqs
 ```
 
 ### Issue: Permission denied errors
@@ -667,17 +828,18 @@ chmod -R 775 ~/public_html/slss-laravel/bootstrap/cache
 **Solutions:**
 
 1. Check if images exist:
+
    ```bash
    ls -la public/images/
    # Should see: successlogo.png, OfficialDocument1.png, noimage.jpg
    ```
-
 2. Check DomPDF dependencies:
+
    ```bash
    composer require barryvdh/laravel-dompdf
    ```
-
 3. Check PHP extensions:
+
    - hPanel → Advanced → PHP Configuration
    - Enable: `gd`, `mbstring`
 
@@ -771,6 +933,7 @@ php artisan view:cache
 ### Monitor Error Logs
 
 Regularly check:
+
 - `storage/logs/laravel.log`
 - hPanel → Advanced → Error Logs
 
@@ -817,6 +980,7 @@ If performance is an issue, consider upgrading:
 - **Cloud → VPS:** Full control, root access
 
 Benefits of upgrading:
+
 - More PHP workers
 - Better resource allocation
 - Faster database queries

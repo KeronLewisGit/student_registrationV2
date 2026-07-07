@@ -5,14 +5,14 @@
     "keywords": ["laravel", "student management", "school"],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^10.0",
-        "laravel/sanctum": "^3.2",
-        "laravel/tinker": "^2.8",
-        "barryvdh/laravel-dompdf": "^2.0",
+        "laravel/framework": "^11.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^2.9",
+        "barryvdh/laravel-dompdf": "^3.0",
         "maatwebsite/excel": "^3.1",
-        "intervention/image": "^2.7"
+        "intervention/image": "^3.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

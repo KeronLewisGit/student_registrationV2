@@ -1,6 +1,6 @@
 # Success Laventille Secondary School - Student Management System
 
-A modern, secure, and user-friendly Laravel-based student management system for Success Laventille Secondary School, featuring comprehensive student record management, advanced PDF generation, and CSV import capabilities.
+A modern, secure, and user-friendly Laravel 11 student management system for Success Laventille Secondary School, featuring comprehensive student record management, advanced PDF generation, and CSV import capabilities.
 
 ![SLSS Logo](public/images/successlogo.png)
 
@@ -34,11 +34,13 @@ A modern, secure, and user-friendly Laravel-based student management system for 
 
 ## 📋 Requirements
 
-- PHP >= 8.1
+- **PHP >= 8.2** (8.3 recommended for optimal compatibility)
 - Composer
 - MySQL >= 5.7 or MariaDB >= 10.3
 - Node.js & NPM (for asset compilation, optional)
 - Extensions: PDO, Mbstring, OpenSSL, Tokenizer, XML, Ctype, JSON, BCMath, GD
+
+**Note:** If using PHP 8.2, you may need to run `composer update` after installation to regenerate the lock file.
 
 ## 🚀 Quick Start Installation
 
@@ -359,13 +361,14 @@ For technical support or feature requests, please contact the system administrat
 
 ## 🙏 Acknowledgments
 
-- Built with [Laravel](https://laravel.com/)
+- Built with [Laravel 11](https://laravel.com/)
 - PDF generation by [DomPDF](https://github.com/barryvdh/laravel-dompdf)
 - UI components by [Bootstrap 5](https://getbootstrap.com/)
 - Icons by [Font Awesome](https://fontawesome.com/)
 
 ---
 
-**Version:** 1.0.0
+**Version:** 2.0.0
+**Framework:** Laravel 11
 **Last Updated:** January 2025
 **Developed for:** Success Laventille Secondary School, Trinidad and Tobago
