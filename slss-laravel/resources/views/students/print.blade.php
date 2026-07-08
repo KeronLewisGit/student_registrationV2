@@ -24,12 +24,30 @@
             min-height: 1000px;
         }
 
+        /* Official Document Watermark */
+        .profile-card::before {
+            content: "OFFICIAL DOCUMENT";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 5rem;
+            font-weight: 900;
+            color: rgba(79, 70, 229, 0.08);
+            text-transform: uppercase;
+            letter-spacing: 0.5rem;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 1;
+            user-select: none;
+        }
+
         .profile-card::after {
             content: "";
             position: absolute;
             inset: 80px;
             background: url('{{ asset('images/OfficialDocument1.png') }}') center/contain no-repeat;
-            opacity: 0.05;
+            opacity: 0.03;
             pointer-events: none;
             z-index: 0;
         }
@@ -101,9 +119,18 @@
             .profile-card {
                 padding-top: 140px !important;
             }
+            .profile-card::before {
+                position: fixed;
+                font-size: 4.5rem;
+                opacity: 1;
+                color: rgba(79, 70, 229, 0.06);
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
             .section-card {
                 box-shadow: none;
                 border-left-width: 3px;
+                page-break-inside: avoid;
             }
         }
     </style>
