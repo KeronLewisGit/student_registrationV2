@@ -4,7 +4,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(/Users/keronlewis/Documents/SLSS-App/slss-laravel/resources/views/students/edit.blade.php)",
       "Bash(git commit -m \"Fix edit form syntax errors - remove escaped quotes and fix date formatting\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
-      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")"
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")",
+      "Bash(git add resources/views/students/index.blade.php)",
+      "Bash(git commit -m \"Fix date sorting by using data-order attributes\n\n- Added data-order attributes to Birth Date and Registration Date columns\n- Attributes contain ISO date format (YYYY-MM-DD) for proper sorting\n- Removed moment.js date sorting plugin (no longer needed)\n- DataTables now sorts dates correctly using native data-order attribute\n- Handles ''No record provided'' cases with 0000-00-00 for proper sorting\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
