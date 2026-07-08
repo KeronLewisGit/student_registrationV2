@@ -5,6 +5,11 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WebhookController;
+
+// Webhook Routes (No Auth Required - CSRF Exempted in Middleware)
+Route::post('/webhook/student-registration', [WebhookController::class, 'handleStudentRegistration'])
+    ->name('webhook.student.registration');
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

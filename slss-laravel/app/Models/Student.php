@@ -23,7 +23,8 @@ class Student extends Model
         'student_sea_date', 'student_primary_school', 'student_sea_slip', 'student_sea_number',
 
         // Transfer Information
-        'student_transfer_status', 'student_transfer_slip', 'student_transfer_date',
+        'student_transfer_status', 'student_transfer_slip', 'student_transfer_reason',
+        'student_transfer_date', 'student_previous_form_class',
         'student_previous_secondary_school', 'student_previous_school_location',
 
         // Medical Information
@@ -36,16 +37,17 @@ class Student extends Model
         'student_emotional_factors', 'student_other_intervention_information',
 
         // Personal Preferences
-        'student_school_feeding_option', 'student_social_welfare_status',
-        'student_mode_of_transport', 'student_access_to_device',
+        'student_school_feeding_option', 'student_social_welfare_status', 'student_social_welfare_detail',
+        'student_mode_of_transport', 'student_access_to_device', 'student_device_shared',
+        'student_reliable_internet', 'student_internet_provider', 'student_online_tools',
 
         // Mother Information
-        'mother_name', 'is_mother_active_or_deceased', 'mother_identification_type',
+        'mother_name', 'is_mother_active_or_deceased', 'mother_death_certificate', 'mother_identification_type',
         'mother_identification_number', 'mother_home_address', 'mother_contact',
         'mother_profession', 'mother_work_address', 'mother_email',
 
         // Father Information
-        'father_name', 'is_father_active_or_deceased', 'father_identification_type',
+        'father_name', 'is_father_active_or_deceased', 'father_death_certificate', 'father_identification_type',
         'father_identification_number', 'father_home_address', 'father_contact',
         'father_profession', 'father_work_address', 'father_email_address',
 
