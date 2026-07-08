@@ -14,15 +14,26 @@ class WebhookController extends Controller
      */
     public function handleStudentRegistration(Request $request)
     {
+        // Log raw request data to file for debugging
+        $debugLog = storage_path('logs/webhook_debug.log');
+        file_put_contents($debugLog, "\n\n=== " . date('Y-m-d H:i:s') . " ===\n" . json_encode([
+            'all_data' => $request->all(),
+            'fields' => $request->input('fields'),
+            'ip' => $request->ip()
+        ], JSON_PRETTY_PRINT), FILE_APPEND);
+
         try {
             // Log incoming data for debugging
             Log::info('Webhook received', [
-                'fields' => $request->input('fields'),
+                'has_fields' => $request->has('fields'),
+                'field_count' => count($request->input('fields', [])),
                 'ip' => $request->ip()
             ]);
 
             // Extract and process the data
             $studentData = $this->extractStudentData($request);
+
+            Log::info('Student data extracted', ['fields_count' => count($studentData)]);
 
             // Create the student record
             $student = Student::create($studentData);
@@ -35,15 +46,30 @@ class WebhookController extends Controller
                 'student_id' => $student->id
             ], 200);
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Database error in webhook', [
+                'error' => $e->getMessage(),
+                'sql' => $e->getSql() ?? 'N/A',
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Database error: ' . $e->getMessage(),
+                'error_type' => 'database'
+            ], 500);
+
         } catch (Exception $e) {
             Log::error('Webhook processing failed', [
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error saving registration'
+                'message' => 'Error: ' . $e->getMessage(),
+                'error_type' => 'general'
             ], 500);
         }
     }
