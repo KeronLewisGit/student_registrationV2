@@ -1,3 +1,4 @@
+
 # Hostinger Deployment Guide - SLSS Laravel Student Management System
 
 ## 🔍 Code Audit Summary
@@ -11,11 +12,13 @@ All code has been audited and optimized for Hostinger's shared hosting environme
 ## 📋 Issues Fixed
 
 ### 1. **composer.json - Duplicate Config Block** ✅ FIXED
+
 - **Issue**: Duplicate `config` block causing potential JSON parsing issues
 - **Fix**: Merged duplicate blocks into single configuration
 - **Status**: Resolved
 
 ### 2. **PHP 8.2 Compatibility** ✅ VERIFIED
+
 - **Status**: All dependencies compatible with PHP 8.2.30 (Hostinger's version)
 - **Laravel Framework**: ^11.0 ✅
 - **DomPDF**: ^3.0 ✅
@@ -23,6 +26,7 @@ All code has been audited and optimized for Hostinger's shared hosting environme
 - **Intervention Image**: ^3.0 ✅
 
 ### 3. **Production Environment Configuration** ✅ OPTIMIZED
+
 - **`.env.example`**: Updated with Hostinger-specific values
 - **APP_ENV**: Changed from `local` to `production`
 - **APP_DEBUG**: Disabled for security (`false`)
@@ -30,11 +34,30 @@ All code has been audited and optimized for Hostinger's shared hosting environme
 - **Database**: Pre-configured for Hostinger MySQL
 
 ### 4. **Code Structure** ✅ VERIFIED
+
 - **No hardcoded paths**: All paths use Laravel helpers
 - **No localhost references**: All configs use environment variables
 - **Service layer architecture**: Properly implemented
 - **Form requests**: Validation properly separated
 - **Migrations**: Compatible with MySQL 5.7+
+
+### 5. **PHP 8.2 Platform Lock** ✅ CRITICAL FIX
+
+- **Issue**: Dependencies were resolving to versions requiring PHP 8.3+, incompatible with Hostinger
+- **Fix**: Added platform constraint in `composer.json`:
+  ```json
+  "config": {
+      "platform": {
+          "php": "8.2.30"
+      }
+  }
+  ```
+- **Result**: All dependencies now resolve to PHP 8.2-compatible versions
+- **Key packages locked**:
+  - `maennchen/zipstream-php`: 3.1.2 (was 3.2.2 requiring PHP 8.3)
+  - `symfony/*`: v7.x series (was v8.x requiring PHP 8.4)
+- **composer.lock regenerated**: Committed to repository with PHP 8.2 constraints
+- **Status**: Now fully compatible with Hostinger PHP 8.2.30
 
 ---
 
@@ -45,16 +68,17 @@ All code has been audited and optimized for Hostinger's shared hosting environme
 Before deployment, ensure you have:
 
 1. **Hostinger Account Access**
+
    - Domain: `darkcyan-whale-509153.hostingersite.com`
    - Username: `u269010508`
    - SSH Access: Port `65002`
-
 2. **Database Created in hPanel**
+
    - Database name: `u269010508_slss`
    - Database user: `u269010508_user`
    - Password: (set in hPanel)
-
 3. **Git Repository**
+
    - Code committed to git repository
    - Remote repository URL ready (GitHub, GitLab, Bitbucket, etc.)
 
@@ -63,6 +87,7 @@ Before deployment, ensure you have:
 ## 🎯 Deployment Method: Git (Recommended)
 
 ### Why Git Deployment?
+
 - ✅ Easier updates (just `git pull`)
 - ✅ Version control and rollback capability
 - ✅ Only transfers changed files
@@ -98,6 +123,7 @@ cd slss-laravel
 ```
 
 **Note:** If using private repository, you may need to:
+
 - Set up SSH keys: `ssh-keygen -t ed25519 -C "u269010508@hostinger"`
 - Add public key to GitHub/GitLab: `cat ~/.ssh/id_ed25519.pub`
 
@@ -129,6 +155,26 @@ cd ~/public_html/student_registrationV2/slss-laravel
 # Install production dependencies
 composer install --optimize-autoloader --no-dev
 ```
+
+**Important Notes:**
+
+- ✅ `composer.lock` is committed to git repository
+- ✅ All dependencies are pre-locked to PHP 8.2-compatible versions
+- ✅ No need to run `composer update` - just `composer install`
+- ✅ This ensures exact same package versions as development environment
+
+**What this does:**
+
+- Reads `composer.lock` for exact package versions
+- Installs only production dependencies (no dev tools like PHPUnit)
+- Generates optimized autoloader for better performance
+- Downloads all packages to `vendor/` directory
+
+**If you encounter errors:**
+
+- Make sure you've pulled the latest code: `git pull origin master`
+- Verify PHP version: `php -v` (should be 8.2.x)
+- Check composer is installed: `composer --version`
 
 ---
 
@@ -226,10 +272,12 @@ php artisan view:cache
 ## 🌐 Step 3: Configure Document Root in hPanel
 
 ### 3.1 Access hPanel
+
 1. Log in to Hostinger hPanel
 2. Go to **Advanced** → **Domain Configuration**
 
 ### 3.2 Update Document Root
+
 1. Find domain: `darkcyan-whale-509153.hostingersite.com`
 2. Click **Manage**
 3. Update **Document Root** to:
@@ -250,6 +298,7 @@ ls -la .htaccess
 ```
 
 If it's missing, check it out from git:
+
 ```bash
 cd ~/public_html/student_registrationV2/slss-laravel
 git checkout public/.htaccess
@@ -262,6 +311,7 @@ git checkout public/.htaccess
 ### 4.1 Access Application
 
 Open browser and navigate to:
+
 ```
 https://darkcyan-whale-509153.hostingersite.com
 ```
@@ -278,6 +328,7 @@ Use default admin credentials:
 ### 4.3 Verify Features
 
 After login, test:
+
 - ✅ View students list
 - ✅ Add new student
 - ✅ Edit student
@@ -292,16 +343,19 @@ After login, test:
 ### Issue: 500 Internal Server Error
 
 **Solution 1: Check Laravel Logs**
+
 ```bash
 tail -50 ~/public_html/student_registrationV2/slss-laravel/storage/logs/laravel.log
 ```
 
 **Solution 2: Check File Permissions**
+
 ```bash
 chmod -R 775 storage bootstrap/cache
 ```
 
 **Solution 3: Clear All Caches**
+
 ```bash
 php artisan cache:clear
 php artisan config:clear
@@ -310,11 +364,13 @@ php artisan view:clear
 ```
 
 **Solution 4: Verify .env File**
+
 ```bash
 cat .env | grep -E "DB_|APP_KEY"
 ```
 
 Ensure:
+
 - `APP_KEY` is set (not empty)
 - Database credentials are correct
 
@@ -323,11 +379,13 @@ Ensure:
 ### Issue: Blank Page
 
 **Check PHP Error Logs:**
+
 ```bash
 tail -50 ~/logs/error_log
 ```
 
 **Enable Debug Mode Temporarily:**
+
 ```bash
 # Edit .env
 nano .env
@@ -343,12 +401,14 @@ APP_DEBUG=true
 ### Issue: Database Connection Error
 
 **Verify Database Exists:**
+
 1. Log in to hPanel
 2. Go to **Databases** → **MySQL Databases**
 3. Verify `u269010508_slss` exists
 4. Verify user `u269010508_user` has permissions
 
 **Test Connection:**
+
 ```bash
 mysql -u u269010508_user -p u269010508_slss -e "SELECT 1"
 ```
@@ -358,6 +418,7 @@ mysql -u u269010508_user -p u269010508_slss -e "SELECT 1"
 ### Issue: Images/PDFs Not Loading
 
 **Solution:**
+
 ```bash
 # Recreate storage link
 rm -f public/storage
@@ -373,11 +434,11 @@ chmod -R 775 storage
 
 ### Default Users (Created by Seeder)
 
-| Role | Email | Password | Permissions |
-|------|-------|----------|-------------|
-| Admin | admin@slss.edu.tt | admin123 | Full access |
-| Staff | staff@slss.edu.tt | staff123 | Create, edit, import |
-| Viewer | viewer@slss.edu.tt | viewer123 | View only |
+| Role   | Email              | Password  | Permissions          |
+| ------ | ------------------ | --------- | -------------------- |
+| Admin  | admin@slss.edu.tt  | admin123  | Full access          |
+| Staff  | staff@slss.edu.tt  | staff123  | Create, edit, import |
+| Viewer | viewer@slss.edu.tt | viewer123 | View only            |
 
 **⚠️ IMPORTANT:** Change these passwords after first login!
 
@@ -505,6 +566,7 @@ chmod +x ~/update-slss.sh
 ```
 
 Then for future updates, just run:
+
 ```bash
 ~/update-slss.sh
 ```
@@ -547,7 +609,9 @@ The following files **ARE** committed to version control:
 - ✅ Public assets (`public/images/`, `public/css/`, `public/js/`)
 - ✅ `.htaccess` file in `public/` directory
 - ✅ `.env.example` (template for environment config)
-- ✅ `composer.json` and `composer.lock`
+- ✅ `composer.json` and `composer.lock` (dependency management)
+  - **IMPORTANT**: `composer.lock` contains PHP 8.2-locked versions
+  - Ensures consistent dependencies across all environments
 - ✅ `.gitkeep` files (preserve empty directory structure)
 - ✅ Documentation files (README.md, etc.)
 
@@ -573,16 +637,19 @@ The following files **ARE NOT** committed (in `.gitignore`):
 ### 🔍 Why This Matters
 
 **Environment files (`.env`, `.htaccess`)** are not tracked because:
+
 - They contain environment-specific settings (database credentials, app keys)
 - Local development settings differ from production
 - Security: prevents accidental commit of passwords/keys
 
 **Vendor directory** is not tracked because:
+
 - It's regenerated from `composer.json` via `composer install`
 - Reduces repository size significantly
 - Ensures server uses correct PHP version dependencies
 
 **Storage/cache files** are not tracked because:
+
 - They're regenerated automatically
 - User uploads are environment-specific
 - Log files would bloat the repository
@@ -606,17 +673,20 @@ git ls-files | grep filename
 ## 📞 Support
 
 **SSH Connection Details:**
+
 - Host: `31.97.97.131`
 - Port: `65002`
 - User: `u269010508`
 - Command: `ssh -p 65002 u269010508@31.97.97.131`
 
 **Database Details:**
+
 - Host: `localhost`
 - Database: `u269010508_slss`
 - User: `u269010508_user`
 
 **Application URL:**
+
 - Primary: `https://darkcyan-whale-509153.hostingersite.com`
 
 ---

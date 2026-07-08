@@ -7,7 +7,7 @@ use App\Http\Controllers\ImportController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
@@ -28,6 +28,6 @@ Route::middleware(['auth'])->group(function () {
     // CSV Import Routes (Admin/Staff only)
     Route::middleware(['can:edit-students'])->group(function () {
         Route::get('/import', [ImportController::class, 'index'])->name('import.index');
-        Route::post('/import', [ImportController::class, 'import'])->name('import.store');
+        Route::post('/import', [ImportController::class, 'import'])->middleware('throttle:10,1')->name('import.store');
     });
 });
