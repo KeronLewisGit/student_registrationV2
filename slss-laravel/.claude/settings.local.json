@@ -28,7 +28,11 @@
       "Bash(git add app/Http/Controllers/Controller.php)",
       "Bash(git commit -m \"Fix base Controller class with proper Laravel 11 traits and methods\")",
       "Bash(git add resources/views/students/create.blade.php)",
-      "Bash(git commit -m \"Add student creation form with comprehensive fields\")"
+      "Bash(git commit -m \"Add student creation form with comprehensive fields\")",
+      "Read(//Users/keronlewis/Downloads/**)",
+      "Bash(scp -P 65002 '/Users/keronlewis/Downloads/gkblvzmy_student-portal (1).sql' u269010508@31.97.97.131:~/student_data_backup.sql)",
+      "Bash(git add app/Console/Commands/ImportOldStudentData.php)",
+      "Bash(git commit -m \"Add command to import old student data from backup\")"
     ],
     "deny": [],
     "ask": []
