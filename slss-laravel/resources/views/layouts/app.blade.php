@@ -110,6 +110,54 @@
             font-size: 1.1rem;
         }
 
+        .sidebar-menu-link .menu-arrow {
+            margin-left: auto;
+            transition: transform 0.2s;
+        }
+
+        .sidebar-menu-link.collapsed .menu-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .sidebar-submenu {
+            display: none;
+            padding-left: 1rem;
+        }
+
+        .sidebar-submenu.show {
+            display: block;
+        }
+
+        .sidebar-submenu-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 1rem;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 400;
+            font-size: 0.9rem;
+            margin: 0.125rem 0;
+        }
+
+        .sidebar-submenu-link:hover {
+            background: rgba(255,255,255,0.08);
+            color: white;
+        }
+
+        .sidebar-submenu-link.active {
+            background: rgba(79,70,229,0.3);
+            color: white;
+        }
+
+        .sidebar-submenu-link i {
+            width: 16px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
         .sidebar-user {
             position: absolute;
             bottom: 0;
@@ -466,33 +514,46 @@
 
         <nav class="sidebar-menu">
             <div class="sidebar-menu-item">
-                <a href="{{ route('students.index') }}" class="sidebar-menu-link {{ request()->routeIs('students.*') ? 'active' : '' }}">
+                <a href="{{ route('students.index') }}" class="sidebar-menu-link {{ request()->routeIs('students.index') && !request()->routeIs('students.create') ? 'active' : '' }}">
                     <i class="fas fa-th-large"></i>
                     <span>Dashboard</span>
                 </a>
             </div>
+
+            <!-- Students Menu with Submenu -->
             <div class="sidebar-menu-item">
-                <a href="{{ route('students.index') }}" class="sidebar-menu-link {{ request()->routeIs('students.index') ? 'active' : '' }}">
+                <a href="#studentsSubmenu" class="sidebar-menu-link {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'active' : '' }} {{ request()->routeIs('students.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('students.*') ? 'true' : 'false' }}">
                     <i class="fas fa-users"></i>
                     <span>Students</span>
+                    <i class="fas fa-chevron-down menu-arrow"></i>
                 </a>
+                <div class="sidebar-submenu collapse {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'show' : '' }}" id="studentsSubmenu">
+                    @can('edit-students')
+                    <a href="{{ route('students.create') }}" class="sidebar-submenu-link {{ request()->routeIs('students.create') ? 'active' : '' }}">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Add Student</span>
+                    </a>
+                    @endcan
+                </div>
             </div>
+
             @can('import-students')
+            <!-- Data Management Menu with Submenu -->
             <div class="sidebar-menu-item">
-                <a href="{{ route('import.index') }}" class="sidebar-menu-link {{ request()->routeIs('import.*') ? 'active' : '' }}">
-                    <i class="fas fa-file-import"></i>
-                    <span>Import Data</span>
+                <a href="#dataSubmenu" class="sidebar-menu-link {{ request()->routeIs('import.*') ? 'active' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('import.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-database"></i>
+                    <span>Data Management</span>
+                    <i class="fas fa-chevron-down menu-arrow"></i>
                 </a>
+                <div class="sidebar-submenu collapse {{ request()->routeIs('import.*') ? 'show' : '' }}" id="dataSubmenu">
+                    <a href="{{ route('import.index') }}" class="sidebar-submenu-link {{ request()->routeIs('import.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-import"></i>
+                        <span>Import Data</span>
+                    </a>
+                </div>
             </div>
             @endcan
-            @can('edit-students')
-            <div class="sidebar-menu-item">
-                <a href="{{ route('students.create') }}" class="sidebar-menu-link {{ request()->routeIs('students.create') ? 'active' : '' }}">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Add Student</span>
-                </a>
-            </div>
-            @endcan
+
             @if(auth()->user()->role === 'admin')
             <div class="sidebar-menu-item">
                 <a href="{{ route('users.index') }}" class="sidebar-menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
@@ -583,6 +644,19 @@
                 if (!sidebar.contains(event.target) && event.target !== toggle) {
                     sidebar.classList.remove('show');
                 }
+            }
+        });
+
+        // Handle submenu toggle arrow animation
+        document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(element) {
+            element.addEventListener('click', function() {
+                this.classList.toggle('collapsed');
+            });
+
+            // Initialize arrow state on page load
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target && target.classList.contains('show')) {
+                this.classList.remove('collapsed');
             }
         });
     </script>
