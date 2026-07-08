@@ -32,7 +32,9 @@
       "Read(//Users/keronlewis/Downloads/**)",
       "Bash(scp -P 65002 '/Users/keronlewis/Downloads/gkblvzmy_student-portal (1).sql' u269010508@31.97.97.131:~/student_data_backup.sql)",
       "Bash(git add app/Console/Commands/ImportOldStudentData.php)",
-      "Bash(git commit -m \"Add command to import old student data from backup\")"
+      "Bash(git commit -m \"Add command to import old student data from backup\")",
+      "Bash(git add resources/views/students/edit.blade.php)",
+      "Bash(git commit -m \"Create comprehensive student edit form with all fields organized in sections\")"
     ],
     "deny": [],
     "ask": []
