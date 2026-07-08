@@ -34,7 +34,12 @@
       "Bash(git add app/Console/Commands/ImportOldStudentData.php)",
       "Bash(git commit -m \"Add command to import old student data from backup\")",
       "Bash(git add resources/views/students/edit.blade.php)",
-      "Bash(git commit -m \"Create comprehensive student edit form with all fields organized in sections\")"
+      "Bash(git commit -m \"Create comprehensive student edit form with all fields organized in sections\")",
+      "Bash(php artisan make:controller UserController)",
+      "Bash(git log -1 --format='%H %s')",
+      "Bash(git add app/Http/Controllers/UserController.php resources/views/users/ resources/views/layouts/app.blade.php routes/web.php)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd user management system with role-based access control\n\n- Created UserController with admin-only middleware\n- Implemented full CRUD operations for user management\n- Added safety checks: prevent self-deletion, prevent last admin deletion\n- Created user index view with statistics and DataTable\n- Created user create/edit forms with password validation\n- Added User Management link to sidebar (admin-only)\n- Updated routes with user resource routes\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")"
     ],
     "deny": [],
     "ask": []
