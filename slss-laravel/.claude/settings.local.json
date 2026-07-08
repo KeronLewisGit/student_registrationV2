@@ -56,7 +56,9 @@
       "Bash(git commit -m \"Add enhanced webhook debugging and error logging\n\n- Added detailed error messages with error types\n- Created separate catch block for database errors\n- Added webhook_debug.log file logging\n- Created test-webhook.php for debugging Elementor form data\n- Log file path, line number, and full trace for errors\n- Better field counting and validation logging\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
       "WebFetch(domain:hotpink-hedgehog-569052.hostingersite.com)",
       "Bash(curl -s \"https://hotpink-hedgehog-569052.hostingersite.com/registration/\")",
-      "Read(//Users/keronlewis/Desktop/**)"
+      "Read(//Users/keronlewis/Desktop/**)",
+      "Bash(git add public/view-webhook-log.php)",
+      "Bash(git commit -m \"Add webhook log viewer for debugging Elementor form data\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
