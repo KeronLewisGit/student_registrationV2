@@ -216,10 +216,9 @@
                             </td>
                             <td>
                                 <div class="table-actions">
-                                    <a href="{{ route('students.print', $student) }}"
+                                    <a href="{{ route('students.show', $student) }}"
                                        class="btn btn-sm btn-outline-secondary"
-                                       title="View Full Profile"
-                                       target="_blank">
+                                       title="View Profile">
                                         <i class="fas fa-eye"></i>
                                     </a>
                                     <a href="{{ route('students.pdf', $student) }}"
