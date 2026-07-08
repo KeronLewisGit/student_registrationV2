@@ -493,6 +493,14 @@
                 </a>
             </div>
             @endcan
+            @if(auth()->user()->role === 'admin')
+            <div class="sidebar-menu-item">
+                <a href="{{ route('users.index') }}" class="sidebar-menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Management</span>
+                </a>
+            </div>
+            @endif
         </nav>
 
         <div class="sidebar-user">

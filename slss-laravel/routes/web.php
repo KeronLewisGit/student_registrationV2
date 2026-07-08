@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ImportController;
+use App\Http\Controllers\UserController;
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -30,4 +31,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/import', [ImportController::class, 'index'])->name('import.index');
         Route::post('/import', [ImportController::class, 'import'])->middleware('throttle:10,1')->name('import.store');
     });
+
+    // User Management Routes (Admin only - authorization in controller)
+    Route::resource('users', UserController::class)->except(['show']);
 });
