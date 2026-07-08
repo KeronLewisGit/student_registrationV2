@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print - {{ $student->student_name }}</title>
+    <title>Student Profile - {{ $student->student_name }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
         @page {
             size: Letter;
@@ -14,6 +15,7 @@
         body {
             background: white;
             padding: 2rem;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .profile-card {
@@ -27,7 +29,7 @@
             position: absolute;
             inset: 80px;
             background: url('{{ asset('images/OfficialDocument1.png') }}') center/contain no-repeat;
-            opacity: 0.08;
+            opacity: 0.05;
             pointer-events: none;
             z-index: 0;
         }
@@ -42,7 +44,8 @@
             height: 150px;
             object-fit: cover;
             border-radius: 12px;
-            border: 2px solid #e5e7eb;
+            border: 3px solid #4f46e5;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .school-logo {
@@ -51,12 +54,41 @@
         }
 
         .section-card {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
             border: 1px solid #e5e7eb;
+            border-left: 4px solid #4f46e5;
             border-radius: 12px;
-            padding: 1.25rem;
-            margin-top: 1.25rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
             page-break-inside: avoid;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .section-card h5 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-card p {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #1e293b;
+            margin: 0;
+            padding: 0.5rem 0;
+        }
+
+        .fw-bold.border-bottom {
+            border-color: #4f46e5 !important;
+            border-width: 2px !important;
+            padding-bottom: 0.75rem !important;
+        }
+
+        .fw-bold i {
+            color: #4f46e5;
         }
 
         @media print {
@@ -69,10 +101,14 @@
             .profile-card {
                 padding-top: 140px !important;
             }
+            .section-card {
+                box-shadow: none;
+                border-left-width: 3px;
+            }
         }
     </style>
 </head>
-<body onload="window.print()">
+<body>
     <div class="profile-card">
         <div class="profile-inner">
             <div class="row align-items-start mb-4">
