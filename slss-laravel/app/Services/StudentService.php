@@ -10,6 +10,14 @@ class StudentService
 {
     public function createStudent(array $data, ?UploadedFile $photo = null): Student
     {
+        // Handle first name + last name concatenation
+        if (isset($data['student_first_name']) || isset($data['student_last_name'])) {
+            $firstName = trim($data['student_first_name'] ?? '');
+            $lastName = trim($data['student_last_name'] ?? '');
+            $data['student_name'] = trim("$firstName $lastName");
+            unset($data['student_first_name'], $data['student_last_name']);
+        }
+
         if ($photo) {
             $data['student_passport_photo'] = $this->handlePhotoUpload($photo);
         }
@@ -19,6 +27,14 @@ class StudentService
 
     public function updateStudent(Student $student, array $data, ?UploadedFile $photo = null): Student
     {
+        // Handle first name + last name concatenation
+        if (isset($data['student_first_name']) || isset($data['student_last_name'])) {
+            $firstName = trim($data['student_first_name'] ?? '');
+            $lastName = trim($data['student_last_name'] ?? '');
+            $data['student_name'] = trim("$firstName $lastName");
+            unset($data['student_first_name'], $data['student_last_name']);
+        }
+
         if ($photo) {
             // Delete old photo
             if ($student->student_passport_photo) {
