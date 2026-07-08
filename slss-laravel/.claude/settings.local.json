@@ -24,7 +24,9 @@
       "Bash(php -l app/Http/Kernel.php)",
       "Bash(php artisan config:clear)",
       "Bash(php artisan cache:clear)",
-      "Bash(git push origin master)"
+      "Bash(git push origin master)",
+      "Bash(git add app/Http/Controllers/Controller.php)",
+      "Bash(git commit -m \"Fix base Controller class with proper Laravel 11 traits and methods\")"
     ],
     "deny": [],
     "ask": []
