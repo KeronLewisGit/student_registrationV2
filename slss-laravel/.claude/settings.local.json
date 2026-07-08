@@ -58,7 +58,9 @@
       "Bash(curl -s \"https://hotpink-hedgehog-569052.hostingersite.com/registration/\")",
       "Read(//Users/keronlewis/Desktop/**)",
       "Bash(git add public/view-webhook-log.php)",
-      "Bash(git commit -m \"Add webhook log viewer for debugging Elementor form data\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
+      "Bash(git commit -m \"Add webhook log viewer for debugging Elementor form data\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")",
+      "Bash(git add app/Http/Controllers/WebhookController.php)",
+      "Bash(git commit -m \"Fix webhook to handle Elementor form placeholders and deceased status\n\n- Added placeholder value rejection in hasValue() method\n- Rejects ''Select...'' dropdown placeholders\n- Fixed mother/father deceased status logic (form doesn''t capture this)\n- Default to ''Alive'' and ''N/A'' for death certificates\n- Improved data validation for cleaner database entries\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
