@@ -1,205 +1,285 @@
 @extends('layouts.app')
 
-@section('title', 'Student Records - SLSS')
+@section('title', 'Student Management - SLSS')
+
+@section('page-title', 'Student Management')
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('students.index') }}">Home</a></li>
+    <li class="breadcrumb-item active">Students</li>
+@endsection
 
 @push('styles')
 <style>
-    .filter-card {
-        background: white;
-        border-radius: 16px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-    }
-
-    .profile-card {
-        position: relative;
-        background: white;
-        border-radius: 16px;
-        padding: 2rem;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-        min-height: 800px;
-    }
-
-    .profile-card::after {
-        content: "";
-        position: absolute;
-        inset: 80px;
-        background: url('{{ asset('images/Official Document1.png') }}') center/contain no-repeat;
-        opacity: 0.06;
-        pointer-events: none;
-        z-index: 0;
-    }
-
-    .profile-inner {
-        position: relative;
-        z-index: 1;
-    }
-
-    .passport-photo {
-        width: 150px;
-        height: 150px;
+    .student-photo-thumbnail {
+        width: 40px;
+        height: 40px;
         object-fit: cover;
-        border-radius: 12px;
-        border: 2px solid #e5e7eb;
+        border-radius: 6px;
     }
 
-    .school-logo {
-        width: 160px;
-        height: auto;
-    }
-
-    .section-card {
-        background: #f8f9fa;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin-top: 1.25rem;
-    }
-
-    .section-card h5 {
-        font-size: 0.875rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: 0.5rem;
-    }
-
-    .section-card p {
-        font-size: 0.875rem;
-        color: #1f2937;
-        margin: 0;
-    }
-
-    .action-buttons {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        z-index: 10;
+    .table-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.25rem;
     }
 
-    @media print {
-        .filter-card, .action-buttons {
-            display: none !important;
-        }
-        .profile-card {
-            box-shadow: none;
-            page-break-after: always;
-            padding-top: 140px !important;
-        }
-        .profile-card:last-child {
-            page-break-after: auto;
-        }
+    .badge-gender-male {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .badge-gender-female {
+        background: #fce7f3;
+        color: #be185d;
+    }
+
+    .badge-class {
+        background: var(--primary-light);
+        color: var(--primary-color);
+        font-weight: 600;
     }
 </style>
 @endpush
 
 @section('content')
-<div class="filter-card no-print">
-    <form method="GET" action="{{ route('students.index') }}" class="row g-3" id="filterForm">
-        <div class="col-md-3">
-            <label for="year" class="form-label">Registration Year</label>
-            <select name="year" id="year" class="form-select" onchange="this.form.submit()">
-                <option value="">All Years</option>
-                @foreach($years as $year)
-                    <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                        {{ $year }}
-                    </option>
-                @endforeach
-            </select>
+<!-- Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="stat-value">{{ \App\Models\Student::count() }}</h3>
+            <p class="stat-label">Total Students</p>
         </div>
-
-        <div class="col-md-3">
-            <label for="student_class" class="form-label">Form Class</label>
-            <select name="student_class" id="student_class" class="form-select" onchange="this.form.submit()">
-                <option value="0">All Students</option>
-                @foreach($classes as $class)
-                    <option value="{{ $class }}" {{ request('student_class') == $class ? 'selected' : '' }}>
-                        Form {{ $class }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-4">
-            <label for="student_name" class="form-label">Student Name</label>
-            <select name="student_name" id="student_name" class="form-select" onchange="this.form.submit()">
-                <option value="0">Student Name</option>
-                @foreach($studentNames as $name)
-                    <option value="{{ $name }}" {{ request('student_name') == $name ? 'selected' : '' }}>
-                        {{ ucwords(strtolower($name)) }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-
-        <div class="col-md-2 d-flex align-items-end gap-2">
-            <button type="button" class="btn btn-secondary flex-fill" onclick="window.print()">
-                <i class="fas fa-print"></i> Print All
-            </button>
-            <a href="{{ route('students.bulk-pdf', request()->all()) }}" class="btn btn-primary flex-fill">
-                <i class="fas fa-file-pdf"></i> Bulk PDF
-            </a>
-        </div>
-    </form>
-
-    @can('edit-students')
-    <div class="mt-3">
-        <a href="{{ route('students.create') }}" class="btn btn-success">
-            <i class="fas fa-plus-circle"></i> Add New Student
-        </a>
     </div>
-    @endcan
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon success">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3 class="stat-value">{{ \App\Models\Student::where('student_gender', 'Male')->count() }}</h3>
+            <p class="stat-label">Male Students</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon warning">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h3 class="stat-value">{{ \App\Models\Student::where('student_gender', 'Female')->count() }}</h3>
+            <p class="stat-label">Female Students</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div class="stat-icon info">
+                <i class="fas fa-calendar-plus"></i>
+            </div>
+            <h3 class="stat-value">{{ \App\Models\Student::whereYear('registration_date', date('Y'))->count() }}</h3>
+            <p class="stat-label">This Year</p>
+        </div>
+    </div>
 </div>
 
-@if($students->isEmpty())
-    <div class="alert alert-info">
-        <i class="fas fa-info-circle me-2"></i>No students found for the selected filter(s).
+<!-- Filters & Actions Card -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-filter me-2"></i>Filter Students</span>
+        @can('edit-students')
+        <a href="{{ route('students.create') }}" class="btn btn-success btn-sm">
+            <i class="fas fa-plus-circle me-1"></i> Add Student
+        </a>
+        @endcan
     </div>
-@else
-    @foreach($students as $student)
-        <div class="profile-card">
-            <div class="action-buttons no-print">
-                <a href="{{ route('students.pdf', $student) }}" class="btn btn-sm btn-success" title="Generate PDF">
-                    <i class="fas fa-file-pdf"></i>
-                </a>
-                <a href="{{ route('students.print', $student) }}" class="btn btn-sm btn-secondary" title="Print" target="_blank">
-                    <i class="fas fa-print"></i>
-                </a>
-                @can('edit-students')
-                <a href="{{ route('students.edit', $student) }}" class="btn btn-sm btn-primary" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </a>
-                @endcan
+    <div class="card-body">
+        <form method="GET" action="{{ route('students.index') }}" class="row g-3">
+            <div class="col-md-3">
+                <label for="year" class="form-label">Registration Year</label>
+                <select name="year" id="year" class="form-select">
+                    <option value="">All Years</option>
+                    @foreach($years as $year)
+                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
+                            {{ $year }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
 
-            <div class="profile-inner">
-                <!-- Header Row -->
-                <div class="row align-items-start mb-4">
-                    <div class="col-md-3">
-                        <h6 class="fw-bold mb-2">Passport Size Photo</h6>
-                        @if($student->student_passport_photo)
-                            <img src="{{ asset($student->student_passport_photo) }}" alt="Passport" class="passport-photo">
-                        @else
-                            <img src="{{ asset('images/noimage.jpg') }}" alt="No Image" class="passport-photo">
-                        @endif
-                    </div>
-                    <div class="col-md-6 text-center">
-                        <h2 class="fw-bold mb-2" style="font-size: 2rem; color: #1f2937;">
-                            Success Laventille Secondary School<br>Eastern Main Road
-                        </h2>
-                        <p class="text-muted">Official Student Record</p>
-                    </div>
-                    <div class="col-md-3 text-end">
-                        <img src="{{ asset('images/successlogo.png') }}" alt="SLSS Logo" class="school-logo">
-                    </div>
-                </div>
-
-                @include('students.partials.profile-sections', ['student' => $student])
+            <div class="col-md-3">
+                <label for="student_class" class="form-label">Form Class</label>
+                <select name="student_class" id="student_class" class="form-select">
+                    <option value="0">All Classes</option>
+                    @foreach($classes as $class)
+                        <option value="{{ $class }}" {{ request('student_class') == $class ? 'selected' : '' }}>
+                            Form {{ $class }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
+
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" name="search" id="search" class="form-control"
+                       placeholder="Search by name, SEA number, or birth certificate..."
+                       value="{{ request('search') }}">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search me-1"></i> Filter
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-3 d-flex gap-2">
+            <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-redo me-1"></i> Reset Filters
+            </a>
+            <a href="{{ route('students.bulk-pdf', request()->all()) }}" class="btn btn-info btn-sm">
+                <i class="fas fa-file-pdf me-1"></i> Export to PDF
+            </a>
         </div>
-    @endforeach
-@endif
+    </div>
+</div>
+
+<!-- Students Table -->
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-table me-2"></i>Student Records
+        <span class="badge bg-primary ms-2">{{ $students->count() }} {{ $students->count() === 1 ? 'student' : 'students' }}</span>
+    </div>
+    <div class="card-body">
+        @if($students->isEmpty())
+            <div class="alert alert-info mb-0">
+                <i class="fas fa-info-circle me-2"></i>No students found for the selected filter(s).
+            </div>
+        @else
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="studentsTable">
+                    <thead>
+                        <tr>
+                            <th>Photo</th>
+                            <th>Student Name</th>
+                            <th>Form Class</th>
+                            <th>Gender</th>
+                            <th>Birth Date</th>
+                            <th>Registration Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($students as $student)
+                        <tr>
+                            <td>
+                                @if($student->student_passport_photo)
+                                    <img src="{{ asset($student->student_passport_photo) }}"
+                                         alt="{{ $student->student_name }}"
+                                         class="student-photo-thumbnail">
+                                @else
+                                    <img src="{{ asset('images/noimage.jpg') }}"
+                                         alt="No photo"
+                                         class="student-photo-thumbnail">
+                                @endif
+                            </td>
+                            <td>
+                                <strong>{{ ucwords(strtolower($student->student_name)) }}</strong>
+                                @if($student->student_sea_number)
+                                    <br><small class="text-muted">SEA: {{ $student->student_sea_number }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                @if($student->form_1_class)
+                                    <span class="badge badge-class">Form {{ $student->form_1_class }}</span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if($student->student_gender === 'Male')
+                                    <span class="badge badge-gender-male">
+                                        <i class="fas fa-mars me-1"></i>Male
+                                    </span>
+                                @elseif($student->student_gender === 'Female')
+                                    <span class="badge badge-gender-female">
+                                        <i class="fas fa-venus me-1"></i>Female
+                                    </span>
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
+                            <td>
+                                <small>{{ $student->formatted_dob }}</small>
+                            </td>
+                            <td>
+                                <small>{{ $student->formatted_registration_date }}</small>
+                            </td>
+                            <td>
+                                <div class="table-actions">
+                                    <a href="{{ route('students.print', $student) }}"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="View Full Profile"
+                                       target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('students.pdf', $student) }}"
+                                       class="btn btn-sm btn-outline-success"
+                                       title="Download PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    @can('edit-students')
+                                    <a href="{{ route('students.edit', $student) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    @endcan
+                                    @can('delete-students')
+                                    <form action="{{ route('students.destroy', $student) }}"
+                                          method="POST"
+                                          class="d-inline"
+                                          onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                    @endcan
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    if ($('#studentsTable tbody tr').length > 0) {
+        $('#studentsTable').DataTable({
+            pageLength: 25,
+            order: [[1, 'asc']], // Sort by name
+            language: {
+                search: "Search students:",
+                lengthMenu: "Show _MENU_ students per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ students",
+                infoEmpty: "No students to display",
+                infoFiltered: "(filtered from _MAX_ total students)",
+                zeroRecords: "No matching students found"
+            },
+            columnDefs: [
+                { orderable: false, targets: [0, 6] } // Disable sorting on photo and actions
+            ]
+        });
+    }
+});
+</script>
+@endpush
