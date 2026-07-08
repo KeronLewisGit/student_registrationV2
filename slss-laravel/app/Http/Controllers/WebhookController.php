@@ -93,7 +93,7 @@ class WebhookController extends Controller
             ]),
             'student_dob' => $this->field($request, 'student_dob', '1900-01-01'),
             'student_birth_certificate' => $this->field($request, 'student_birth_certificate'),
-            'student_birth_certificate_pin' => $this->field($request, 'student_birth_pin'),
+            'student_birth_certificate_pin' => $this->fieldOrNull($request, 'student_birth_pin'),
             'student_religion' => $this->field($request, 'student_religion'),
             'student_country_of_birth' => $this->field($request, 'student_country_of_birth'),
             'student_nationality' => $this->conditionalField($request, 'student_nationality', 'Other', 'other_student_nationality'),
@@ -216,6 +216,20 @@ class WebhookController extends Controller
         }
 
         return $this->hasValue($value) ? trim((string)$value) : $default;
+    }
+
+    /**
+     * Get field value or NULL (for fields with unique constraints)
+     */
+    private function fieldOrNull(Request $request, string $key): ?string
+    {
+        $value = $request->input("fields.{$key}.value");
+
+        if (is_array($value)) {
+            $value = implode(', ', array_filter(array_map('strval', $value), fn($x) => trim($x) !== ''));
+        }
+
+        return $this->hasValue($value) ? trim((string)$value) : null;
     }
 
     /**
