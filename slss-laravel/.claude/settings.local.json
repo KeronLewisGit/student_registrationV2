@@ -39,7 +39,9 @@
       "Bash(git log -1 --format='%H %s')",
       "Bash(git add app/Http/Controllers/UserController.php resources/views/users/ resources/views/layouts/app.blade.php routes/web.php)",
       "Bash(git commit -m \"$(cat <<''EOF''\nAdd user management system with role-based access control\n\n- Created UserController with admin-only middleware\n- Implemented full CRUD operations for user management\n- Added safety checks: prevent self-deletion, prevent last admin deletion\n- Created user index view with statistics and DataTable\n- Created user create/edit forms with password validation\n- Added User Management link to sidebar (admin-only)\n- Updated routes with user resource routes\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
-      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")"
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")",
+      "Bash(git add resources/views/layouts/app.blade.php)",
+      "Bash(git commit -m \"Reorganize sidebar navigation with nested menu structure\n\n- Students menu now has Add Student as sub-item\n- Created Data Management parent menu with Import Data as sub-item\n- Added collapsible submenu styling and animations\n- Arrow icons rotate when expanding/collapsing submenus\n- Improved navigation hierarchy and organization\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\")"
     ],
     "deny": [],
     "ask": []
