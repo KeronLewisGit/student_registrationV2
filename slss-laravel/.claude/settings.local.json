@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")"
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan migrate --force && php artisan config:clear && php artisan cache:clear && php artisan view:clear\")",
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && tail -50 storage/logs/laravel.log\")",
+      "Bash(git commit -m \"$(cat <<''EOF''\nAdd date format conversion for webhook date fields\n\n- Added dateField() method to convert DD/MM/YYYY to YYYY-MM-DD\n- Applied to student_dob, student_sea_date, student_transfer_date, registration_date\n- Enhanced logging to show student name and registration date on creation\n- Fixes issue where Elementor form dates weren''t being parsed correctly\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
