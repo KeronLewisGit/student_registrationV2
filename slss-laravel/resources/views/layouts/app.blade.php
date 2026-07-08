@@ -649,14 +649,25 @@
 
         // Handle submenu toggle arrow animation
         document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(function(element) {
-            element.addEventListener('click', function() {
-                this.classList.toggle('collapsed');
-            });
+            const targetSelector = element.getAttribute('href');
+            const target = document.querySelector(targetSelector);
 
-            // Initialize arrow state on page load
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target && target.classList.contains('show')) {
-                this.classList.remove('collapsed');
+            if (target) {
+                // Listen to Bootstrap collapse events
+                target.addEventListener('show.bs.collapse', function() {
+                    element.classList.remove('collapsed');
+                });
+
+                target.addEventListener('hide.bs.collapse', function() {
+                    element.classList.add('collapsed');
+                });
+
+                // Initialize arrow state on page load
+                if (target.classList.contains('show')) {
+                    element.classList.remove('collapsed');
+                } else {
+                    element.classList.add('collapsed');
+                }
             }
         });
     </script>
