@@ -208,10 +208,10 @@
                                     <span class="text-muted">—</span>
                                 @endif
                             </td>
-                            <td>
+                            <td data-order="{{ $student->student_dob ? $student->student_dob->format('Y-m-d') : '0000-00-00' }}">
                                 <small>{{ $student->formatted_dob }}</small>
                             </td>
-                            <td>
+                            <td data-order="{{ $student->registration_date ? $student->registration_date->format('Y-m-d') : '0000-00-00' }}">
                                 <small>{{ $student->formatted_registration_date }}</small>
                             </td>
                             <td>
@@ -262,28 +262,8 @@
 
 @push('scripts')
 <script>
-// Add date sorting for DD/MM/YYYY format
-$.fn.dataTable.moment = function ( format, locale ) {
-    var types = $.fn.dataTable.ext.type;
-
-    // Add type detection
-    types.detect.unshift( function ( d ) {
-        return moment( d, format, locale, true ).isValid() ?
-            'moment-'+format :
-            null;
-    } );
-
-    // Add sorting method
-    types.order[ 'moment-'+format+'-pre' ] = function ( d ) {
-        return moment( d, format, locale, true ).unix();
-    };
-};
-
 $(document).ready(function() {
     if ($('#studentsTable tbody tr').length > 0) {
-        // Register DD/MM/YYYY date format
-        $.fn.dataTable.moment('DD/MM/YYYY');
-
         $('#studentsTable').DataTable({
             pageLength: 25,
             order: [[5, 'desc']], // Sort by registration date (newest first)
@@ -296,8 +276,7 @@ $(document).ready(function() {
                 zeroRecords: "No matching students found"
             },
             columnDefs: [
-                { orderable: false, targets: [0, 6] }, // Disable sorting on photo and actions
-                { type: 'moment-DD/MM/YYYY', targets: [4, 5] } // Birth Date and Registration Date columns
+                { orderable: false, targets: [0, 6] } // Disable sorting on photo and actions
             ]
         });
     }
