@@ -148,10 +148,9 @@ class WebhookController extends Controller
             'student_online_tools' => $this->field($request, 'online_tools'),
 
             // Mother Information
-            'is_mother_active_or_deceased' => $this->field($request, 'mother_living_status') === 'Deceased' ? 'Deceased' : 'Alive',
-            'mother_death_certificate' => $this->field($request, 'mother_living_status') === 'Deceased'
-                ? $this->fieldAny($request, ['mother_death_certificate', 'field_ed0fb29'])
-                : 'N/A',
+            // Note: Form doesn't capture deceased status, defaulting to Alive
+            'is_mother_active_or_deceased' => 'Alive',
+            'mother_death_certificate' => 'N/A',
             'mother_name' => $this->multiField($request, ['mother_first_name', 'mother_last_name']),
             'mother_identification_type' => $this->field($request, 'mother_identification'),
             'mother_identification_number' => $this->field($request, 'mother_identification_number'),
@@ -168,10 +167,9 @@ class WebhookController extends Controller
             'mother_email' => $this->field($request, 'mother_email'),
 
             // Father Information
-            'is_father_active_or_deceased' => $this->field($request, 'father_living_status') === 'Deceased' ? 'Deceased' : 'Alive',
-            'father_death_certificate' => $this->field($request, 'father_living_status') === 'Deceased'
-                ? $this->fieldAny($request, ['father_death_certificate', 'field_f9d5c85'])
-                : 'N/A',
+            // Note: Form doesn't capture deceased status, defaulting to Alive
+            'is_father_active_or_deceased' => 'Alive',
+            'father_death_certificate' => 'N/A',
             'father_name' => $this->multiField($request, ['father_first_name', 'father_last_name']),
             'father_identification_type' => $this->field($request, 'father_identification_type'),
             'father_identification_number' => $this->field($request, 'father_identification_no'),
@@ -302,6 +300,22 @@ class WebhookController extends Controller
             $value = implode('', array_map('strval', $value));
         }
 
-        return $value !== null && trim((string)$value) !== '';
+        $trimmed = trim((string)$value);
+
+        // Reject null, empty, or placeholder values
+        if ($trimmed === '' || $value === null) {
+            return false;
+        }
+
+        // Reject common Elementor select placeholders
+        $placeholders = [
+            'Select Gender', 'Select Religion', 'Select Country', 'Select Ethnicity',
+            'Select Nationality', 'Select Community', 'Select Constituency', 'Select City',
+            'Select Corporation', 'Select Identification Type', 'Select Blood Type',
+            'Select Option', 'Select Transport Option', 'Select Relation',
+            'Citizenship Type', 'Citizenship  Type'
+        ];
+
+        return !in_array($trimmed, $placeholders, true);
     }
 }
