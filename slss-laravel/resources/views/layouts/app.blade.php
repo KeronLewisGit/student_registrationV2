@@ -540,7 +540,7 @@
             @can('import-students')
             <!-- Data Management Menu with Submenu -->
             <div class="sidebar-menu-item">
-                <a href="#dataSubmenu" class="sidebar-menu-link {{ request()->routeIs('import.*') ? 'active' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('import.*') ? 'true' : 'false' }}">
+                <a href="#dataSubmenu" class="sidebar-menu-link {{ request()->routeIs('import.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('import.*') ? 'true' : 'false' }}">
                     <i class="fas fa-database"></i>
                     <span>Data Management</span>
                     <i class="fas fa-chevron-down menu-arrow"></i>
