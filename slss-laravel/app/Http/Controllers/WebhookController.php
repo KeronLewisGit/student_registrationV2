@@ -33,12 +33,21 @@ class WebhookController extends Controller
             // Extract and process the data
             $studentData = $this->extractStudentData($request);
 
-            Log::info('Student data extracted', ['fields_count' => count($studentData)]);
+            Log::info('Student data extracted', [
+                'fields_count' => count($studentData),
+                'student_name' => $studentData['student_name'] ?? 'N/A',
+                'registration_date' => $studentData['registration_date'] ?? 'N/A',
+                'form_1_class' => $studentData['form_1_class'] ?? 'N/A'
+            ]);
 
             // Create the student record
             $student = Student::create($studentData);
 
-            Log::info('Student created successfully', ['student_id' => $student->id]);
+            Log::info('Student created successfully', [
+                'student_id' => $student->id,
+                'student_name' => $student->student_name,
+                'registration_date' => $student->registration_date
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -91,7 +100,7 @@ class WebhookController extends Controller
                 'student_community', 'student_village',
                 'student_city', 'student_corporartion'
             ]),
-            'student_dob' => $this->field($request, 'student_dob', '1900-01-01'),
+            'student_dob' => $this->dateField($request, 'student_dob', '1900-01-01'),
             'student_birth_certificate' => $this->field($request, 'student_birth_certificate'),
             'student_birth_certificate_pin' => $this->fieldOrNull($request, 'student_birth_pin'),
             'student_religion' => $this->field($request, 'student_religion'),
@@ -102,7 +111,7 @@ class WebhookController extends Controller
             'student_email' => $this->field($request, 'student_email'),
 
             // SEA Information
-            'student_sea_date' => $this->field($request, 'student_sea_date', '1900-01-01'),
+            'student_sea_date' => $this->dateField($request, 'student_sea_date', '1900-01-01'),
             'student_primary_school' => $this->field($request, 'student_primary_school'),
             'student_sea_slip' => $this->field($request, 'student_sea_slip'),
             'student_sea_number' => $this->field($request, 'student_sea_number'),
@@ -111,7 +120,7 @@ class WebhookController extends Controller
             'student_transfer_status' => $this->field($request, 'transfer_status'),
             'student_transfer_slip' => $this->field($request, 'student_transfer_slip'),
             'student_transfer_reason' => $this->field($request, 'transferreason'),
-            'student_transfer_date' => $this->field($request, 'student_transfer_year', '1900-01-01'),
+            'student_transfer_date' => $this->dateField($request, 'student_transfer_year', '1900-01-01'),
             'student_previous_form_class' => $this->field($request, 'previous_form_class'),
             'student_previous_secondary_school' => $this->field($request, 'student_transfer_school'),
             'student_previous_school_location' => $this->multiField($request, [
@@ -194,7 +203,7 @@ class WebhookController extends Controller
             'emergency_contact_number' => $this->field($request, 'emergency_contact'),
 
             // Registrant Information
-            'registration_date' => $this->field($request, 'registrant_date', now()->format('Y-m-d')),
+            'registration_date' => $this->dateField($request, 'registrant_date', now()->format('Y-m-d')),
             'registrant_relationship_to_student' => $this->conditionalField($request, 'registrant_relationsip_to_student', 'Other', 'registrant_other_relationship'),
             'registrant_name' => $this->multiField($request, ['registrant_first_name', 'registrant_last_name']),
             'registrant_identification_type' => $this->field($request, 'registrant_identification_type'),
@@ -230,6 +239,26 @@ class WebhookController extends Controller
         }
 
         return $this->hasValue($value) ? trim((string)$value) : null;
+    }
+
+    /**
+     * Get date field and convert from DD/MM/YYYY to YYYY-MM-DD format
+     */
+    private function dateField(Request $request, string $key, string $default = '1900-01-01'): string
+    {
+        $value = $this->field($request, $key);
+
+        if ($value === 'N/A') {
+            return $default;
+        }
+
+        // Try to parse DD/MM/YYYY format (common in Elementor forms)
+        if (preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $value, $matches)) {
+            return $matches[3] . '-' . $matches[2] . '-' . $matches[1]; // Convert to YYYY-MM-DD
+        }
+
+        // If already in YYYY-MM-DD format or other format, return as-is
+        return $value;
     }
 
     /**
