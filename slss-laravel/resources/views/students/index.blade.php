@@ -262,11 +262,31 @@
 
 @push('scripts')
 <script>
+// Add date sorting for DD/MM/YYYY format
+$.fn.dataTable.moment = function ( format, locale ) {
+    var types = $.fn.dataTable.ext.type;
+
+    // Add type detection
+    types.detect.unshift( function ( d ) {
+        return moment( d, format, locale, true ).isValid() ?
+            'moment-'+format :
+            null;
+    } );
+
+    // Add sorting method
+    types.order[ 'moment-'+format+'-pre' ] = function ( d ) {
+        return moment( d, format, locale, true ).unix();
+    };
+};
+
 $(document).ready(function() {
     if ($('#studentsTable tbody tr').length > 0) {
+        // Register DD/MM/YYYY date format
+        $.fn.dataTable.moment('DD/MM/YYYY');
+
         $('#studentsTable').DataTable({
             pageLength: 25,
-            order: [[1, 'asc']], // Sort by name
+            order: [[5, 'desc']], // Sort by registration date (newest first)
             language: {
                 search: "Search students:",
                 lengthMenu: "Show _MENU_ students per page",
@@ -276,7 +296,8 @@ $(document).ready(function() {
                 zeroRecords: "No matching students found"
             },
             columnDefs: [
-                { orderable: false, targets: [0, 6] } // Disable sorting on photo and actions
+                { orderable: false, targets: [0, 6] }, // Disable sorting on photo and actions
+                { type: 'moment-DD/MM/YYYY', targets: [4, 5] } // Birth Date and Registration Date columns
             ]
         });
     }
