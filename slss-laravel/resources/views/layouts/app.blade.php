@@ -456,12 +456,45 @@
             border-radius: 8px;
             border: 1.5px solid var(--border-color);
             padding: 0.5rem 0.75rem;
+            min-height: 44px;
         }
 
         .dataTables_wrapper .dataTables_length select {
             border-radius: 8px;
             border: 1.5px solid var(--border-color);
             padding: 0.375rem 0.75rem;
+            min-height: 44px;
+        }
+
+        /* DataTables Pagination - Touch-Friendly */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.75rem;
+            margin: 0 2px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--primary-color) !important;
+            color: white !important;
+            border-color: var(--primary-color) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: var(--bg-light) !important;
+            color: var(--text-dark) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .dataTables_wrapper .dataTables_info {
+            padding: 0.75rem 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
         }
 
         table.dataTable thead th {
@@ -566,11 +599,13 @@
             .btn {
                 padding: 0.75rem 1rem;
                 font-size: 0.9rem;
+                min-height: 44px;
             }
 
             .btn-sm {
                 padding: 0.5rem 0.75rem;
                 font-size: 0.85rem;
+                min-height: 40px;
             }
 
             /* Improve table actions on mobile */
@@ -582,25 +617,68 @@
             .form-select,
             .form-control {
                 font-size: 16px; /* Prevents zoom on iOS */
+                min-height: 44px;
             }
 
             label.form-label {
                 font-size: 0.9rem;
                 margin-bottom: 0.375rem;
             }
+
+            /* DataTables Mobile Optimizations */
+            .dataTables_wrapper .dataTables_length,
+            .dataTables_wrapper .dataTables_filter {
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+
+            .dataTables_wrapper .dataTables_length label,
+            .dataTables_wrapper .dataTables_filter label {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                align-items: stretch;
+            }
+
+            .dataTables_wrapper .dataTables_filter input {
+                width: 100%;
+                font-size: 16px;
+            }
+
+            .dataTables_wrapper .dataTables_length select {
+                width: 100%;
+                font-size: 16px;
+            }
+
+            .dataTables_wrapper .dataTables_info {
+                text-align: center;
+                margin-top: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .dataTables_wrapper .dataTables_paginate {
+                text-align: center;
+                margin-top: 1rem;
+            }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                min-width: 44px;
+                min-height: 44px;
+                margin: 2px;
+            }
         }
 
         /* Small Mobile Responsive */
         @media (max-width: 576px) {
             .sidebar-toggle {
-                width: 36px;
-                height: 36px;
-                top: 0.75rem;
-                left: 0.75rem;
+                width: 44px;
+                height: 44px;
+                top: 0.5rem;
+                left: 0.5rem;
             }
 
             .top-header {
-                padding-left: 3rem;
+                padding-left: 3.5rem;
                 padding-right: 0.5rem;
             }
 
@@ -654,7 +732,51 @@
             }
 
             .page-link {
-                padding: 0.375rem 0.625rem;
+                min-width: 44px;
+                min-height: 44px;
+                padding: 0.5rem 0.75rem;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* DataTables pagination buttons for small screens */
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                font-size: 0.9rem;
+                padding: 0.5rem 0.625rem;
+            }
+
+            /* Reduce spacing between pagination buttons on very small screens */
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                margin: 1px;
+            }
+        }
+
+        /* Extra Small Mobile - Additional optimizations */
+        @media (max-width: 480px) {
+            .dataTables_wrapper .dataTables_info {
+                font-size: 0.8rem;
+                padding: 0.5rem 0;
+            }
+
+            .dataTables_wrapper .dataTables_paginate .paginate_button {
+                min-width: 40px;
+                min-height: 40px;
+                padding: 0.375rem 0.5rem;
+                font-size: 0.85rem;
+            }
+
+            /* Hide ellipsis and some page numbers on very small screens for better fit */
+            .dataTables_wrapper .dataTables_paginate .paginate_button.ellipsis {
+                min-width: 30px;
+                padding: 0.375rem 0.25rem;
+            }
+
+            /* Ensure Previous/Next buttons are still touch-friendly */
+            .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+            .dataTables_wrapper .dataTables_paginate .paginate_button.next {
+                min-width: 44px;
+                min-height: 44px;
             }
         }
 
