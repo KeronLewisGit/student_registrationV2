@@ -109,7 +109,7 @@
 @section('content')
 <!-- Statistics Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
@@ -118,7 +118,7 @@
             <p class="stat-label">Total Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon success">
                 <i class="fas fa-user-graduate"></i>
@@ -127,7 +127,7 @@
             <p class="stat-label">Male Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="fas fa-user-graduate"></i>
@@ -136,7 +136,7 @@
             <p class="stat-label">Female Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon info">
                 <i class="fas fa-calendar-plus"></i>
