@@ -239,6 +239,25 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
+        /* Mobile Overlay */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .mobile-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
         /* Top Header */
         .top-header {
             position: fixed;
@@ -457,6 +476,7 @@
         }
 
         /* Responsive */
+        /* Tablet Responsive */
         @media (max-width: 992px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -475,10 +495,130 @@
             .top-header {
                 left: 0;
                 padding-left: 4rem;
+                padding-right: 1rem;
+                height: 60px;
+            }
+
+            .page-title {
+                font-size: 1.25rem;
             }
 
             .main-content {
                 margin-left: 0;
+                margin-top: 60px;
+                padding: 1.5rem;
+                min-height: calc(100vh - 60px);
+            }
+
+            .stat-card {
+                padding: 1.25rem;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .top-header {
+                padding-left: 3.5rem;
+                padding-right: 0.75rem;
+                height: 56px;
+            }
+
+            .page-title {
+                font-size: 1.125rem;
+            }
+
+            .breadcrumb {
+                display: none;
+            }
+
+            .main-content {
+                margin-top: 56px;
+                padding: 1rem;
+                min-height: calc(100vh - 56px);
+            }
+
+            .stat-card {
+                padding: 1rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+
+            .card-header {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+
+            .card-body {
+                padding: 1rem;
+            }
+
+            /* Make buttons more touch-friendly */
+            .btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-sm {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.85rem;
+            }
+
+            /* Improve table actions on mobile */
+            .table-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        /* Small Mobile Responsive */
+        @media (max-width: 576px) {
+            .sidebar-toggle {
+                width: 36px;
+                height: 36px;
+                top: 0.75rem;
+                left: 0.75rem;
+            }
+
+            .top-header {
+                padding-left: 3rem;
+                padding-right: 0.5rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .main-content {
+                padding: 0.75rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.25rem;
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            /* Stack action buttons vertically on small screens */
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-action {
+                width: 100%;
+                justify-content: center;
             }
         }
 
@@ -498,6 +638,9 @@
     @stack('styles')
 </head>
 <body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay no-print" id="mobileOverlay"></div>
+
     <!-- Mobile Toggle -->
     <button class="sidebar-toggle no-print" id="sidebarToggle">
         <i class="fas fa-bars"></i>
@@ -633,18 +776,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script>
         // Sidebar toggle for mobile
-        document.getElementById('sidebarToggle')?.addEventListener('click', function() {
-            document.getElementById('sidebar').classList.toggle('show');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('show');
+            mobileOverlay.classList.toggle('show');
+            document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('show');
+            mobileOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        sidebarToggle?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
         });
+
+        // Close sidebar when clicking overlay
+        mobileOverlay?.addEventListener('click', closeSidebar);
 
         // Close sidebar when clicking outside on mobile
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const toggle = document.getElementById('sidebarToggle');
             if (window.innerWidth <= 992 && sidebar?.classList.contains('show')) {
-                if (!sidebar.contains(event.target) && event.target !== toggle) {
-                    sidebar.classList.remove('show');
+                if (!sidebar.contains(event.target) && event.target !== sidebarToggle) {
+                    closeSidebar();
                 }
+            }
+        });
+
+        // Close sidebar on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 992 && sidebar?.classList.contains('show')) {
+                closeSidebar();
             }
         });
 

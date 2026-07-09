@@ -138,6 +138,85 @@
         margin: 1.5rem 0;
     }
 
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .profile-header {
+            padding: 1.5rem;
+        }
+
+        .profile-photo-large {
+            width: 100px;
+            height: 100px;
+        }
+
+        .action-buttons {
+            margin-top: 1rem;
+        }
+
+        .info-card {
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-card-header h5 {
+            font-size: 1rem;
+        }
+
+        .info-card-header i {
+            font-size: 1.25rem;
+        }
+
+        .info-row {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+        }
+
+        .info-value {
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .profile-header {
+            padding: 1rem;
+        }
+
+        .profile-header .row {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .profile-header .col-auto {
+            margin: 0 auto 1rem;
+        }
+
+        .profile-header h2 {
+            font-size: 1.5rem !important;
+        }
+
+        .badge-status {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .info-card {
+            padding: 1rem;
+        }
+
+        .info-row {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .btn-action {
+            font-size: 0.85rem;
+            padding: 0.5rem 1rem;
+        }
+    }
+
     @media print {
         .info-card {
             break-inside: avoid;

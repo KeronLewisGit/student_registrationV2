@@ -38,6 +38,52 @@
         color: var(--primary-color);
         font-weight: 600;
     }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .student-photo-thumbnail {
+            width: 32px;
+            height: 32px;
+        }
+
+        .table-actions {
+            gap: 0.125rem;
+        }
+
+        .table-actions .btn-sm {
+            padding: 0.375rem 0.5rem;
+        }
+
+        .table-actions .btn-sm i {
+            font-size: 0.75rem;
+        }
+
+        /* Make filter buttons stack on mobile */
+        .mt-3.d-flex {
+            flex-direction: column;
+        }
+
+        .mt-3.d-flex .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        /* Hide less important columns on small screens */
+        table th:nth-child(5),
+        table td:nth-child(5) {
+            display: none;
+        }
+
+        .badge-status,
+        .badge-class,
+        .badge-gender-male,
+        .badge-gender-female {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+        }
+    }
 </style>
 @endpush
 
