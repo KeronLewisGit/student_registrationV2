@@ -508,9 +508,119 @@
             background: var(--bg-light);
         }
 
+        /* Footer Styles */
+        .app-footer {
+            background: white;
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            margin-left: var(--sidebar-width);
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .footer-left,
+        .footer-right {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .footer-copyright,
+        .footer-version,
+        .footer-developer,
+        .footer-portfolio {
+            margin: 0;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .footer-developer {
+            color: var(--text-dark);
+        }
+
+        .footer-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Version History Modal Styles */
+        .version-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .version-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .version-badge.current {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .version-date {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .version-features {
+            margin: 0;
+            padding-left: 1.5rem;
+            font-size: 0.875rem;
+            color: var(--text-dark);
+        }
+
+        .version-features li {
+            margin-bottom: 0.375rem;
+        }
+
+        .version-features li:last-child {
+            margin-bottom: 0;
+        }
+
         /* Responsive */
         /* Tablet Responsive */
         @media (max-width: 992px) {
+            .app-footer {
+                margin-left: 0;
+            }
             .sidebar {
                 transform: translateX(-100%);
             }
@@ -554,6 +664,21 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
+            .app-footer {
+                padding: 1rem;
+                margin-top: 2rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .footer-right {
+                text-align: center;
+            }
+
             .top-header {
                 padding-left: 3.5rem;
                 padding-right: 0.75rem;
@@ -926,6 +1051,86 @@
 
         @yield('content')
     </main>
+
+    <!-- Footer -->
+    <footer class="app-footer no-print">
+        <div class="footer-content">
+            <div class="footer-left">
+                <p class="footer-copyright">
+                    &copy; {{ date('Y') }} Success Laventille Secondary School. All rights reserved.
+                </p>
+                <p class="footer-version">
+                    Version 1.0 | <a href="#" class="footer-link" data-bs-toggle="modal" data-bs-target="#versionHistoryModal">Version History</a>
+                </p>
+            </div>
+            <div class="footer-right">
+                <p class="footer-developer">
+                    Designed &amp; Developed by <strong>Code Canvas Consultants LTD</strong>
+                </p>
+                <p class="footer-portfolio">
+                    <a href="https://keronlewis.com" target="_blank" rel="noopener noreferrer" class="footer-link">
+                        <i class="fas fa-user-tie me-1"></i>Developer Portfolio
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Version History Modal -->
+    <div class="modal fade" id="versionHistoryModal" tabindex="-1" aria-labelledby="versionHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="versionHistoryModalLabel">
+                        <i class="fas fa-code-branch me-2"></i>Version History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge current">v1.0</span>
+                            <span class="version-date">{{ date('F Y') }} - Current</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Complete mobile responsiveness across all devices</li>
+                            <li>127-field comprehensive student profiles</li>
+                            <li>Webhook integration with registration form</li>
+                            <li>User management with role-based access control</li>
+                            <li>PDF generation with official document watermarks</li>
+                            <li>Advanced search and filtering capabilities</li>
+                            <li>DataTables integration for efficient data management</li>
+                        </ul>
+                    </div>
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge">v0.9</span>
+                            <span class="version-date">January 2026</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Beta testing with form integration</li>
+                            <li>PDF generation functionality</li>
+                            <li>Enhanced security features</li>
+                        </ul>
+                    </div>
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge">v0.8</span>
+                            <span class="version-date">December 2025</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Initial development</li>
+                            <li>Core student management features</li>
+                            <li>Basic CRUD operations</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
