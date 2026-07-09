@@ -162,6 +162,109 @@
             margin-right: 0.5rem;
         }
 
+        /* Login Footer */
+        .login-footer {
+            margin-top: 3rem;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .login-footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .login-footer p {
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+        .login-footer-link {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .login-footer-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        /* Version History Modal */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+
+        .modal-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            border-bottom: none;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .version-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .version-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .version-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .version-badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            background: #f8fafc;
+            color: #0f172a;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.875rem;
+        }
+
+        .version-badge.current {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .version-date {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+
+        .version-features {
+            margin: 0;
+            padding-left: 1.5rem;
+            font-size: 0.875rem;
+            color: #0f172a;
+        }
+
+        .version-features li {
+            margin-bottom: 0.375rem;
+        }
+
+        .version-features li:last-child {
+            margin-bottom: 0;
+        }
+
         @media (max-width: 768px) {
             .login-container {
                 flex-direction: column;
@@ -182,6 +285,15 @@
 
             .login-right {
                 padding: 2rem;
+            }
+
+            .login-footer {
+                margin-top: 2rem;
+                padding: 1rem;
+            }
+
+            .login-footer p {
+                font-size: 0.8rem;
             }
         }
     </style>
@@ -264,5 +376,92 @@
             </form>
         </div>
     </div>
+
+    <!-- Footer -->
+    <div class="login-footer">
+        <div class="login-footer-content">
+            <p>&copy; {{ date('Y') }} Success Laventille Secondary School. All rights reserved.</p>
+            <p>
+                Version 1.0 |
+                <a href="#" class="login-footer-link" data-bs-toggle="modal" data-bs-target="#versionHistoryModal">
+                    Version History
+                </a>
+            </p>
+            <p>Designed &amp; Developed by <strong>Code Canvas Consultants LTD</strong></p>
+            <p>
+                <a href="https://keronlewis.com" target="_blank" rel="noopener noreferrer" class="login-footer-link">
+                    <i class="fas fa-user-tie me-1"></i>Developer Portfolio
+                </a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div class="modal fade" id="versionHistoryModal" tabindex="-1" aria-labelledby="versionHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="versionHistoryModalLabel">
+                        <i class="fas fa-code-branch me-2"></i>Version History
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Version 1.0 -->
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge current">v1.0</span>
+                            <span class="version-date">{{ date('F Y') }} - Current</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Complete mobile responsiveness across all devices</li>
+                            <li>127-field comprehensive student profiles</li>
+                            <li>Webhook integration with Elementor registration form</li>
+                            <li>Automated student data import from public form</li>
+                            <li>Role-based access control (Admin, Staff, Viewer)</li>
+                            <li>User management system with safety checks</li>
+                            <li>Advanced DataTables with search and pagination</li>
+                            <li>Print and PDF export functionality</li>
+                            <li>CSV bulk import with duplicate detection</li>
+                            <li>Professional UI with Bootstrap 5.3.2</li>
+                            <li>Touch-friendly interface meeting international standards</li>
+                            <li>Secure authentication with Laravel Sanctum</li>
+                        </ul>
+                    </div>
+
+                    <!-- Version 0.9 -->
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge">v0.9</span>
+                            <span class="version-date">December 2024</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Initial student management system</li>
+                            <li>Basic CRUD operations for students</li>
+                            <li>User authentication system</li>
+                            <li>Student list view with basic filtering</li>
+                            <li>Manual student creation forms</li>
+                        </ul>
+                    </div>
+
+                    <!-- Version 0.8 -->
+                    <div class="version-item">
+                        <div class="version-header">
+                            <span class="version-badge">v0.8</span>
+                            <span class="version-date">November 2024</span>
+                        </div>
+                        <ul class="version-features">
+                            <li>Project initialization</li>
+                            <li>Database schema design</li>
+                            <li>Laravel 11 setup</li>
+                            <li>Basic authentication scaffolding</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
