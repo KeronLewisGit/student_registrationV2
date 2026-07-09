@@ -198,7 +198,7 @@
         }
 
         .badge-status {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             padding: 0.25rem 0.5rem;
         }
 
@@ -206,14 +206,31 @@
             padding: 1rem;
         }
 
+        .info-card-header {
+            margin-bottom: 1rem;
+        }
+
+        .info-card-header h5 {
+            font-size: 0.95rem;
+        }
+
         .info-row {
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 0.75rem;
+        }
+
+        .info-item {
+            padding: 0.5rem 0;
         }
 
         .btn-action {
             font-size: 0.85rem;
-            padding: 0.5rem 1rem;
+            padding: 0.625rem 1rem;
+        }
+
+        /* Ensure action buttons wrap nicely */
+        .action-buttons {
+            gap: 0.5rem;
         }
     }
 
@@ -260,17 +277,17 @@
                 @endif
             </div>
         </div>
-        <div class="col-auto">
+        <div class="col-12 col-md-auto">
             <div class="action-buttons">
                 <a href="{{ route('students.print', $student) }}" target="_blank" class="btn btn-light btn-action">
-                    <i class="fas fa-print"></i> Print Profile
+                    <i class="fas fa-print"></i><span class="d-none d-sm-inline"> Print Profile</span><span class="d-inline d-sm-none"> Print</span>
                 </a>
                 <a href="{{ route('students.pdf', $student) }}" class="btn btn-light btn-action">
-                    <i class="fas fa-file-pdf"></i> Download PDF
+                    <i class="fas fa-file-pdf"></i><span class="d-none d-sm-inline"> Download PDF</span><span class="d-inline d-sm-none"> PDF</span>
                 </a>
                 @can('edit-students')
                 <a href="{{ route('students.edit', $student) }}" class="btn btn-warning btn-action">
-                    <i class="fas fa-edit"></i> Edit Student
+                    <i class="fas fa-edit"></i><span class="d-none d-sm-inline"> Edit Student</span><span class="d-inline d-sm-none"> Edit</span>
                 </a>
                 @endcan
             </div>

@@ -577,6 +577,17 @@
             .table-actions {
                 flex-wrap: wrap;
             }
+
+            /* Form improvements for mobile */
+            .form-select,
+            .form-control {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            label.form-label {
+                font-size: 0.9rem;
+                margin-bottom: 0.375rem;
+            }
         }
 
         /* Small Mobile Responsive */
@@ -619,6 +630,31 @@
             .btn-action {
                 width: 100%;
                 justify-content: center;
+            }
+
+            /* Form section headings */
+            h4, h5 {
+                font-size: 1rem;
+            }
+
+            /* Improve modal dialogs on small screens */
+            .modal-dialog {
+                margin: 0.5rem;
+            }
+
+            /* Better alert spacing */
+            .alert {
+                padding: 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            /* Optimize pagination for small screens */
+            .pagination {
+                font-size: 0.85rem;
+            }
+
+            .page-link {
+                padding: 0.375rem 0.625rem;
             }
         }
 

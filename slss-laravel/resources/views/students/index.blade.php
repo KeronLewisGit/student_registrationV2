@@ -58,21 +58,23 @@
             font-size: 0.75rem;
         }
 
-        /* Make filter buttons stack on mobile */
-        .mt-3.d-flex {
-            flex-direction: column;
+        /* Improve DataTables controls spacing */
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter {
+            margin-bottom: 1rem;
         }
 
-        .mt-3.d-flex .btn {
-            width: 100%;
-            margin-bottom: 0.5rem;
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_paginate {
+            margin-top: 1rem;
+            text-align: center;
         }
     }
 
     @media (max-width: 576px) {
         /* Hide less important columns on small screens */
-        table th:nth-child(5),
-        table td:nth-child(5) {
+        #studentsTable th:nth-child(5),
+        #studentsTable td:nth-child(5) {
             display: none;
         }
 
@@ -80,8 +82,25 @@
         .badge-class,
         .badge-gender-male,
         .badge-gender-female {
-            font-size: 0.75rem;
-            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+
+        /* Optimize table for mobile */
+        #studentsTable {
+            font-size: 0.85rem;
+        }
+
+        #studentsTable th,
+        #studentsTable td {
+            padding: 0.5rem 0.25rem;
+        }
+
+        /* Make student name column wrap */
+        #studentsTable td:nth-child(2) {
+            max-width: 120px;
+            white-space: normal;
+            word-wrap: break-word;
         }
     }
 </style>
@@ -130,17 +149,17 @@
 
 <!-- Filters & Actions Card -->
 <div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-filter me-2"></i>Filter Students</span>
         @can('edit-students')
         <a href="{{ route('students.create') }}" class="btn btn-success btn-sm">
-            <i class="fas fa-plus-circle me-1"></i> Add Student
+            <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline"> Add Student</span><span class="d-inline d-sm-none">Add</span>
         </a>
         @endcan
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('students.index') }}" class="row g-3">
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <label for="year" class="form-label">Registration Year</label>
                 <select name="year" id="year" class="form-select">
                     <option value="">All Years</option>
@@ -152,7 +171,7 @@
                 </select>
             </div>
 
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-6">
                 <label for="student_class" class="form-label">Form Class</label>
                 <select name="student_class" id="student_class" class="form-select">
                     <option value="0">All Classes</option>
@@ -164,26 +183,26 @@
                 </select>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-4 col-sm-12">
                 <label for="search" class="form-label">Search</label>
                 <input type="text" name="search" id="search" class="form-control"
-                       placeholder="Search by name, SEA number, or birth certificate..."
+                       placeholder="Search name, SEA #, or cert..."
                        value="{{ request('search') }}">
             </div>
 
-            <div class="col-md-2 d-flex align-items-end">
+            <div class="col-md-2 col-sm-12 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary w-100">
                     <i class="fas fa-search me-1"></i> Filter
                 </button>
             </div>
         </form>
 
-        <div class="mt-3 d-flex gap-2">
+        <div class="mt-3 d-flex gap-2 flex-wrap">
             <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-redo me-1"></i> Reset Filters
+                <i class="fas fa-redo me-1"></i><span class="d-none d-sm-inline"> Reset Filters</span><span class="d-inline d-sm-none">Reset</span>
             </a>
             <a href="{{ route('students.bulk-pdf', request()->all()) }}" class="btn btn-info btn-sm">
-                <i class="fas fa-file-pdf me-1"></i> Export to PDF
+                <i class="fas fa-file-pdf me-1"></i><span class="d-none d-sm-inline"> Export to PDF</span><span class="d-inline d-sm-none">PDF</span>
             </a>
         </div>
     </div>
