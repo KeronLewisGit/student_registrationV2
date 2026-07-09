@@ -23,9 +23,11 @@
             background: linear-gradient(135deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 100%);
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 2rem 1rem;
+            gap: 2rem;
         }
 
         .login-container {
@@ -164,10 +166,11 @@
 
         /* Login Footer */
         .login-footer {
-            margin-top: 3rem;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             text-align: center;
             color: rgba(255, 255, 255, 0.9);
+            max-width: 900px;
+            width: 100%;
         }
 
         .login-footer-content {
@@ -266,6 +269,11 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                gap: 1.5rem;
+                padding: 1.5rem 1rem;
+            }
+
             .login-container {
                 flex-direction: column;
             }
@@ -288,8 +296,7 @@
             }
 
             .login-footer {
-                margin-top: 2rem;
-                padding: 1rem;
+                padding: 0.75rem 1rem;
             }
 
             .login-footer p {
