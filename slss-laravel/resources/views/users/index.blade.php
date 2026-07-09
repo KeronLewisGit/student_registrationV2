@@ -41,13 +41,94 @@
         font-weight: 700;
         font-size: 1rem;
     }
+    .table-actions {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            font-size: 0.875rem;
+        }
+
+        .table-actions {
+            gap: 0.125rem;
+        }
+
+        .table-actions .btn-sm {
+            padding: 0.375rem 0.5rem;
+        }
+
+        .table-actions .btn-sm i {
+            font-size: 0.75rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        /* Hide Created column on small screens */
+        #usersTable th:nth-child(4),
+        #usersTable td:nth-child(4) {
+            display: none;
+        }
+
+        .role-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+
+        /* Optimize table for mobile */
+        #usersTable {
+            font-size: 0.85rem;
+        }
+
+        #usersTable th,
+        #usersTable td {
+            padding: 0.5rem 0.25rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        /* Stack action buttons vertically for better touch targets */
+        .table-actions {
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 40px;
+        }
+
+        .table-actions .btn-sm {
+            width: 100%;
+            min-height: 36px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table-actions .btn-sm i {
+            font-size: 0.875rem;
+        }
+
+        /* Reduce table padding further */
+        #usersTable th,
+        #usersTable td {
+            padding: 0.4rem 0.2rem;
+        }
+
+        /* Smaller font for table */
+        #usersTable {
+            font-size: 0.8rem;
+        }
+    }
 </style>
 @endpush
 
 @section('content')
 <!-- Statistics Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
@@ -56,7 +137,7 @@
             <p class="stat-label">Total Users</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="fas fa-user-shield"></i>
@@ -65,7 +146,7 @@
             <p class="stat-label">Administrators</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon info">
                 <i class="fas fa-user-tie"></i>
@@ -74,7 +155,7 @@
             <p class="stat-label">Staff Members</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6 col-sm-6">
         <div class="stat-card">
             <div class="stat-icon success">
                 <i class="fas fa-user"></i>
@@ -87,10 +168,10 @@
 
 <!-- Users Table -->
 <div class="card">
-    <div class="card-header d-flex justify-content-between align-items-center">
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-users-cog me-2"></i>System Users</span>
         <a href="{{ route('users.create') }}" class="btn btn-success btn-sm">
-            <i class="fas fa-plus-circle me-1"></i> Add User
+            <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline"> Add User</span><span class="d-inline d-sm-none">Add</span>
         </a>
     </div>
     <div class="card-body">
@@ -143,7 +224,7 @@
                                 <small>{{ $user->created_at->format('M d, Y') }}</small>
                             </td>
                             <td>
-                                <div class="d-flex gap-1">
+                                <div class="table-actions">
                                     <a href="{{ route('users.edit', $user) }}"
                                        class="btn btn-sm btn-outline-primary"
                                        title="Edit User">
@@ -232,8 +313,11 @@
 <script>
 $(document).ready(function() {
     if ($('#usersTable tbody tr').length > 0) {
+        // Adjust page length based on screen size
+        var pageLength = $(window).width() < 768 ? 10 : 10;
+
         $('#usersTable').DataTable({
-            pageLength: 10,
+            pageLength: pageLength,
             order: [[3, 'desc']], // Sort by created date
             language: {
                 search: "Search users:",
@@ -245,7 +329,25 @@ $(document).ready(function() {
             },
             columnDefs: [
                 { orderable: false, targets: [4] } // Disable sorting on actions
-            ]
+            ],
+            // Optimize for mobile
+            dom: $(window).width() < 768 ?
+                '<"row"<"col-12"f>><"row"<"col-12"tr>><"row"<"col-12"i><"col-12"p>>' :
+                'lfrtip',
+            // Adjust display on window resize
+            drawCallback: function() {
+                // Ensure action buttons remain properly styled after DataTables redraw
+                $('.table-actions').css('display', 'flex');
+            }
+        });
+
+        // Handle responsive page length on window resize
+        $(window).on('resize', function() {
+            var table = $('#usersTable').DataTable();
+            var newPageLength = $(window).width() < 768 ? 10 : 10;
+            if (table.page.len() !== newPageLength) {
+                table.page.len(newPageLength).draw();
+            }
         });
     }
 });

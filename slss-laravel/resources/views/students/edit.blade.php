@@ -49,6 +49,143 @@
         padding-bottom: 0.5rem;
         border-bottom: 2px solid var(--primary-light);
     }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1rem;
+            border-radius: 8px;
+        }
+
+        .section-header {
+            padding: 0.625rem 1rem;
+            font-size: 0.95rem;
+            border-radius: 6px;
+        }
+
+        fieldset {
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 8px;
+        }
+
+        legend {
+            font-size: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        textarea.form-control {
+            min-height: 100px;
+        }
+
+        .btn {
+            min-height: 44px;
+            font-size: 0.95rem;
+        }
+
+        /* Improve spacing between form rows */
+        .row.g-3 {
+            row-gap: 1rem !important;
+        }
+
+        /* Header section */
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+
+        /* Current photo thumbnail */
+        .img-thumbnail {
+            max-width: 150px !important;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .form-card {
+            padding: 0.75rem;
+        }
+
+        .form-card h2 {
+            font-size: 1.25rem;
+        }
+
+        .form-card p {
+            font-size: 0.875rem;
+        }
+
+        .subsection-header {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        fieldset {
+            border-width: 1px;
+            padding: 0.75rem;
+        }
+
+        legend {
+            font-size: 0.95rem;
+        }
+
+        .section-header {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .section-header i {
+            font-size: 0.875rem;
+        }
+
+        /* Stack action buttons vertically */
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+
+        /* Current photo thumbnail */
+        .img-thumbnail {
+            max-width: 120px !important;
+        }
+    }
+
+    /* Sticky bottom buttons for long forms */
+    @media (max-width: 768px) {
+        .sticky-bottom-actions {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            padding: 1rem;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+            margin: 0 -1rem -1rem;
+            z-index: 10;
+            border-radius: 0 0 8px 8px;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .sticky-bottom-actions {
+            padding: 0.75rem;
+            margin: 0 -0.75rem -0.75rem;
+        }
+    }
 </style>
 @endpush
 
@@ -650,7 +787,7 @@
         </fieldset>
 
         <!-- Action Buttons -->
-        <div class="d-flex justify-content-end gap-2 mt-4">
+        <div class="d-flex justify-content-end gap-2 mt-4 sticky-bottom-actions">
             <a href="{{ route('students.index') }}" class="btn btn-secondary">
                 <i class="fas fa-times me-1"></i> Cancel
             </a>
