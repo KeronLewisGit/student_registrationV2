@@ -103,6 +103,63 @@
             word-wrap: break-word;
         }
     }
+
+    /* Extra Small Mobile - Very aggressive optimization */
+    @media (max-width: 480px) {
+        /* Hide photo column on very small screens */
+        #studentsTable th:nth-child(1),
+        #studentsTable td:nth-child(1) {
+            display: none;
+        }
+
+        /* Also hide gender column */
+        #studentsTable th:nth-child(4),
+        #studentsTable td:nth-child(4) {
+            display: none;
+        }
+
+        /* Stack action buttons vertically for better touch targets */
+        .table-actions {
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 40px;
+        }
+
+        .table-actions .btn-sm {
+            width: 100%;
+            min-height: 36px;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .table-actions .btn-sm i {
+            font-size: 0.875rem;
+        }
+
+        /* Optimize student name column for extra space */
+        #studentsTable td:nth-child(2) {
+            max-width: 150px;
+        }
+
+        /* Reduce table padding further */
+        #studentsTable th,
+        #studentsTable td {
+            padding: 0.4rem 0.2rem;
+        }
+
+        /* Smaller font for table */
+        #studentsTable {
+            font-size: 0.8rem;
+        }
+
+        /* Optimize DataTables pagination for small screens */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+    }
 </style>
 @endpush
 
@@ -328,8 +385,11 @@
 <script>
 $(document).ready(function() {
     if ($('#studentsTable tbody tr').length > 0) {
+        // Adjust page length based on screen size
+        var pageLength = $(window).width() < 768 ? 10 : 25;
+
         $('#studentsTable').DataTable({
-            pageLength: 25,
+            pageLength: pageLength,
             order: [[5, 'desc']], // Sort by registration date (newest first)
             language: {
                 search: "Search students:",
@@ -341,7 +401,25 @@ $(document).ready(function() {
             },
             columnDefs: [
                 { orderable: false, targets: [0, 6] } // Disable sorting on photo and actions
-            ]
+            ],
+            // Optimize for mobile
+            dom: $(window).width() < 768 ?
+                '<"row"<"col-12"f>><"row"<"col-12"tr>><"row"<"col-12"i><"col-12"p>>' :
+                'lfrtip',
+            // Adjust display on window resize
+            drawCallback: function() {
+                // Ensure action buttons remain properly styled after DataTables redraw
+                $('.table-actions').css('display', 'flex');
+            }
+        });
+
+        // Handle responsive page length on window resize
+        $(window).on('resize', function() {
+            var table = $('#studentsTable').DataTable();
+            var newPageLength = $(window).width() < 768 ? 10 : 25;
+            if (table.page.len() !== newPageLength) {
+                table.page.len(newPageLength).draw();
+            }
         });
     }
 });
