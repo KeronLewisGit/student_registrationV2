@@ -2,6 +2,79 @@
 
 @section('title', 'Import Students - SLSS')
 
+@push('styles')
+<style>
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1rem;
+        }
+
+        .form-control {
+            min-height: 44px;
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        .btn {
+            min-height: 44px;
+            font-size: 0.95rem;
+        }
+
+        .alert {
+            padding: 0.875rem;
+            font-size: 0.9rem;
+        }
+
+        .alert h5 {
+            font-size: 1rem;
+        }
+
+        .alert ul {
+            font-size: 0.875rem;
+            padding-left: 1.25rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 0.75rem;
+        }
+
+        .card-header {
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .alert {
+            padding: 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .alert h5 {
+            font-size: 0.95rem;
+        }
+
+        .alert ul {
+            font-size: 0.8rem;
+            padding-left: 1rem;
+        }
+
+        /* Stack buttons vertically */
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="card">
     <div class="card-header">

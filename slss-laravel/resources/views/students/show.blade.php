@@ -226,11 +226,72 @@
         .btn-action {
             font-size: 0.85rem;
             padding: 0.625rem 1rem;
+            min-height: 44px;
         }
 
         /* Ensure action buttons wrap nicely */
         .action-buttons {
             gap: 0.5rem;
+        }
+    }
+
+    /* Extra Small Mobile - Additional optimizations */
+    @media (max-width: 480px) {
+        .profile-header {
+            padding: 0.875rem;
+        }
+
+        .profile-photo-large {
+            width: 80px;
+            height: 80px;
+        }
+
+        .profile-header h2 {
+            font-size: 1.25rem !important;
+        }
+
+        .badge-status {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.4rem;
+        }
+
+        .info-card {
+            padding: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card-header i {
+            font-size: 1.125rem;
+        }
+
+        .info-card-header h5 {
+            font-size: 0.9rem;
+        }
+
+        .info-label {
+            font-size: 0.65rem;
+        }
+
+        .info-value {
+            font-size: 0.875rem;
+        }
+
+        .btn-action {
+            font-size: 0.8rem;
+            padding: 0.5rem 0.875rem;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn-action {
+            width: 100%;
         }
     }
 

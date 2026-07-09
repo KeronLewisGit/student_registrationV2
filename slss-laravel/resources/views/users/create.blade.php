@@ -33,6 +33,78 @@
         margin: 0;
         padding-left: 1.5rem;
     }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            margin-bottom: 0.375rem;
+        }
+
+        .form-control,
+        .form-select {
+            min-height: 44px;
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        .btn {
+            min-height: 44px;
+            font-size: 0.95rem;
+        }
+
+        /* Header section */
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .d-flex.justify-content-between .btn {
+            width: 100%;
+        }
+
+        .password-requirements {
+            padding: 0.875rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .form-card {
+            padding: 1rem;
+        }
+
+        .form-card h2 {
+            font-size: 1.25rem;
+        }
+
+        .form-card p {
+            font-size: 0.875rem;
+        }
+
+        /* Stack action buttons vertically */
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+        .d-flex.gap-2 .btn {
+            width: 100%;
+        }
+
+        .password-requirements {
+            padding: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .password-requirements ul {
+            padding-left: 1.25rem;
+            font-size: 0.85rem;
+        }
+    }
 </style>
 @endpush
 
