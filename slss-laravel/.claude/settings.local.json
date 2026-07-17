@@ -32,7 +32,8 @@
       "Bash(php -l app/Http/Controllers/DeployController.php)",
       "Bash(php artisan route:list --name=deploy)",
       "Bash(php -l app/Services/PdfService.php)",
-      "Bash(php artisan route:list --name=students.bulk-pdf)"
+      "Bash(php artisan route:list --name=students.bulk-pdf)",
+      "Bash(php -l app/Http/Controllers/StudentController.php)"
     ],
     "deny": [],
     "ask": []

@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/students/{student}/pdf', [StudentController::class, 'generatePdf'])->name('students.pdf');
     Route::get('/students/{student}/print', [StudentController::class, 'print'])->name('students.print');
     Route::get('/students-bulk-pdf', [StudentController::class, 'generateBulkPdf'])->name('students.bulk-pdf');
+    Route::get('/students-bulk-pdf-progress', [StudentController::class, 'getBulkPdfProgress'])->name('students.bulk-pdf.progress');
 
     // CSV Import Routes (Admin/Staff only)
     Route::middleware(['can:edit-students'])->group(function () {

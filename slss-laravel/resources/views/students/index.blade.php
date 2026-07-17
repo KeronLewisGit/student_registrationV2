@@ -258,9 +258,9 @@
             <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-redo me-1"></i><span class="d-none d-sm-inline"> Reset Filters</span><span class="d-inline d-sm-none">Reset</span>
             </a>
-            <a href="{{ route('students.bulk-pdf', request()->all()) }}" class="btn btn-info btn-sm">
+            <button type="button" id="exportToPdfBtn" class="btn btn-info btn-sm" data-filters="{{ json_encode(request()->all()) }}">
                 <i class="fas fa-file-pdf me-1"></i><span class="d-none d-sm-inline"> Export to PDF</span><span class="d-inline d-sm-none">PDF</span>
-            </a>
+            </button>
         </div>
     </div>
 </div>
@@ -379,6 +379,52 @@
         @endif
     </div>
 </div>
+
+<!-- PDF Export Progress Modal -->
+<div class="modal fade" id="pdfExportModal" tabindex="-1" aria-labelledby="pdfExportModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="pdfExportModalLabel">
+                    <i class="fas fa-file-pdf me-2"></i>Exporting Student Profiles
+                </h5>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-3">
+                    <div class="spinner-border text-info" role="status" id="exportSpinner">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <i class="fas fa-check-circle text-success d-none" id="exportSuccess" style="font-size: 3rem;"></i>
+                    <i class="fas fa-times-circle text-danger d-none" id="exportError" style="font-size: 3rem;"></i>
+                </div>
+
+                <p class="text-center mb-3" id="exportMessage">Initializing export...</p>
+
+                <div class="progress" style="height: 25px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
+                         role="progressbar"
+                         id="exportProgressBar"
+                         style="width: 0%"
+                         aria-valuenow="0"
+                         aria-valuemin="0"
+                         aria-valuemax="100">0%</div>
+                </div>
+
+                <p class="text-center mt-2 small text-muted" id="exportDetails">
+                    Preparing to export <span id="exportTotal">0</span> students...
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="exportCloseBtn" data-bs-dismiss="modal" disabled>
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
+                <a href="#" class="btn btn-success d-none" id="exportDownloadBtn" download>
+                    <i class="fas fa-download me-1"></i>Download ZIP
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('scripts')
@@ -422,6 +468,122 @@ $(document).ready(function() {
             }
         });
     }
+
+    // PDF Export with Progress Bar
+    let progressInterval = null;
+
+    $('#exportToPdfBtn').on('click', function() {
+        const filters = $(this).data('filters');
+        const progressId = 'pdf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('pdfExportModal'));
+        modal.show();
+
+        // Reset UI
+        $('#exportSpinner').removeClass('d-none');
+        $('#exportSuccess').addClass('d-none');
+        $('#exportError').addClass('d-none');
+        $('#exportProgressBar').css('width', '0%').text('0%').attr('aria-valuenow', 0);
+        $('#exportMessage').text('Initializing export...');
+        $('#exportDetails').html('Preparing to export <span id="exportTotal">0</span> students...');
+        $('#exportCloseBtn').prop('disabled', true);
+        $('#exportDownloadBtn').addClass('d-none');
+
+        // Build URL with filters and progress ID
+        const url = '{{ route("students.bulk-pdf") }}?' + $.param({...filters, progress_id: progressId});
+
+        // Start the export in an iframe (so we can download the file)
+        const iframe = $('<iframe>', {
+            src: url,
+            style: 'display:none;'
+        }).appendTo('body');
+
+        // Start polling progress
+        progressInterval = setInterval(function() {
+            $.ajax({
+                url: '{{ route("students.bulk-pdf.progress") }}',
+                method: 'GET',
+                data: { progress_id: progressId },
+                success: function(data) {
+                    if (data.status === 'processing') {
+                        // Update progress bar
+                        const progress = Math.round(data.progress);
+                        $('#exportProgressBar')
+                            .css('width', progress + '%')
+                            .text(progress + '%')
+                            .attr('aria-valuenow', progress);
+
+                        // Update message
+                        $('#exportMessage').text(data.message);
+                        $('#exportDetails').html(`Processing ${data.current} of ${data.total} students...`);
+                        $('#exportTotal').text(data.total);
+
+                    } else if (data.status === 'completed') {
+                        // Export completed
+                        clearInterval(progressInterval);
+
+                        $('#exportProgressBar')
+                            .css('width', '100%')
+                            .text('100%')
+                            .attr('aria-valuenow', 100)
+                            .removeClass('progress-bar-animated');
+
+                        $('#exportSpinner').addClass('d-none');
+                        $('#exportSuccess').removeClass('d-none');
+                        $('#exportMessage').html('<strong>Export completed successfully!</strong>');
+                        $('#exportDetails').html(`<span class="text-success">All ${data.total} student profiles have been exported.</span>`);
+                        $('#exportCloseBtn').prop('disabled', false);
+
+                        // Show success message
+                        setTimeout(function() {
+                            modal.hide();
+                            alert('PDF export completed! Your download should start automatically.');
+                        }, 2000);
+
+                    } else if (data.status === 'failed') {
+                        // Export failed
+                        clearInterval(progressInterval);
+                        iframe.remove();
+
+                        $('#exportProgressBar')
+                            .removeClass('bg-info progress-bar-animated')
+                            .addClass('bg-danger');
+
+                        $('#exportSpinner').addClass('d-none');
+                        $('#exportError').removeClass('d-none');
+                        $('#exportMessage').html('<strong>Export failed!</strong>');
+                        $('#exportDetails').html(`<span class="text-danger">${data.message}</span>`);
+                        $('#exportCloseBtn').prop('disabled', false);
+
+                    } else if (data.status === 'not_found') {
+                        // Progress not found (might have been deleted after completion)
+                        clearInterval(progressInterval);
+                    }
+                },
+                error: function() {
+                    clearInterval(progressInterval);
+                    iframe.remove();
+
+                    $('#exportProgressBar')
+                        .removeClass('bg-info progress-bar-animated')
+                        .addClass('bg-danger');
+
+                    $('#exportSpinner').addClass('d-none');
+                    $('#exportError').removeClass('d-none');
+                    $('#exportMessage').html('<strong>Connection error!</strong>');
+                    $('#exportDetails').html('<span class="text-danger">Failed to check export progress.</span>');
+                    $('#exportCloseBtn').prop('disabled', false);
+                }
+            });
+        }, 1000); // Poll every second
+
+        // Cleanup on modal close
+        $('#pdfExportModal').on('hidden.bs.modal', function() {
+            clearInterval(progressInterval);
+            iframe.remove();
+        });
+    });
 });
 </script>
 @endpush
