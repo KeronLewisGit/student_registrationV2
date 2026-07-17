@@ -411,4 +411,72 @@ class DeployController extends Controller
 </html>
         ")->header('Content-Type', 'text/html');
     }
+
+    public function storageDiagnostics()
+    {
+        $diagnostics = [];
+        $status = 'success';
+
+        // Check storage symlink
+        $publicStorage = public_path('storage');
+        $diagnostics[] = "=== STORAGE SYMLINK CHECK ===";
+        $diagnostics[] = "Public storage path: {$publicStorage}";
+
+        if (file_exists($publicStorage)) {
+            if (is_link($publicStorage)) {
+                $target = readlink($publicStorage);
+                $diagnostics[] = "✓ Symlink exists";
+                $diagnostics[] = "Target: {$target}";
+                $diagnostics[] = "Target exists: " . (file_exists($target) ? 'YES' : 'NO');
+            } else {
+                $diagnostics[] = "✗ Path exists but is NOT a symlink!";
+                $diagnostics[] = "This is a directory or file, not a symbolic link.";
+                $status = 'error';
+            }
+        } else {
+            $diagnostics[] = "✗ Symlink does NOT exist";
+            $diagnostics[] = "Run: php artisan storage:link";
+            $status = 'error';
+        }
+
+        // Check storage/app/public directory
+        $diagnostics[] = "\n=== STORAGE DIRECTORY CHECK ===";
+        $storageAppPublic = storage_path('app/public');
+        $diagnostics[] = "Storage app/public path: {$storageAppPublic}";
+        $diagnostics[] = "Exists: " . (file_exists($storageAppPublic) ? 'YES' : 'NO');
+        $diagnostics[] = "Writable: " . (is_writable($storageAppPublic) ? 'YES' : 'NO');
+        $diagnostics[] = "Permissions: " . (file_exists($storageAppPublic) ? substr(sprintf('%o', fileperms($storageAppPublic)), -4) : 'N/A');
+
+        // List recent ZIP files
+        $diagnostics[] = "\n=== RECENT ZIP FILES ===";
+        $zipFiles = glob(storage_path('app/public/*.zip'));
+        if ($zipFiles) {
+            rsort($zipFiles); // Most recent first
+            $recentFiles = array_slice($zipFiles, 0, 5); // Show last 5
+            foreach ($recentFiles as $file) {
+                $size = filesize($file);
+                $readable = is_readable($file) ? 'YES' : 'NO';
+                $diagnostics[] = basename($file) . " | Size: " . round($size / 1024, 2) . " KB | Readable: {$readable}";
+            }
+        } else {
+            $diagnostics[] = "No ZIP files found in storage/app/public/";
+        }
+
+        // Check web accessibility
+        $diagnostics[] = "\n=== WEB ACCESSIBILITY CHECK ===";
+        $diagnostics[] = "Base URL: " . url('/');
+        $diagnostics[] = "Storage URL: " . url('storage/');
+        if ($zipFiles) {
+            $testFile = basename($recentFiles[0]);
+            $diagnostics[] = "Test URL: " . url("storage/{$testFile}");
+        }
+
+        // Check permissions on base_path
+        $diagnostics[] = "\n=== PERMISSIONS CHECK ===";
+        $diagnostics[] = "Base path: " . base_path();
+        $diagnostics[] = "Public path: " . public_path();
+        $diagnostics[] = "Storage path: " . storage_path();
+
+        return $this->formatOutput($diagnostics, $status, $status === 'success' ? 'Storage diagnostics completed' : 'Storage issues detected');
+    }
 }

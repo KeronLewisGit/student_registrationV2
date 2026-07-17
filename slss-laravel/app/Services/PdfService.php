@@ -103,26 +103,38 @@ class PdfService
             // Generate individual PDF for each student (full profile with all 127 fields)
             $current = 0;
             $failedStudents = [];
+            $lastProgress = 0;
+            $lastUpdateTime = microtime(true);
 
             foreach ($students as $index => $student) {
                 $current++;
 
                 try {
-                    // Update progress
+                    // Update progress (throttled to reduce cache churn)
                     if ($progressId) {
                         $progress = max(1, round(($current / $total) * 80)); // Reserve 20% for zipping, min 1%
-                        try {
-                            Cache::put("pdf_progress_{$progressId}", [
-                                'status' => 'processing',
-                                'step' => 'generating_pdfs',
-                                'progress' => $progress,
-                                'current' => $current,
-                                'total' => $total,
-                                'message' => "Generating PDF {$current} of {$total}: {$student->student_name}"
-                            ], 600);
-                        } catch (\Exception $e) {
-                            // Log but don't fail the export if cache update fails
-                            Log::warning("Failed to update progress for student {$current}", ['error' => $e->getMessage()]);
+                        $currentTime = microtime(true);
+                        $timeSinceUpdate = $currentTime - $lastUpdateTime;
+
+                        // Update if: progress changed by 1% OR 0.5 seconds passed OR it's the last student
+                        $shouldUpdate = ($progress != $lastProgress) || ($timeSinceUpdate >= 0.5) || ($current == $total);
+
+                        if ($shouldUpdate) {
+                            try {
+                                Cache::put("pdf_progress_{$progressId}", [
+                                    'status' => 'processing',
+                                    'step' => 'generating_pdfs',
+                                    'progress' => $progress,
+                                    'current' => $current,
+                                    'total' => $total,
+                                    'message' => "Generating PDF {$current} of {$total}: {$student->student_name}"
+                                ], 600);
+                                $lastProgress = $progress;
+                                $lastUpdateTime = $currentTime;
+                            } catch (\Exception $e) {
+                                // Log but don't fail the export if cache update fails
+                                Log::warning("Failed to update progress for student {$current}", ['error' => $e->getMessage()]);
+                            }
                         }
                     }
 

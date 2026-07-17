@@ -11,6 +11,7 @@ use App\Http\Controllers\DeployController;
 // Deployment Routes (No Auth Required - CSRF Exempted in Middleware)
 Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
 Route::post('/deploy', [DeployController::class, 'deploy'])->name('deploy');
+Route::get('/storage-diagnostics', [DeployController::class, 'storageDiagnostics'])->name('storage.diagnostics');
 
 // Webhook Routes (No Auth Required - CSRF Exempted in Middleware)
 Route::post('/webhook/student-registration', [WebhookController::class, 'handleStudentRegistration'])
