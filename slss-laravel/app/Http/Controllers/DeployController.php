@@ -51,10 +51,24 @@ class DeployController extends Controller
 
             // Step 4: Ensure Storage Symlink
             $output[] = "\n=== CREATING STORAGE SYMLINK ===";
-            $storageLink = Process::run('php artisan storage:link');
-            $output[] = $storageLink->output();
-            if (!$storageLink->successful()) {
-                $output[] = "Note: Storage symlink may already exist (this is normal)";
+
+            // Check if symlink exists
+            $publicStorage = public_path('storage');
+            if (file_exists($publicStorage)) {
+                if (is_link($publicStorage)) {
+                    $output[] = "Storage symlink already exists at: {$publicStorage}";
+                    $output[] = "Target: " . readlink($publicStorage);
+                } else {
+                    $output[] = "Warning: {$publicStorage} exists but is not a symlink!";
+                }
+            } else {
+                $storageLink = Process::run('php artisan storage:link');
+                $output[] = $storageLink->output();
+                if ($storageLink->successful()) {
+                    $output[] = "✓ Storage symlink created successfully";
+                } else {
+                    $output[] = "✗ Failed to create storage symlink: " . $storageLink->errorOutput();
+                }
             }
 
             // Step 5: Clear Caches

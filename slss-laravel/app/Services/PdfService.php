@@ -160,8 +160,34 @@ class PdfService
             Log::info("ZIP archive created successfully", [
                 'filename' => $zipFilename,
                 'total_files' => count($generatedFiles),
-                'failed_students' => count($failedStudents)
+                'failed_students' => count($failedStudents),
+                'zip_path' => $zipPath,
+                'zip_size' => filesize($zipPath)
             ]);
+
+            // Verify file is readable
+            if (!file_exists($zipPath)) {
+                throw new \Exception("ZIP file was created but cannot be found at: {$zipPath}");
+            }
+
+            if (!is_readable($zipPath)) {
+                throw new \Exception("ZIP file exists but is not readable. Check file permissions.");
+            }
+
+            // Check if storage symlink exists
+            $symlinkPath = public_path('storage');
+            $symlinkExists = file_exists($symlinkPath) && is_link($symlinkPath);
+
+            Log::info("Storage symlink check", [
+                'symlink_path' => $symlinkPath,
+                'exists' => $symlinkExists,
+                'is_link' => is_link($symlinkPath),
+                'target' => $symlinkExists ? readlink($symlinkPath) : 'N/A'
+            ]);
+
+            if (!$symlinkExists) {
+                Log::warning("Storage symlink does not exist! ZIP file created but may not be accessible via web.");
+            }
 
             // Clean up temporary PDFs
             array_map('unlink', $generatedFiles);
@@ -186,7 +212,8 @@ class PdfService
                     'message' => $successMsg,
                     'download_url' => url('storage/' . $zipFilename),
                     'filename' => $zipFilename,
-                    'failed_count' => count($failedStudents)
+                    'failed_count' => count($failedStudents),
+                    'symlink_exists' => $symlinkExists
                 ], 600);
             }
 

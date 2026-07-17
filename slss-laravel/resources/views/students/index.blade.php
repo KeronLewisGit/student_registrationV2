@@ -544,7 +544,13 @@ $(document).ready(function() {
                         $('#exportSpinner').addClass('d-none');
                         $('#exportSuccess').removeClass('d-none');
                         $('#exportMessage').html('<strong>Export completed successfully!</strong>');
-                        $('#exportDetails').html(`<span class="text-success">${progress.message}</span>`);
+
+                        // Check if symlink exists and warn if not
+                        let detailsHtml = `<span class="text-success">${progress.message}</span>`;
+                        if (progress.symlink_exists === false) {
+                            detailsHtml += `<br><br><span class="text-warning"><strong>⚠️ Warning:</strong> Storage symlink not found. If download fails, run: <code>php artisan storage:link</code></span>`;
+                        }
+                        $('#exportDetails').html(detailsHtml);
                         $('#exportCloseBtn').prop('disabled', false);
 
                         // Show download button
