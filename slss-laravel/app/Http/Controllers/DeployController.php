@@ -49,7 +49,15 @@ class DeployController extends Controller
             $migrate = Process::run('php artisan migrate --force');
             $output[] = $migrate->output();
 
-            // Step 4: Clear Caches
+            // Step 4: Ensure Storage Symlink
+            $output[] = "\n=== CREATING STORAGE SYMLINK ===";
+            $storageLink = Process::run('php artisan storage:link');
+            $output[] = $storageLink->output();
+            if (!$storageLink->successful()) {
+                $output[] = "Note: Storage symlink may already exist (this is normal)";
+            }
+
+            // Step 5: Clear Caches
             $output[] = "\n=== CLEARING CACHES ===";
 
             $configClear = Process::run('php artisan config:clear');
@@ -64,7 +72,7 @@ class DeployController extends Controller
             $routeClear = Process::run('php artisan route:clear');
             $output[] = "Route cache cleared: " . ($routeClear->successful() ? 'OK' : 'FAILED');
 
-            // Step 5: Optimize
+            // Step 6: Optimize
             $output[] = "\n=== OPTIMIZING APPLICATION ===";
             $optimize = Process::run('php artisan optimize');
             $output[] = $optimize->output();

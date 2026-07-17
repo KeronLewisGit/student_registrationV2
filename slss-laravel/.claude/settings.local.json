@@ -41,7 +41,9 @@
       "Bash(php artisan storage:link)",
       "Bash(php artisan config:clear)",
       "Bash(php artisan route:clear)",
-      "Bash(php artisan cache:clear)"
+      "Bash(php artisan cache:clear)",
+      "Bash(git push origin master)",
+      "Bash(ssh -p 65002 u269010508@31.97.97.131 \"cd domains/darkcyan-whale-509153.hostingersite.com/slss-laravel && git pull origin master && php artisan storage:link && php artisan route:clear && php artisan view:clear && php artisan config:clear\")"
     ],
     "deny": [],
     "ask": []
