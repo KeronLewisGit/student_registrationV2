@@ -19,11 +19,32 @@
             --warning-yellow: #f59e0b;
             --info-blue: #3b82f6;
             --bg-light: #f8fafc;
+            --bg-white: #ffffff;
             --bg-sidebar: #1e293b;
+            --bg-card: #ffffff;
             --text-dark: #0f172a;
+            --text-normal: #1e293b;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --sidebar-width: 260px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Dark Mode Theme */
+        [data-theme="dark"] {
+            --bg-light: #0f172a;
+            --bg-white: #1e293b;
+            --bg-sidebar: #0a0f1a;
+            --bg-card: #1e293b;
+            --text-dark: #f1f5f9;
+            --text-normal: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 4px 12px rgba(0,0,0,0.5);
         }
 
         * {
@@ -265,14 +286,39 @@
             left: var(--sidebar-width);
             right: 0;
             height: 70px;
-            background: white;
+            background: var(--bg-white);
             border-bottom: 1px solid var(--border-color);
             padding: 0 2rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             z-index: 999;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
+            transition: background 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            color: var(--text-dark);
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .theme-toggle:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            transform: rotate(180deg);
         }
 
         .page-title {
@@ -615,6 +661,101 @@
             margin-bottom: 0;
         }
 
+        /* Dark Mode Specific Styles */
+        [data-theme="dark"] .card {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+            color: var(--text-normal);
+        }
+
+        [data-theme="dark"] .card-header {
+            background: var(--bg-light);
+            border-bottom-color: var(--border-color);
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .table {
+            color: var(--text-normal);
+        }
+
+        [data-theme="dark"] .table-hover tbody tr:hover {
+            background-color: rgba(79, 70, 229, 0.1);
+        }
+
+        [data-theme="dark"] .form-control,
+        [data-theme="dark"] .form-select {
+            background-color: var(--bg-light);
+            border-color: var(--border-color);
+            color: var(--text-normal);
+        }
+
+        [data-theme="dark"] .form-control:focus,
+        [data-theme="dark"] .form-select:focus {
+            background-color: var(--bg-light);
+            border-color: var(--primary-color);
+            color: var(--text-normal);
+        }
+
+        [data-theme="dark"] .form-label {
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .stat-card {
+            background: var(--bg-card);
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .stat-value,
+        [data-theme="dark"] .stat-label {
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .alert {
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .breadcrumb-item,
+        [data-theme="dark"] .breadcrumb-item a {
+            color: var(--text-muted);
+        }
+
+        [data-theme="dark"] .breadcrumb-item.active {
+            color: var(--text-dark);
+        }
+
+        [data-theme="dark"] .modal-content {
+            background-color: var(--bg-card);
+            color: var(--text-normal);
+        }
+
+        [data-theme="dark"] .modal-header {
+            border-bottom-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .modal-footer {
+            border-top-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .btn-close {
+            filter: invert(1);
+        }
+
+        [data-theme="dark"] input::placeholder,
+        [data-theme="dark"] textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Dark mode transitions */
+        body,
+        .card,
+        .form-control,
+        .form-select,
+        .stat-card,
+        .sidebar,
+        .top-header {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
         /* Responsive */
         /* Tablet Responsive */
         @media (max-width: 992px) {
@@ -640,6 +781,13 @@
                 padding-left: 4rem;
                 padding-right: 1rem;
                 height: 60px;
+                gap: 1rem;
+            }
+
+            .theme-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
             }
 
             .page-title {
@@ -683,6 +831,14 @@
                 padding-left: 3.5rem;
                 padding-right: 0.75rem;
                 height: 56px;
+                gap: 0.5rem;
+            }
+
+            .theme-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+                padding: 0.375rem;
             }
 
             .page-title {
@@ -1019,6 +1175,9 @@
                 </ol>
             </nav>
         </div>
+        <button class="theme-toggle" id="themeToggle" title="Toggle Theme" aria-label="Toggle Theme">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
     </header>
 
     <!-- Main Content -->
@@ -1202,6 +1361,37 @@
                 }
             }
         });
+
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
+
+        // Load theme from localStorage or default to light
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        setTheme(savedTheme);
+
+        // Theme toggle click handler
+        themeToggle?.addEventListener('click', function() {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        function setTheme(theme) {
+            htmlElement.setAttribute('data-theme', theme);
+
+            if (theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+                themeToggle.setAttribute('title', 'Switch to Light Mode');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+                themeToggle.setAttribute('title', 'Switch to Dark Mode');
+            }
+        }
     </script>
     @stack('scripts')
 </body>
