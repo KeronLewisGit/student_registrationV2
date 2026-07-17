@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\Student;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Cache;
 
 class PdfService
 {
@@ -19,22 +18,17 @@ class PdfService
         return $pdf->download($filename);
     }
 
-    public function generateBulkPdf(Collection $students, ?string $progressId = null)
+    public function generateBulkPdf(Collection $students, bool $returnJson = false)
     {
         // Check if there are any students to export
         if ($students->isEmpty()) {
+            if ($returnJson) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No students found to export. Please adjust your filters.'
+                ], 400);
+            }
             return redirect()->back()->with('error', 'No students found to export. Please adjust your filters.');
-        }
-
-        // Initialize progress tracking
-        if ($progressId) {
-            Cache::put("pdf_progress_{$progressId}", [
-                'status' => 'processing',
-                'progress' => 0,
-                'current' => 0,
-                'total' => $students->count(),
-                'message' => 'Starting export...'
-            ], 600); // 10 minutes expiry
         }
 
         // Create temporary directory for PDFs
@@ -45,24 +39,9 @@ class PdfService
 
         try {
             $total = $students->count();
-            $current = 0;
 
             // Generate individual PDF for each student (full profile with all 127 fields)
             foreach ($students as $student) {
-                $current++;
-
-                // Update progress
-                if ($progressId) {
-                    $progress = round(($current / $total) * 90); // Reserve 10% for zipping
-                    Cache::put("pdf_progress_{$progressId}", [
-                        'status' => 'processing',
-                        'progress' => $progress,
-                        'current' => $current,
-                        'total' => $total,
-                        'message' => "Generating PDF {$current} of {$total}..."
-                    ], 600);
-                }
-
                 $pdf = PDF::loadView('students.pdf', compact('student'));
                 $pdf->setPaper('letter', 'portrait');
 
@@ -70,20 +49,14 @@ class PdfService
                 $pdf->save($tempDir . '/' . $filename);
             }
 
-            // Update progress - Creating ZIP
-            if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'processing',
-                    'progress' => 90,
-                    'current' => $total,
-                    'total' => $total,
-                    'message' => 'Creating ZIP archive...'
-                ], 600);
-            }
-
             // Create ZIP archive
             $zipFilename = 'student_profiles_' . now()->format('Y-m-d_His') . '.zip';
-            $zipPath = storage_path('app/' . $zipFilename);
+            $zipPath = storage_path('app/public/' . $zipFilename);
+
+            // Ensure public storage directory exists
+            if (!file_exists(storage_path('app/public'))) {
+                mkdir(storage_path('app/public'), 0755, true);
+            }
 
             $zip = new \ZipArchive();
             if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
@@ -99,33 +72,21 @@ class PdfService
             array_map('unlink', glob($tempDir . '/*.pdf'));
             rmdir($tempDir);
 
-            // Mark as complete
-            if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'completed',
-                    'progress' => 100,
-                    'current' => $total,
-                    'total' => $total,
-                    'message' => 'Export completed successfully!',
-                    'download_path' => $zipFilename
-                ], 600);
+            // Return JSON response for AJAX or download directly
+            if ($returnJson) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Successfully exported {$total} student profiles!",
+                    'download_url' => url('storage/' . $zipFilename),
+                    'filename' => $zipFilename,
+                    'total' => $total
+                ]);
             }
 
-            // Download the ZIP file and delete after sending
-            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
+            // Direct download
+            return response()->download($zipPath, $zipFilename);
 
         } catch (\Exception $e) {
-            // Mark as failed
-            if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'failed',
-                    'progress' => 0,
-                    'current' => 0,
-                    'total' => $students->count(),
-                    'message' => 'Export failed: ' . $e->getMessage()
-                ], 600);
-            }
-
             // Clean up on error
             if (file_exists($tempDir)) {
                 $files = glob($tempDir . '/*.pdf');
@@ -135,19 +96,15 @@ class PdfService
                 rmdir($tempDir);
             }
 
+            if ($returnJson) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to generate PDF export: ' . $e->getMessage()
+                ], 500);
+            }
+
             return redirect()->back()->with('error', 'Failed to generate PDF export: ' . $e->getMessage());
         }
-    }
-
-    public function getProgress(string $progressId): array
-    {
-        return Cache::get("pdf_progress_{$progressId}", [
-            'status' => 'not_found',
-            'progress' => 0,
-            'current' => 0,
-            'total' => 0,
-            'message' => 'Export session not found.'
-        ]);
     }
 
     public function streamPdf(Student $student)
