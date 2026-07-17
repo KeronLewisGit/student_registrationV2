@@ -33,20 +33,24 @@ class DeployController extends Controller
         $startTime = now();
 
         try {
+            // Set working directory to Laravel root
+            $laravelRoot = base_path();
+            $output[] = "Working directory: {$laravelRoot}\n";
+
             // Step 1: Git Pull
             $output[] = "=== PULLING LATEST CHANGES ===";
-            $gitPull = Process::run('git pull origin master');
+            $gitPull = Process::path($laravelRoot)->run('git pull origin master');
             $output[] = $gitPull->output();
             $output[] = $gitPull->errorOutput();
 
             // Step 2: Install/Update Dependencies (if composer.lock changed)
             $output[] = "\n=== UPDATING DEPENDENCIES ===";
-            $composerInstall = Process::run('composer install --no-interaction --prefer-dist --optimize-autoloader');
+            $composerInstall = Process::path($laravelRoot)->run('composer install --no-interaction --prefer-dist --optimize-autoloader');
             $output[] = $composerInstall->output();
 
             // Step 3: Run Migrations
             $output[] = "\n=== RUNNING MIGRATIONS ===";
-            $migrate = Process::run('php artisan migrate --force');
+            $migrate = Process::path($laravelRoot)->run('php artisan migrate --force');
             $output[] = $migrate->output();
 
             // Step 4: Ensure Storage Symlink
@@ -62,7 +66,7 @@ class DeployController extends Controller
                     $output[] = "Warning: {$publicStorage} exists but is not a symlink!";
                 }
             } else {
-                $storageLink = Process::run('php artisan storage:link');
+                $storageLink = Process::path($laravelRoot)->run('php artisan storage:link');
                 $output[] = $storageLink->output();
                 if ($storageLink->successful()) {
                     $output[] = "✓ Storage symlink created successfully";
@@ -74,21 +78,21 @@ class DeployController extends Controller
             // Step 5: Clear Caches
             $output[] = "\n=== CLEARING CACHES ===";
 
-            $configClear = Process::run('php artisan config:clear');
+            $configClear = Process::path($laravelRoot)->run('php artisan config:clear');
             $output[] = "Config cache cleared: " . ($configClear->successful() ? 'OK' : 'FAILED');
 
-            $cacheClear = Process::run('php artisan cache:clear');
+            $cacheClear = Process::path($laravelRoot)->run('php artisan cache:clear');
             $output[] = "Application cache cleared: " . ($cacheClear->successful() ? 'OK' : 'FAILED');
 
-            $viewClear = Process::run('php artisan view:clear');
+            $viewClear = Process::path($laravelRoot)->run('php artisan view:clear');
             $output[] = "View cache cleared: " . ($viewClear->successful() ? 'OK' : 'FAILED');
 
-            $routeClear = Process::run('php artisan route:clear');
+            $routeClear = Process::path($laravelRoot)->run('php artisan route:clear');
             $output[] = "Route cache cleared: " . ($routeClear->successful() ? 'OK' : 'FAILED');
 
             // Step 6: Optimize
             $output[] = "\n=== OPTIMIZING APPLICATION ===";
-            $optimize = Process::run('php artisan optimize');
+            $optimize = Process::path($laravelRoot)->run('php artisan optimize');
             $output[] = $optimize->output();
 
             $endTime = now();
