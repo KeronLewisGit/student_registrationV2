@@ -24,17 +24,41 @@ class PdfService
     {
         $returnJson = !empty($progressId);
 
+        // Initialize progress IMMEDIATELY if progressId is provided
+        if ($progressId) {
+            try {
+                Cache::put("pdf_progress_{$progressId}", [
+                    'status' => 'initializing',
+                    'step' => 'validating',
+                    'progress' => 0,
+                    'current' => 0,
+                    'total' => $students->count(),
+                    'message' => 'Validating export request...'
+                ], 600);
+            } catch (\Exception $e) {
+                Log::error("Failed to initialize progress tracking", [
+                    'progress_id' => $progressId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
         // Check if there are any students to export
         if ($students->isEmpty()) {
             $errorMsg = 'No students found to export. Please adjust your filters.';
 
             if ($returnJson) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'failed',
-                    'step' => 'validation',
-                    'progress' => 0,
-                    'message' => $errorMsg
-                ], 600);
+                try {
+                    Cache::put("pdf_progress_{$progressId}", [
+                        'status' => 'failed',
+                        'step' => 'validation',
+                        'progress' => 0,
+                        'message' => $errorMsg,
+                        'error_details' => 'No students matched your filter criteria.'
+                    ], 600);
+                } catch (\Exception $e) {
+                    Log::error("Failed to update progress on validation failure", ['error' => $e->getMessage()]);
+                }
 
                 return response()->json([
                     'success' => false,
@@ -50,16 +74,20 @@ class PdfService
         try {
             $total = $students->count();
 
-            // Initialize progress
+            // Update progress to processing
             if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'processing',
-                    'step' => 'initializing',
-                    'progress' => 0,
-                    'current' => 0,
-                    'total' => $total,
-                    'message' => "Starting export of {$total} student profiles..."
-                ], 600);
+                try {
+                    Cache::put("pdf_progress_{$progressId}", [
+                        'status' => 'processing',
+                        'step' => 'initializing',
+                        'progress' => 1,
+                        'current' => 0,
+                        'total' => $total,
+                        'message' => "Starting export of {$total} student profiles..."
+                    ], 600);
+                } catch (\Exception $e) {
+                    Log::error("Failed to update progress to processing", ['error' => $e->getMessage()]);
+                }
             }
 
             // Create temporary directory for PDFs
@@ -82,15 +110,20 @@ class PdfService
                 try {
                     // Update progress
                     if ($progressId) {
-                        $progress = round(($current / $total) * 80); // Reserve 20% for zipping
-                        Cache::put("pdf_progress_{$progressId}", [
-                            'status' => 'processing',
-                            'step' => 'generating_pdfs',
-                            'progress' => $progress,
-                            'current' => $current,
-                            'total' => $total,
-                            'message' => "Generating PDF {$current} of {$total}: {$student->student_name}"
-                        ], 600);
+                        $progress = max(1, round(($current / $total) * 80)); // Reserve 20% for zipping, min 1%
+                        try {
+                            Cache::put("pdf_progress_{$progressId}", [
+                                'status' => 'processing',
+                                'step' => 'generating_pdfs',
+                                'progress' => $progress,
+                                'current' => $current,
+                                'total' => $total,
+                                'message' => "Generating PDF {$current} of {$total}: {$student->student_name}"
+                            ], 600);
+                        } catch (\Exception $e) {
+                            // Log but don't fail the export if cache update fails
+                            Log::warning("Failed to update progress for student {$current}", ['error' => $e->getMessage()]);
+                        }
                     }
 
                     $pdf = PDF::loadView('students.pdf', compact('student'));
@@ -118,14 +151,18 @@ class PdfService
 
             // Update progress - Creating ZIP
             if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'processing',
-                    'step' => 'creating_zip',
-                    'progress' => 85,
-                    'current' => $total,
-                    'total' => $total,
-                    'message' => 'Creating ZIP archive...'
-                ], 600);
+                try {
+                    Cache::put("pdf_progress_{$progressId}", [
+                        'status' => 'processing',
+                        'step' => 'creating_zip',
+                        'progress' => 85,
+                        'current' => $total,
+                        'total' => $total,
+                        'message' => 'Creating ZIP archive...'
+                    ], 600);
+                } catch (\Exception $e) {
+                    Log::warning("Failed to update progress for ZIP creation", ['error' => $e->getMessage()]);
+                }
             }
 
             // Create ZIP archive
@@ -203,18 +240,22 @@ class PdfService
 
             // Mark as complete
             if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'completed',
-                    'step' => 'completed',
-                    'progress' => 100,
-                    'current' => $total,
-                    'total' => $total,
-                    'message' => $successMsg,
-                    'download_url' => url('storage/' . $zipFilename),
-                    'filename' => $zipFilename,
-                    'failed_count' => count($failedStudents),
-                    'symlink_exists' => $symlinkExists
-                ], 600);
+                try {
+                    Cache::put("pdf_progress_{$progressId}", [
+                        'status' => 'completed',
+                        'step' => 'completed',
+                        'progress' => 100,
+                        'current' => $total,
+                        'total' => $total,
+                        'message' => $successMsg,
+                        'download_url' => url('storage/' . $zipFilename),
+                        'filename' => $zipFilename,
+                        'failed_count' => count($failedStudents),
+                        'symlink_exists' => $symlinkExists
+                    ], 600);
+                } catch (\Exception $e) {
+                    Log::error("Failed to mark export as complete in cache", ['error' => $e->getMessage()]);
+                }
             }
 
             // Return JSON response for AJAX or download directly
@@ -266,13 +307,17 @@ class PdfService
             }
 
             if ($progressId) {
-                Cache::put("pdf_progress_{$progressId}", [
-                    'status' => 'failed',
-                    'step' => 'error',
-                    'progress' => 0,
-                    'message' => $errorMessage,
-                    'error_details' => $errorDetails
-                ], 600);
+                try {
+                    Cache::put("pdf_progress_{$progressId}", [
+                        'status' => 'failed',
+                        'step' => 'error',
+                        'progress' => 0,
+                        'message' => $errorMessage,
+                        'error_details' => $errorDetails
+                    ], 600);
+                } catch (\Exception $cacheError) {
+                    Log::error("Failed to mark export as failed in cache", ['error' => $cacheError->getMessage()]);
+                }
             }
 
             if ($returnJson) {
@@ -289,14 +334,41 @@ class PdfService
 
     public function getProgress(string $progressId): array
     {
-        return Cache::get("pdf_progress_{$progressId}", [
-            'status' => 'not_found',
-            'step' => 'unknown',
-            'progress' => 0,
-            'current' => 0,
-            'total' => 0,
-            'message' => 'Export session not found or expired.'
-        ]);
+        try {
+            $progress = Cache::get("pdf_progress_{$progressId}");
+
+            if (!$progress) {
+                return [
+                    'status' => 'not_found',
+                    'step' => 'unknown',
+                    'progress' => 0,
+                    'current' => 0,
+                    'total' => 0,
+                    'message' => 'Export session not found or expired.'
+                ];
+            }
+
+            // Ensure progress value is numeric and within bounds
+            if (isset($progress['progress'])) {
+                $progress['progress'] = max(0, min(100, (int)$progress['progress']));
+            }
+
+            return $progress;
+        } catch (\Exception $e) {
+            Log::error("Failed to retrieve progress", [
+                'progress_id' => $progressId,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'status' => 'error',
+                'step' => 'cache_error',
+                'progress' => 0,
+                'current' => 0,
+                'total' => 0,
+                'message' => 'Unable to retrieve export progress.'
+            ];
+        }
     }
 
     public function streamPdf(Student $student)

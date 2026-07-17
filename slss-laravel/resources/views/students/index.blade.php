@@ -490,6 +490,10 @@ $(document).ready(function() {
         $('#exportCloseBtn').prop('disabled', true);
         $('#exportDownloadBtn').addClass('d-none').attr('href', '#');
 
+        // Track last known progress to enforce monotonic increase
+        let lastProgress = 0;
+        let progressInterval = null;
+
         // Start the export process (non-blocking request)
         $.ajax({
             url: '{{ route("students.bulk-pdf") }}',
@@ -506,21 +510,27 @@ $(document).ready(function() {
                     $('#exportMessage').html('<strong>Export timed out!</strong>');
                     $('#exportDetails').html('<span class="text-danger">The export process took too long. Please try with fewer students or contact support.</span>');
                     $('#exportCloseBtn').prop('disabled', false);
-                    clearInterval(progressInterval);
+                    if (progressInterval) clearInterval(progressInterval);
                 }
             }
         });
 
-        // Poll for progress updates every 1.5 seconds
-        let progressInterval = setInterval(function() {
-            $.ajax({
-                url: '{{ route("students.bulk-pdf-progress") }}',
-                method: 'GET',
-                data: { progress_id: progressId },
-                dataType: 'json',
-                success: function(progress) {
-                    // Update progress bar
-                    $('#exportProgressBar').css('width', progress.progress + '%');
+        // Wait 1 second before starting to poll (give server time to initialize)
+        setTimeout(function() {
+            // Poll for progress updates every 1.5 seconds
+            progressInterval = setInterval(function() {
+                $.ajax({
+                    url: '{{ route("students.bulk-pdf-progress") }}',
+                    method: 'GET',
+                    data: { progress_id: progressId },
+                    dataType: 'json',
+                    success: function(progress) {
+                        // Enforce monotonic increase - progress should never decrease
+                        let currentProgress = Math.max(lastProgress, progress.progress || 0);
+                        lastProgress = currentProgress;
+
+                        // Update progress bar (only if increased)
+                        $('#exportProgressBar').css('width', currentProgress + '%');
 
                     // Update message
                     $('#exportMessage').text(progress.message || 'Processing...');
@@ -594,6 +604,7 @@ $(document).ready(function() {
                 }
             });
         }, 1500); // Poll every 1.5 seconds
+        }, 1000); // Wait 1 second before starting to poll
     });
 });
 </script>
