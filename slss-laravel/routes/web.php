@@ -39,4 +39,5 @@ Route::middleware(['auth'])->group(function () {
 
     // User Management Routes (Admin only - authorization in controller)
     Route::resource('users', UserController::class)->except(['show']);
+    Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
 });

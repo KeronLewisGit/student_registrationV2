@@ -101,4 +101,16 @@ class UserController extends Controller
             ->route('users.index')
             ->with('success', "User '{$name}' deleted successfully.");
     }
+
+    public function resetPassword(Request $request, User $user)
+    {
+        $validated = $request->validate([
+            'new_password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return back()->with('success', "Password reset successfully for '{$user->name}'.");
+    }
 }

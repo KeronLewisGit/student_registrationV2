@@ -95,12 +95,12 @@
         .table-actions {
             flex-direction: column;
             gap: 0.25rem;
-            min-width: 40px;
+            min-width: 44px;
         }
 
         .table-actions .btn-sm {
             width: 100%;
-            min-height: 36px;
+            min-height: 40px;
             padding: 0.5rem;
             display: flex;
             align-items: center;
@@ -120,6 +120,22 @@
         /* Smaller font for table */
         #usersTable {
             font-size: 0.8rem;
+        }
+    }
+
+    /* Modal responsive */
+    @media (max-width: 576px) {
+        .modal-dialog {
+            margin: 0.5rem;
+        }
+
+        .modal-body .form-control {
+            min-height: 44px;
+            font-size: 16px; /* Prevents iOS zoom */
+        }
+
+        .modal-footer .btn {
+            min-height: 44px;
         }
     }
 </style>
@@ -230,6 +246,13 @@
                                        title="Edit User">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-warning"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#resetPasswordModal{{ $user->id }}"
+                                            title="Reset Password">
+                                        <i class="fas fa-key"></i>
+                                    </button>
                                     @if($user->id !== auth()->id())
                                         <form action="{{ route('users.destroy', $user) }}"
                                               method="POST"
@@ -257,6 +280,67 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- Password Reset Modals -->
+            @foreach($users as $user)
+            <div class="modal fade" id="resetPasswordModal{{ $user->id }}" tabindex="-1" aria-labelledby="resetPasswordModalLabel{{ $user->id }}" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header bg-warning text-white">
+                            <h5 class="modal-title" id="resetPasswordModalLabel{{ $user->id }}">
+                                <i class="fas fa-key me-2"></i>Reset Password for {{ $user->name }}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="{{ route('users.reset-password', $user) }}" method="POST">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Administrator Password Reset</strong><br>
+                                    You are about to reset the password for <strong>{{ $user->name }}</strong> ({{ $user->email }}).
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="new_password{{ $user->id }}" class="form-label">New Password *</label>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="new_password{{ $user->id }}"
+                                           name="new_password"
+                                           required
+                                           minlength="8"
+                                           placeholder="Enter new password (minimum 8 characters)">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="new_password_confirmation{{ $user->id }}" class="form-label">Confirm New Password *</label>
+                                    <input type="password"
+                                           class="form-control"
+                                           id="new_password_confirmation{{ $user->id }}"
+                                           name="new_password_confirmation"
+                                           required
+                                           minlength="8"
+                                           placeholder="Confirm new password">
+                                </div>
+
+                                <div class="alert alert-warning mb-0">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Important:</strong> Make sure to securely communicate this new password to the user.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-key me-1"></i>Reset Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            @endforeach
         @endif
     </div>
 </div>
