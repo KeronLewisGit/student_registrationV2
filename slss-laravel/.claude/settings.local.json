@@ -38,7 +38,10 @@
       "Bash(git add .gitattributes)",
       "Bash(git add resources/views/layouts/app.blade.php .claude/settings.local.json)",
       "Bash(git add -A)",
-      "Bash(php artisan storage:link)"
+      "Bash(php artisan storage:link)",
+      "Bash(php artisan config:clear)",
+      "Bash(php artisan route:clear)",
+      "Bash(php artisan cache:clear)"
     ],
     "deny": [],
     "ask": []

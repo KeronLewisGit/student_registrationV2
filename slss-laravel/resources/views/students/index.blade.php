@@ -469,9 +469,12 @@ $(document).ready(function() {
         });
     }
 
-    // PDF Export with Loading Indicator
+    // PDF Export with Real-Time Progress Tracking
     $('#exportToPdfBtn').on('click', function() {
         const filters = $(this).data('filters');
+
+        // Generate unique progress ID
+        const progressId = 'export_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
         // Show modal
         const modal = new bootstrap.Modal(document.getElementById('pdfExportModal'));
@@ -481,76 +484,110 @@ $(document).ready(function() {
         $('#exportSpinner').removeClass('d-none');
         $('#exportSuccess').addClass('d-none');
         $('#exportError').addClass('d-none');
-        $('#exportProgressBar').css('width', '100%').removeClass('bg-danger').addClass('bg-info progress-bar-animated');
-        $('#exportMessage').text('Generating PDFs and creating ZIP archive...');
-        $('#exportDetails').html('This may take a few moments depending on the number of students.');
+        $('#exportProgressBar').css('width', '0%').removeClass('bg-danger bg-success').addClass('bg-info progress-bar-animated');
+        $('#exportMessage').text('Initializing export...');
+        $('#exportDetails').html('Starting PDF generation...');
         $('#exportCloseBtn').prop('disabled', true);
         $('#exportDownloadBtn').addClass('d-none').attr('href', '#');
 
-        // Make AJAX request to generate PDFs
+        // Start the export process (non-blocking request)
         $.ajax({
             url: '{{ route("students.bulk-pdf") }}',
             method: 'GET',
-            data: {...filters, ajax: 1},
+            data: {...filters, progress_id: progressId},
             dataType: 'json',
             timeout: 300000, // 5 minutes timeout
-            success: function(response) {
-                if (response.success) {
-                    // Export completed successfully
-                    $('#exportProgressBar')
-                        .removeClass('progress-bar-animated')
-                        .addClass('bg-success');
-
-                    $('#exportSpinner').addClass('d-none');
-                    $('#exportSuccess').removeClass('d-none');
-                    $('#exportMessage').html('<strong>Export completed successfully!</strong>');
-                    $('#exportDetails').html(`<span class="text-success">${response.message}</span>`);
-                    $('#exportCloseBtn').prop('disabled', false);
-
-                    // Show download button
-                    $('#exportDownloadBtn')
-                        .removeClass('d-none')
-                        .attr('href', response.download_url)
-                        .attr('download', response.filename);
-
-                    // Trigger automatic download
-                    window.location.href = response.download_url;
-
-                } else {
-                    // Export failed
-                    $('#exportProgressBar')
-                        .removeClass('bg-info progress-bar-animated')
-                        .addClass('bg-danger');
-
+            error: function(xhr, status, error) {
+                // Only handle catastrophic errors here (network failure, etc.)
+                if (status === 'timeout') {
+                    $('#exportProgressBar').removeClass('bg-info progress-bar-animated').addClass('bg-danger').css('width', '100%');
                     $('#exportSpinner').addClass('d-none');
                     $('#exportError').removeClass('d-none');
-                    $('#exportMessage').html('<strong>Export failed!</strong>');
-                    $('#exportDetails').html(`<span class="text-danger">${response.message}</span>`);
+                    $('#exportMessage').html('<strong>Export timed out!</strong>');
+                    $('#exportDetails').html('<span class="text-danger">The export process took too long. Please try with fewer students or contact support.</span>');
                     $('#exportCloseBtn').prop('disabled', false);
+                    clearInterval(progressInterval);
                 }
-            },
-            error: function(xhr, status, error) {
-                // Handle errors
-                let errorMessage = 'Failed to generate PDF export.';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (status === 'timeout') {
-                    errorMessage = 'Export timed out. Please try with fewer students or contact support.';
-                } else if (error) {
-                    errorMessage = error;
-                }
-
-                $('#exportProgressBar')
-                    .removeClass('bg-info progress-bar-animated')
-                    .addClass('bg-danger');
-
-                $('#exportSpinner').addClass('d-none');
-                $('#exportError').removeClass('d-none');
-                $('#exportMessage').html('<strong>Export failed!</strong>');
-                $('#exportDetails').html(`<span class="text-danger">${errorMessage}</span>`);
-                $('#exportCloseBtn').prop('disabled', false);
             }
         });
+
+        // Poll for progress updates every 1.5 seconds
+        let progressInterval = setInterval(function() {
+            $.ajax({
+                url: '{{ route("students.bulk-pdf-progress") }}',
+                method: 'GET',
+                data: { progress_id: progressId },
+                dataType: 'json',
+                success: function(progress) {
+                    // Update progress bar
+                    $('#exportProgressBar').css('width', progress.progress + '%');
+
+                    // Update message
+                    $('#exportMessage').text(progress.message || 'Processing...');
+
+                    // Update details with current/total if available
+                    if (progress.current && progress.total) {
+                        $('#exportDetails').html(`Processing ${progress.current} of ${progress.total} students...`);
+                    } else {
+                        $('#exportDetails').html(progress.step || 'Working...');
+                    }
+
+                    // Handle completion
+                    if (progress.status === 'completed') {
+                        clearInterval(progressInterval);
+
+                        $('#exportProgressBar')
+                            .removeClass('progress-bar-animated')
+                            .addClass('bg-success')
+                            .css('width', '100%');
+
+                        $('#exportSpinner').addClass('d-none');
+                        $('#exportSuccess').removeClass('d-none');
+                        $('#exportMessage').html('<strong>Export completed successfully!</strong>');
+                        $('#exportDetails').html(`<span class="text-success">${progress.message}</span>`);
+                        $('#exportCloseBtn').prop('disabled', false);
+
+                        // Show download button
+                        if (progress.download_url) {
+                            $('#exportDownloadBtn')
+                                .removeClass('d-none')
+                                .attr('href', progress.download_url)
+                                .attr('download', progress.filename);
+
+                            // Trigger automatic download
+                            window.location.href = progress.download_url;
+                        }
+                    }
+
+                    // Handle failure
+                    if (progress.status === 'failed') {
+                        clearInterval(progressInterval);
+
+                        $('#exportProgressBar')
+                            .removeClass('bg-info progress-bar-animated')
+                            .addClass('bg-danger')
+                            .css('width', '100%');
+
+                        $('#exportSpinner').addClass('d-none');
+                        $('#exportError').removeClass('d-none');
+                        $('#exportMessage').html('<strong>Export failed!</strong>');
+
+                        // Show detailed error information
+                        let errorHtml = `<span class="text-danger"><strong>Error:</strong> ${progress.message}</span>`;
+                        if (progress.error_details) {
+                            errorHtml += `<br><span class="text-muted"><strong>Details:</strong> ${progress.error_details}</span>`;
+                        }
+                        $('#exportDetails').html(errorHtml);
+                        $('#exportCloseBtn').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    // If progress polling fails, don't stop the interval immediately
+                    // The export might still be running
+                    console.log('Progress poll failed, retrying...');
+                }
+            });
+        }, 1500); // Poll every 1.5 seconds
     });
 });
 </script>

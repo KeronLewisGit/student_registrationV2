@@ -95,9 +95,25 @@ class StudentController extends Controller
     public function generateBulkPdf(Request $request)
     {
         $students = $this->studentService->getFilteredStudents($request->all());
-        $returnJson = $request->wantsJson() || $request->ajax() || $request->input('ajax');
+        $progressId = $request->input('progress_id');
 
-        return $this->pdfService->generateBulkPdf($students, $returnJson);
+        return $this->pdfService->generateBulkPdf($students, $progressId);
+    }
+
+    public function getBulkPdfProgress(Request $request)
+    {
+        $progressId = $request->input('progress_id');
+
+        if (!$progressId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Progress ID is required.'
+            ], 400);
+        }
+
+        $progress = $this->pdfService->getProgress($progressId);
+
+        return response()->json($progress);
     }
 
     public function print(Student $student)
