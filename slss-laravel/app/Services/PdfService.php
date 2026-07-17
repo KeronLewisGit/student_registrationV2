@@ -20,12 +20,60 @@ class PdfService
 
     public function generateBulkPdf(Collection $students)
     {
-        $pdf = PDF::loadView('students.bulk-pdf', compact('students'));
-        $pdf->setPaper('letter', 'portrait');
+        // Check if there are any students to export
+        if ($students->isEmpty()) {
+            return redirect()->back()->with('error', 'No students found to export. Please adjust your filters.');
+        }
 
-        $filename = 'profiles_' . now()->format('Y-m-d') . '.pdf';
+        // Create temporary directory for PDFs
+        $tempDir = storage_path('app/temp_pdfs_' . time());
+        if (!file_exists($tempDir)) {
+            mkdir($tempDir, 0755, true);
+        }
 
-        return $pdf->download($filename);
+        try {
+            // Generate individual PDF for each student (full profile with all 127 fields)
+            foreach ($students as $student) {
+                $pdf = PDF::loadView('students.pdf', compact('student'));
+                $pdf->setPaper('letter', 'portrait');
+
+                $filename = 'profile_' . str_replace(' ', '_', strtolower($student->student_name)) . '.pdf';
+                $pdf->save($tempDir . '/' . $filename);
+            }
+
+            // Create ZIP archive
+            $zipFilename = 'student_profiles_' . now()->format('Y-m-d_His') . '.zip';
+            $zipPath = storage_path('app/' . $zipFilename);
+
+            $zip = new \ZipArchive();
+            if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
+                // Add all PDFs to the zip
+                $files = glob($tempDir . '/*.pdf');
+                foreach ($files as $file) {
+                    $zip->addFile($file, basename($file));
+                }
+                $zip->close();
+            }
+
+            // Clean up temporary PDFs
+            array_map('unlink', glob($tempDir . '/*.pdf'));
+            rmdir($tempDir);
+
+            // Download the ZIP file and delete after sending
+            return response()->download($zipPath, $zipFilename)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            // Clean up on error
+            if (file_exists($tempDir)) {
+                $files = glob($tempDir . '/*.pdf');
+                if ($files) {
+                    array_map('unlink', $files);
+                }
+                rmdir($tempDir);
+            }
+
+            return redirect()->back()->with('error', 'Failed to generate PDF export: ' . $e->getMessage());
+        }
     }
 
     public function streamPdf(Student $student)

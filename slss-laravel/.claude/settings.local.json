@@ -30,7 +30,9 @@
       "Bash(php artisan view:cache)",
       "Bash(php artisan view:clear)",
       "Bash(php -l app/Http/Controllers/DeployController.php)",
-      "Bash(php artisan route:list --name=deploy)"
+      "Bash(php artisan route:list --name=deploy)",
+      "Bash(php -l app/Services/PdfService.php)",
+      "Bash(php artisan route:list --name=students.bulk-pdf)"
     ],
     "deny": [],
     "ask": []
