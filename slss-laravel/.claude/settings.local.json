@@ -28,7 +28,9 @@
       "Bash(php artisan route:list --name=users)",
       "Bash(php -l app/Http/Controllers/UserController.php)",
       "Bash(php artisan view:cache)",
-      "Bash(php artisan view:clear)"
+      "Bash(php artisan view:clear)",
+      "Bash(php -l app/Http/Controllers/DeployController.php)",
+      "Bash(php artisan route:list --name=deploy)"
     ],
     "deny": [],
     "ask": []

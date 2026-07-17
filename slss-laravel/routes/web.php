@@ -6,6 +6,11 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\ImportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
+use App\Http\Controllers\DeployController;
+
+// Deployment Routes (No Auth Required - CSRF Exempted in Middleware)
+Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
+Route::post('/deploy', [DeployController::class, 'deploy'])->name('deploy');
 
 // Webhook Routes (No Auth Required - CSRF Exempted in Middleware)
 Route::post('/webhook/student-registration', [WebhookController::class, 'handleStudentRegistration'])
