@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     // CSV Import Routes (Admin/Staff only)
     Route::middleware(['can:edit-students'])->group(function () {
         Route::get('/import', [ImportController::class, 'index'])->name('import.index');
+        Route::get('/import/template', [ImportController::class, 'template'])->name('import.template');
         Route::post('/import', [ImportController::class, 'import'])->middleware('throttle:10,1')->name('import.store');
     });
 

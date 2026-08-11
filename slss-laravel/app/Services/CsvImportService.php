@@ -10,6 +10,25 @@ use Illuminate\Support\Facades\Validator;
 class CsvImportService
 {
     /**
+     * Columns declared NOT NULL with an empty-string default.
+     *
+     * A blank CSV cell must be omitted rather than sent as null, or the
+     * insert violates the constraint and aborts the whole import.
+     *
+     * @var array<int, string>
+     */
+    protected const NOT_NULL_COLUMNS = [
+        'student_family_crisis',
+        'student_receiving_counselling',
+        'student_physical_disabilities',
+        'student_learning_disabilities',
+        'student_educational_aid',
+        'student_special_sea_concessions',
+        'student_emotional_factors',
+        'student_other_intervention_information',
+    ];
+
+    /**
      * Mapping of CSV column names to database column names.
      *
      * @var array
@@ -85,6 +104,20 @@ class CsvImportService
         'registrant_nationality' => 'registrant_nationality',
         'registrant_email' => 'registrant_email',
     ];
+
+    /**
+     * Get the CSV column headers this importer accepts, in order.
+     *
+     * These are the exact header names the import expects. Some retain
+     * historical misspellings (e.g. student_birth_certficate_pin) which
+     * must be preserved or those columns are ignored on import.
+     *
+     * @return array<int, string>
+     */
+    public function getExpectedHeaders(): array
+    {
+        return array_keys($this->mapping);
+    }
 
     /**
      * Import student records from a CSV file.
@@ -202,6 +235,14 @@ class CsvImportService
             if (!empty($result[$dateField])) {
                 $timestamp = strtotime($result[$dateField]);
                 $result[$dateField] = $timestamp ? date('Y-m-d', $timestamp) : null;
+            }
+        }
+
+        // These columns are NOT NULL with an empty-string default. Drop the key
+        // when blank so the database default applies instead of inserting null.
+        foreach (self::NOT_NULL_COLUMNS as $column) {
+            if (!isset($result[$column])) {
+                unset($result[$column]);
             }
         }
 
