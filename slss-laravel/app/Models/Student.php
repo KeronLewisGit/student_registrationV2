@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class Student extends Model
@@ -17,6 +18,38 @@ class Student extends Model
      * @var array<int, string>
      */
     public const FORM_CLASSES = ['1A', '1B', '1C', '1D', '1E', '1F'];
+
+    /**
+     * Build the list of stored values that are equivalent to a filter class.
+     *
+     * The form_1_class column holds several historical formats: legacy imports
+     * wrote the bare stream ("A"), newer ones write the full class ("1A"), and
+     * hand-entered rows may carry spacing or lower case ("form 1a", "1 a").
+     * The filter always presents the canonical "1A" form, so map it back to
+     * every variant that means the same class.
+     *
+     * @param  string  $class
+     * @return array<int, string>
+     */
+    public static function classVariants($class): array
+    {
+        $normalized = strtoupper(trim((string) $class));
+
+        // Reduce "FORM 1A", "1 A", "F1A" and friends down to the bare stream letter.
+        $stream = preg_replace('/[^A-Z0-9]/', '', $normalized);
+        $stream = preg_replace('/^(?:FORM|F)?1?/', '', $stream, 1);
+
+        if ($stream === '' || $stream === null) {
+            return array_values(array_filter([$normalized]));
+        }
+
+        return array_values(array_unique([
+            '1' . $stream,   // 1A
+            $stream,         // A
+            '1 ' . $stream,  // 1 A
+            'Form 1' . $stream,
+        ]));
+    }
 
     protected $fillable = [
         // Student Basic Information
@@ -137,7 +170,17 @@ class Student extends Model
     public function scopeByClass($query, $class)
     {
         if ($class && $class !== '0') {
-            return $query->where('form_1_class', $class);
+            // Compare on a normalized column (upper case, no spaces/punctuation)
+            // so "1A", "1 a" and "Form 1A" all match the same stored rows.
+            $variants = array_map(
+                fn ($variant) => preg_replace('/[^A-Z0-9]/', '', strtoupper($variant)),
+                self::classVariants($class)
+            );
+
+            return $query->whereIn(
+                DB::raw("UPPER(REPLACE(REPLACE(REPLACE(form_1_class, ' ', ''), '-', ''), '.', ''))"),
+                array_values(array_unique($variants))
+            );
         }
         return $query;
     }

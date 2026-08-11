@@ -232,8 +232,13 @@
                 <label for="student_class" class="form-label">Form Class</label>
                 <select name="student_class" id="student_class" class="form-select">
                     <option value="0">All Classes</option>
+                    @php
+                        // The stored value may be "A" or "1A"; normalize both sides so the
+                        // dropdown highlights the right option whichever format came back.
+                        $selectedClass = \App\Models\Student::classVariants(request('student_class'));
+                    @endphp
                     @foreach($classes as $class)
-                        <option value="{{ $class }}" {{ request('student_class') == $class ? 'selected' : '' }}>
+                        <option value="{{ $class }}" {{ in_array($class, $selectedClass, true) ? 'selected' : '' }}>
                             {{ $class }}
                         </option>
                     @endforeach
