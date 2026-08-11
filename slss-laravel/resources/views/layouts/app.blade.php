@@ -1119,6 +1119,27 @@
                 </div>
             </div>
 
+            @can('view-reports')
+            <!-- Reports Menu with Submenu -->
+            <div class="sidebar-menu-item">
+                <a href="#reportsSubmenu" class="sidebar-menu-link {{ request()->routeIs('reports.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('reports.*') ? 'true' : 'false' }}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                    <i class="fas fa-chevron-down menu-arrow"></i>
+                </a>
+                <div class="sidebar-submenu collapse {{ request()->routeIs('reports.*') ? 'show' : '' }}" id="reportsSubmenu">
+                    <a href="{{ route('reports.index') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.index') ? 'active' : '' }}">
+                        <i class="fas fa-folder-open"></i>
+                        <span>All Reports</span>
+                    </a>
+                    <a href="{{ route('reports.show', 'all-students') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.show') ? 'active' : '' }}">
+                        <i class="fas fa-users"></i>
+                        <span>All Students</span>
+                    </a>
+                </div>
+            </div>
+            @endcan
+
             @can('import-students')
             <!-- Data Management Menu with Submenu -->
             <div class="sidebar-menu-item">

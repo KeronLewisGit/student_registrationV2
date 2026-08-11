@@ -7,6 +7,7 @@ use App\Http\Controllers\ImportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\DeployController;
+use App\Http\Controllers\ReportController;
 
 // Deployment Routes (No Auth Required - CSRF Exempted in Middleware)
 Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
@@ -37,6 +38,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/students/{student}/print', [StudentController::class, 'print'])->name('students.print');
     Route::get('/students-bulk-pdf', [StudentController::class, 'generateBulkPdf'])->name('students.bulk-pdf');
     Route::get('/students-bulk-pdf-progress', [StudentController::class, 'getBulkPdfProgress'])->name('students.bulk-pdf-progress');
+
+    // Reports Routes (Admin/Staff only - authorization in controller)
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/all-students/export', [ReportController::class, 'allStudents'])->name('reports.all-students.export');
+    Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
 
     // CSV Import Routes (Admin/Staff only)
     Route::middleware(['can:edit-students'])->group(function () {

@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Validator;
 
 class CsvImportService
 {
+    /**
+     * Mapping of CSV column names to database column names.
+     *
+     * @var array
+     */
     protected array $mapping = [
         'student_passport_photo' => 'student_passport_photo',
         'form_1_class' => 'form_1_class',
@@ -81,6 +86,13 @@ class CsvImportService
         'registrant_email' => 'registrant_email',
     ];
 
+    /**
+     * Import student records from a CSV file.
+     *
+     * @param  \Illuminate\Http\UploadedFile  $file
+     * @return array
+     * @throws \RuntimeException
+     */
     public function import(UploadedFile $file): array
     {
         $handle = fopen($file->getRealPath(), 'r');
@@ -163,6 +175,12 @@ class CsvImportService
         }
     }
 
+    /**
+     * Map CSV data to student model attributes.
+     *
+     * @param  array  $data
+     * @return array
+     */
     protected function mapCsvToStudentData(array $data): array
     {
         $result = [];

@@ -11,6 +11,13 @@ class Student extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * The valid Form 1 class values.
+     *
+     * @var array<int, string>
+     */
+    public const FORM_CLASSES = ['1A', '1B', '1C', '1D', '1E', '1F'];
+
     protected $fillable = [
         // Student Basic Information
         'form_1_class', 'student_name', 'student_gender', 'citizen_type',

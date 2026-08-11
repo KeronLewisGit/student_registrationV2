@@ -328,7 +328,7 @@
                 @endif
                 @if($student->form_1_class)
                     <span class="badge-status" style="background: white; color: #667eea;">
-                        <i class="fas fa-graduation-cap me-1"></i>Form {{ $student->form_1_class }}
+                        <i class="fas fa-graduation-cap me-1"></i>{{ $student->form_1_class }}
                     </span>
                 @endif
                 @if($student->student_sea_number)

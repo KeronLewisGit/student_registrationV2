@@ -23,7 +23,7 @@ class StudentController extends Controller
         // Get filter options
         $years = Student::getRegistrationYears();
         $studentNames = Student::getStudentNames();
-        $classes = ['1A', '1B', '1C', '1D', '1E', '1F'];
+        $classes = Student::FORM_CLASSES;
 
         return view('students.index', compact('students', 'years', 'studentNames', 'classes'));
     }

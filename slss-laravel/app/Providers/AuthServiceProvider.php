@@ -23,5 +23,9 @@ class AuthServiceProvider extends ServiceProvider
         Gate::define('import-students', function (User $user) {
             return in_array($user->role, ['admin', 'staff']);
         });
+
+        Gate::define('view-reports', function (User $user) {
+            return in_array($user->role, ['admin', 'staff']);
+        });
     }
 }

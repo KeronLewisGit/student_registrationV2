@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Student;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreStudentRequest extends FormRequest
 {
@@ -15,13 +17,14 @@ class StoreStudentRequest extends FormRequest
     {
         return [
             // Student Basic Information (optimized based on actual data)
-            'student_name' => 'required|string',
-            'form_1_class' => 'nullable|string|in:A,B,C,D,E', // Only specific classes
+            'student_first_name' => 'required|string',
+            'student_last_name' => 'required|string',
+            'form_1_class' => ['nullable', 'string', Rule::in(Student::FORM_CLASSES)],
             'student_gender' => 'nullable|string|in:Male,Female,Other',
-            'citizen_type' => 'nullable|string|in:Birth,Naturalization,Other',
+            'citizen_type' => 'nullable|string|in:Birth,Descent,Naturalisation',
             'student_current_address' => 'nullable|string',
             'student_dob' => 'nullable|date|before:today|after:1990-01-01',
-            'student_birth_certificate' => 'nullable|string', // URL or path
+            'student_birth_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_birth_certificate_pin' => 'nullable|string|max:20|unique:students,student_birth_certificate_pin', // VARCHAR(20) UNIQUE
             'student_religion' => 'nullable|string',
             'student_country_of_birth' => 'nullable|string',
@@ -29,18 +32,20 @@ class StoreStudentRequest extends FormRequest
             'student_ethnicity' => 'nullable|string',
             'student_contact' => 'nullable|string', // Phone numbers (868)xxx-xxxx format
             'student_email' => 'nullable|email',
-            'student_passport_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:5120', // Allow PDF, 5MB max
+            'student_passport_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
 
             // SEA Information
             'student_sea_date' => 'nullable|date|after:2000-01-01',
             'student_primary_school' => 'nullable|string',
-            'student_sea_slip' => 'nullable|string', // URL or path
+            'student_sea_slip' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_sea_number' => 'nullable|string',
 
             // Transfer Information
             'student_transfer_status' => 'nullable|string|in:Yes,No',
-            'student_transfer_slip' => 'nullable|string', // URL or path
+            'student_transfer_slip' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_transfer_date' => 'nullable|date',
+            'student_transfer_reason' => 'nullable|string',
+            'student_previous_form_class' => 'nullable|string',
             'student_previous_secondary_school' => 'nullable|string',
             'student_previous_school_location' => 'nullable|string',
 
@@ -48,7 +53,7 @@ class StoreStudentRequest extends FormRequest
             'student_medical_condition' => 'nullable|string',
             'student_bloodtype' => 'nullable|string', // "Blood Group A", "Blood Group O", etc.
             'student_allergies' => 'nullable|string',
-            'student_immunization_status' => 'nullable|string|in:Yes,No,Unknown',
+            'student_immunization_status' => 'nullable|string',
 
             // Special Needs & Intervention (can be empty string, not required)
             'student_family_crisis' => 'nullable|string',
@@ -61,14 +66,20 @@ class StoreStudentRequest extends FormRequest
             'student_other_intervention_information' => 'nullable|string',
 
             // Personal Preferences
-            'student_school_feeding_option' => 'nullable|string|in:Both Breakfast and Lunch,Breakfast Only,Lunch Only,None',
+            'student_school_feeding_option' => 'nullable|string|in:Yes,No',
             'student_social_welfare_status' => 'nullable|string|in:Yes,No',
+            'student_social_welfare_detail' => 'nullable|string',
             'student_mode_of_transport' => 'nullable|string',
-            'student_access_to_device' => 'nullable|string|in:Yes,No',
+            'student_access_to_device' => 'nullable|string',
+            'student_device_shared' => 'nullable|string|in:Yes,No',
+            'student_reliable_internet' => 'nullable|string|in:Yes,No',
+            'student_internet_provider' => 'nullable|string',
+            'student_online_tools' => 'nullable|string',
 
             // Mother Information
             'is_mother_active_or_deceased' => 'nullable|string|in:Alive,Deceased',
             'mother_name' => 'nullable|string',
+            'mother_death_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'mother_identification_type' => 'nullable|string',
             'mother_identification_number' => 'nullable|string',
             'mother_home_address' => 'nullable|string',
@@ -80,6 +91,7 @@ class StoreStudentRequest extends FormRequest
             // Father Information
             'is_father_active_or_deceased' => 'nullable|string|in:Alive,Deceased',
             'father_name' => 'nullable|string',
+            'father_death_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'father_identification_type' => 'nullable|string',
             'father_identification_number' => 'nullable|string',
             'father_home_address' => 'nullable|string',
@@ -108,11 +120,12 @@ class StoreStudentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'student_name.required' => 'Student name is required.',
+            'student_first_name.required' => 'Student first name is required.',
+            'student_last_name.required' => 'Student last name is required.',
             'student_dob.before' => 'Date of birth must be in the past.',
             'student_birth_certificate_pin.unique' => 'This birth certificate PIN is already registered.',
             'student_passport_photo.image' => 'Passport photo must be an image file.',
-            'student_passport_photo.max' => 'Passport photo must not exceed 2MB.',
+            'student_passport_photo.max' => 'Passport photo must not exceed 5MB.',
         ];
     }
 }

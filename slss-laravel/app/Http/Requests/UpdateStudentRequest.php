@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Student;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,13 +19,14 @@ class UpdateStudentRequest extends FormRequest
 
         return [
             // Student Basic Information (optimized based on actual data)
-            'student_name' => 'required|string',
-            'form_1_class' => 'nullable|string|in:A,B,C,D,E',
+            'student_first_name' => 'required|string',
+            'student_last_name' => 'required|string',
+            'form_1_class' => ['nullable', 'string', Rule::in(Student::FORM_CLASSES)],
             'student_gender' => 'nullable|string|in:Male,Female,Other',
-            'citizen_type' => 'nullable|string|in:Birth,Naturalization,Other',
+            'citizen_type' => 'nullable|string|in:Birth,Descent,Naturalisation',
             'student_current_address' => 'nullable|string',
             'student_dob' => 'nullable|date|before:today|after:1990-01-01',
-            'student_birth_certificate' => 'nullable|string',
+            'student_birth_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_birth_certificate_pin' => [
                 'nullable',
                 'string',
@@ -37,18 +39,20 @@ class UpdateStudentRequest extends FormRequest
             'student_ethnicity' => 'nullable|string',
             'student_contact' => 'nullable|string',
             'student_email' => 'nullable|email',
-            'student_passport_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:5120',
+            'student_passport_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
 
             // SEA Information
             'student_sea_date' => 'nullable|date|after:2000-01-01',
             'student_primary_school' => 'nullable|string',
-            'student_sea_slip' => 'nullable|string',
+            'student_sea_slip' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_sea_number' => 'nullable|string',
 
             // Transfer Information
             'student_transfer_status' => 'nullable|string|in:Yes,No',
-            'student_transfer_slip' => 'nullable|string',
+            'student_transfer_slip' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'student_transfer_date' => 'nullable|date',
+            'student_transfer_reason' => 'nullable|string',
+            'student_previous_form_class' => 'nullable|string',
             'student_previous_secondary_school' => 'nullable|string',
             'student_previous_school_location' => 'nullable|string',
 
@@ -56,7 +60,7 @@ class UpdateStudentRequest extends FormRequest
             'student_medical_condition' => 'nullable|string',
             'student_bloodtype' => 'nullable|string',
             'student_allergies' => 'nullable|string',
-            'student_immunization_status' => 'nullable|string|in:Yes,No,Unknown',
+            'student_immunization_status' => 'nullable|string',
 
             // Special Needs & Intervention
             'student_family_crisis' => 'nullable|string',
@@ -69,14 +73,20 @@ class UpdateStudentRequest extends FormRequest
             'student_other_intervention_information' => 'nullable|string',
 
             // Personal Preferences
-            'student_school_feeding_option' => 'nullable|string|in:Both Breakfast and Lunch,Breakfast Only,Lunch Only,None',
+            'student_school_feeding_option' => 'nullable|string|in:Yes,No',
             'student_social_welfare_status' => 'nullable|string|in:Yes,No',
+            'student_social_welfare_detail' => 'nullable|string',
             'student_mode_of_transport' => 'nullable|string',
-            'student_access_to_device' => 'nullable|string|in:Yes,No',
+            'student_access_to_device' => 'nullable|string',
+            'student_device_shared' => 'nullable|string|in:Yes,No',
+            'student_reliable_internet' => 'nullable|string|in:Yes,No',
+            'student_internet_provider' => 'nullable|string',
+            'student_online_tools' => 'nullable|string',
 
             // Mother Information
             'is_mother_active_or_deceased' => 'nullable|string|in:Alive,Deceased',
             'mother_name' => 'nullable|string',
+            'mother_death_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'mother_identification_type' => 'nullable|string',
             'mother_identification_number' => 'nullable|string',
             'mother_home_address' => 'nullable|string',
@@ -88,6 +98,7 @@ class UpdateStudentRequest extends FormRequest
             // Father Information
             'is_father_active_or_deceased' => 'nullable|string|in:Alive,Deceased',
             'father_name' => 'nullable|string',
+            'father_death_certificate' => 'nullable|file|mimes:pdf,jpeg,jpg,png|max:5120',
             'father_identification_type' => 'nullable|string',
             'father_identification_number' => 'nullable|string',
             'father_home_address' => 'nullable|string',

@@ -10,6 +10,12 @@ use Illuminate\Support\Facades\Log;
 
 class PdfService
 {
+    /**
+     * Generate a PDF for a single student profile.
+     *
+     * @param  \App\Models\Student  $student
+     * @return \Illuminate\Http\Response
+     */
     public function generateStudentPdf(Student $student)
     {
         $pdf = PDF::loadView('students.pdf', compact('student'));
@@ -20,6 +26,13 @@ class PdfService
         return $pdf->download($filename);
     }
 
+    /**
+     * Generate bulk PDF export for multiple students.
+     *
+     * @param  \Illuminate\Support\Collection  $students
+     * @param  string|null  $progressId
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
+     */
     public function generateBulkPdf(Collection $students, ?string $progressId = null)
     {
         $returnJson = !empty($progressId);
@@ -344,6 +357,12 @@ class PdfService
         }
     }
 
+    /**
+     * Get the progress of an ongoing bulk PDF export.
+     *
+     * @param  string  $progressId
+     * @return array
+     */
     public function getProgress(string $progressId): array
     {
         try {
@@ -383,6 +402,12 @@ class PdfService
         }
     }
 
+    /**
+     * Stream a PDF for preview instead of download.
+     *
+     * @param  \App\Models\Student  $student
+     * @return \Illuminate\Http\Response
+     */
     public function streamPdf(Student $student)
     {
         $pdf = PDF::loadView('students.pdf', compact('student'));

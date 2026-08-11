@@ -204,31 +204,31 @@
             <div class="row g-3">
                 <div class="col-md-12">
                     <label class="form-label">Student Photo (Passport Size)</label>
-                    <input type="file" name="student_passport_photo" class="form-control" accept="image/*">
-                    <small class="text-muted">File must not exceed 5MB. Allowed: PDF, JPG, PNG</small>
+                    <input type="file" name="student_passport_photo" class="form-control @error('student_passport_photo') is-invalid @enderror" accept="image/*">
+                    <small class="text-muted">File must not exceed 5MB. Allowed: JPG, PNG, GIF, WEBP</small>
+                    @error('student_passport_photo')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Form 1 Class</label>
                     <select name="form_1_class" class="form-select">
                         <option value="">Select</option>
-                        <option value="A" {{ old('form_1_class') == 'A' ? 'selected' : '' }}>A</option>
-                        <option value="B" {{ old('form_1_class') == 'B' ? 'selected' : '' }}>B</option>
-                        <option value="C" {{ old('form_1_class') == 'C' ? 'selected' : '' }}>C</option>
-                        <option value="D" {{ old('form_1_class') == 'D' ? 'selected' : '' }}>D</option>
-                        <option value="E" {{ old('form_1_class') == 'E' ? 'selected' : '' }}>E</option>
-                        <option value="F" {{ old('form_1_class') == 'F' ? 'selected' : '' }}>F</option>
+                        @foreach(\App\Models\Student::FORM_CLASSES as $class)
+                            <option value="{{ $class }}" {{ old('form_1_class') == $class ? 'selected' : '' }}>{{ $class }}</option>
+                        @endforeach
                     </select>
                 </div>
 
                 <div class="col-md-5">
-                    <label class="form-label">First Name</label>
-                    <input type="text" name="student_first_name" class="form-control" value="{{ old('student_first_name') }}" placeholder="First Name">
+                    <label class="form-label">First Name <span class="text-danger">*</span></label>
+                    <input type="text" name="student_first_name" class="form-control @error('student_first_name') is-invalid @enderror" value="{{ old('student_first_name') }}" placeholder="First Name" required>
+                    @error('student_first_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="col-md-5">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" name="student_last_name" class="form-control" value="{{ old('student_last_name') }}" placeholder="Last Name">
+                    <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                    <input type="text" name="student_last_name" class="form-control @error('student_last_name') is-invalid @enderror" value="{{ old('student_last_name') }}" placeholder="Last Name" required>
+                    @error('student_last_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="col-md-3">
@@ -257,7 +257,8 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Birth Certificate PIN</label>
-                    <input type="text" name="student_birth_certificate_pin" class="form-control" value="{{ old('student_birth_certificate_pin') }}" placeholder="Birth Cert PIN">
+                    <input type="text" name="student_birth_certificate_pin" class="form-control @error('student_birth_certificate_pin') is-invalid @enderror" value="{{ old('student_birth_certificate_pin') }}" maxlength="20" placeholder="Birth Cert PIN">
+                    @error('student_birth_certificate_pin')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="col-md-4">
@@ -571,6 +572,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Living Status</label>
                     <select name="is_mother_active_or_deceased" class="form-select">
+                        <option value="">Select</option>
                         <option value="Alive" {{ old('is_mother_active_or_deceased') == 'Alive' ? 'selected' : '' }}>Alive</option>
                         <option value="Deceased" {{ old('is_mother_active_or_deceased') == 'Deceased' ? 'selected' : '' }}>Deceased</option>
                     </select>
@@ -635,6 +637,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Living Status</label>
                     <select name="is_father_active_or_deceased" class="form-select">
+                        <option value="">Select</option>
                         <option value="Alive" {{ old('is_father_active_or_deceased') == 'Alive' ? 'selected' : '' }}>Alive</option>
                         <option value="Deceased" {{ old('is_father_active_or_deceased') == 'Deceased' ? 'selected' : '' }}>Deceased</option>
                     </select>

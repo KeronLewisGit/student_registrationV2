@@ -234,7 +234,7 @@
                     <option value="0">All Classes</option>
                     @foreach($classes as $class)
                         <option value="{{ $class }}" {{ request('student_class') == $class ? 'selected' : '' }}>
-                            Form {{ $class }}
+                            {{ $class }}
                         </option>
                     @endforeach
                 </select>
@@ -312,7 +312,7 @@
                             </td>
                             <td>
                                 @if($student->form_1_class)
-                                    <span class="badge badge-class">Form {{ $student->form_1_class }}</span>
+                                    <span class="badge badge-class">{{ $student->form_1_class }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
