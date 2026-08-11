@@ -199,7 +199,7 @@
                 <i class="fas fa-calendar-plus"></i>
             </div>
             <h3 class="stat-value">{{ \App\Models\Student::whereYear('registration_date', date('Y'))->count() }}</h3>
-            <p class="stat-label">This Year</p>
+            <p class="stat-label">Registered in {{ date('Y') }}</p>
         </div>
     </div>
 </div>
