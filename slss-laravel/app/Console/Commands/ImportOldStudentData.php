@@ -71,8 +71,10 @@ class ImportOldStudentData extends Command
                     'student_current_address' => $oldStudent->student_current_address,
                     'student_dob' => $oldStudent->student_dob,
                     'student_birth_certificate' => $oldStudent->student_birth_certificate,
-                    // Fix typo in old column name
-                    'student_birth_certificate_pin' => $oldStudent->student_birth_certficate_pin ?? null,
+                    // Fix typo in old column name; normalize so legacy "N/A"
+                    // placeholders become null instead of colliding on the
+                    // column's unique constraint after the first row
+                    'student_birth_certificate_pin' => $this->normalizePin($oldStudent->student_birth_certficate_pin ?? null),
                     'student_religion' => $oldStudent->student_religion,
                     'student_country_of_birth' => $oldStudent->student_country_of_birth,
                     'student_nationality' => $oldStudent->student_nationality,
@@ -183,5 +185,17 @@ class ImportOldStudentData extends Command
         }
 
         return 0;
+    }
+
+    /**
+     * Normalize a legacy birth-certificate PIN: strip punctuation, uppercase,
+     * and convert placeholder values ("N/A") to null so they don't trip the
+     * unique constraint on the column.
+     */
+    private function normalizePin(?string $pin): ?string
+    {
+        $pin = preg_replace('/[^0-9A-Z]/', '', strtoupper(trim((string) $pin)));
+
+        return ($pin === '' || $pin === 'NA') ? null : $pin;
     }
 }

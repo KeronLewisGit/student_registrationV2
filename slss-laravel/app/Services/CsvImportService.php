@@ -137,28 +137,46 @@ class CsvImportService
         // Read and process header
         $header = fgetcsv($handle);
 
-        // Remove BOM if present
-        if ($header && isset($header[0])) {
-            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+        if ($header === false || $header === [null]) {
+            fclose($handle);
+            throw new \RuntimeException('The CSV file is empty.');
         }
 
-        $header = array_map('trim', $header);
+        // Remove BOM if present
+        if (isset($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]);
+        }
+
+        $header = array_map(fn ($h) => trim((string) $h), $header);
 
         $imported = 0;
         $skipped = 0;
         $errors = [];
+        $rowNumber = 1; // header row
 
         DB::beginTransaction();
 
         try {
             while (($row = fgetcsv($handle)) !== false) {
-                if (count($row) < count($header)) {
+                $rowNumber++;
+
+                // Skip completely blank lines without counting them
+                if ($row === [null] || implode('', array_map('strval', $row)) === '') {
                     continue;
                 }
 
+                if (count($row) < count($header)) {
+                    $skipped++;
+                    $errors[] = "Row {$rowNumber}: fewer columns than the header — skipped.";
+                    continue;
+                }
+
+                // Extra trailing columns (stray commas) would make array_combine throw
+                $row = array_slice($row, 0, count($header));
+
                 $data = array_combine($header, $row);
                 $data = array_map(function($value) {
-                    $value = trim($value);
+                    $value = trim((string) $value);
                     $value = str_replace('\/', '/', $value);
                     return $value === '' ? null : $value;
                 }, $data);
@@ -222,9 +240,9 @@ class CsvImportService
             $result[$dbKey] = $data[$csvKey] ?? null;
         }
 
-        // Normalize PIN
+        // Normalize PIN (uppercase FIRST, or lowercase letters get stripped)
         if (!empty($result['student_birth_certificate_pin'])) {
-            $pin = strtoupper(preg_replace('/[^0-9A-Z]/', '', $result['student_birth_certificate_pin']));
+            $pin = preg_replace('/[^0-9A-Z]/', '', strtoupper($result['student_birth_certificate_pin']));
             $result['student_birth_certificate_pin'] = $pin ?: null;
         }
 
@@ -233,8 +251,7 @@ class CsvImportService
 
         foreach ($dateFields as $dateField) {
             if (!empty($result[$dateField])) {
-                $timestamp = strtotime($result[$dateField]);
-                $result[$dateField] = $timestamp ? date('Y-m-d', $timestamp) : null;
+                $result[$dateField] = $this->parseDate($result[$dateField]);
             }
         }
 
@@ -247,5 +264,32 @@ class CsvImportService
         }
 
         return $result;
+    }
+
+    /**
+     * Parse a CSV date as day-first (d/m/Y — the format this app displays and
+     * exports everywhere) with ISO Y-m-d as fallback. strtotime() must not be
+     * used here: it reads 05/06/2012 as US month-first and silently swaps
+     * day and month.
+     */
+    protected function parseDate(string $value): ?string
+    {
+        $value = trim($value);
+
+        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d', 'Y/m/d'] as $format) {
+            $date = \DateTime::createFromFormat('!' . $format, $value);
+            $parseErrors = \DateTime::getLastErrors();
+            $clean = $parseErrors === false
+                || ($parseErrors['warning_count'] === 0 && $parseErrors['error_count'] === 0);
+
+            if ($date !== false && $clean) {
+                return $date->format('Y-m-d');
+            }
+        }
+
+        // Last resort for verbose formats like "5 June 2012"
+        $timestamp = strtotime($value);
+
+        return $timestamp ? date('Y-m-d', $timestamp) : null;
     }
 }

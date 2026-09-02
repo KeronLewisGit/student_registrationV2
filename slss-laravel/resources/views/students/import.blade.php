@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Import Students - SLSS')
+@section('page-title', 'Import Data')
 
 @push('styles')
 <style>

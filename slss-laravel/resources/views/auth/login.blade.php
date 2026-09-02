@@ -366,7 +366,7 @@
                                id="remember"
                                name="remember">
                         <label class="form-check-label" for="remember">
-                            Remember me for 30 days
+                            Remember me
                         </label>
                     </div>
                 </div>

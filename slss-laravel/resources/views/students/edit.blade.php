@@ -222,16 +222,25 @@
                         </div>
                     @endif
                     <input type="file" name="student_passport_photo" class="form-control" accept="image/*">
-                    <small class="text-muted">Upload new photo to replace current one. File must not exceed 5MB. Allowed: PDF, JPG, PNG</small>
+                    <small class="text-muted">Upload new photo to replace current one. File must not exceed 5MB. Allowed: JPG, PNG, GIF, WEBP</small>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Form 1 Class</label>
+                    @php
+                        // Legacy records store variants like "A" or "Form 1a"; match them
+                        // to the canonical option so saving doesn't silently null the class.
+                        $currentClass = old('form_1_class', $student->form_1_class);
+                        $canonicalClass = \App\Models\Student::canonicalClass($currentClass);
+                    @endphp
                     <select name="form_1_class" class="form-select">
                         <option value="">Select</option>
                         @foreach(\App\Models\Student::FORM_CLASSES as $class)
-                            <option value="{{ $class }}" {{ old('form_1_class', $student->form_1_class) == $class ? 'selected' : '' }}>{{ $class }}</option>
+                            <option value="{{ $class }}" {{ $canonicalClass === $class ? 'selected' : '' }}>{{ $class }}</option>
                         @endforeach
+                        @if(!empty($currentClass) && $canonicalClass === null)
+                            <option value="{{ $currentClass }}" selected>{{ $currentClass }} (unrecognized legacy value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -258,6 +267,7 @@
                         <option value="">Select Gender</option>
                         <option value="Male" {{ old('student_gender', $student->student_gender) == 'Male' ? 'selected' : '' }}>Male</option>
                         <option value="Female" {{ old('student_gender', $student->student_gender) == 'Female' ? 'selected' : '' }}>Female</option>
+                        <option value="Other" {{ old('student_gender', $student->student_gender) == 'Other' ? 'selected' : '' }}>Other</option>
                     </select>
                 </div>
 

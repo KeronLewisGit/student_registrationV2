@@ -132,7 +132,7 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function query()
     {
         return $this->studentService->buildFilteredQuery($this->filters)
-            ->select(array_merge(['id'], array_keys(self::COLUMNS)))
+            ->select(array_values(array_unique(array_merge(['id'], array_keys(self::COLUMNS)))))
             ->orderBy('student_name');
     }
 

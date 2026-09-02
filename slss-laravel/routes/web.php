@@ -9,17 +9,17 @@ use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\ReportController;
 
-// Deployment Routes (No Auth Required - CSRF Exempted in Middleware)
+// Deployment Routes (token-authenticated in controller, CSRF exempted, throttled against brute force)
 Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
-Route::post('/deploy', [DeployController::class, 'deploy'])->name('deploy');
-Route::get('/storage-diagnostics', [DeployController::class, 'storageDiagnostics'])->name('storage.diagnostics');
+Route::post('/deploy', [DeployController::class, 'deploy'])->middleware('throttle:5,1')->name('deploy');
 
-// Webhook Routes (No Auth Required - CSRF Exempted in Middleware)
+// Webhook Routes (shared-secret authenticated in controller, CSRF exempted, throttled)
 Route::post('/webhook/student-registration', [WebhookController::class, 'handleStudentRegistration'])
+    ->middleware('throttle:30,1')
     ->name('webhook.student.registration');
 
 // Authentication Routes
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::get('/login', [AuthController::class, 'showLogin'])->middleware('guest')->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/students/{student}/print', [StudentController::class, 'print'])->name('students.print');
     Route::get('/students-bulk-pdf', [StudentController::class, 'generateBulkPdf'])->name('students.bulk-pdf');
     Route::get('/students-bulk-pdf-progress', [StudentController::class, 'getBulkPdfProgress'])->name('students.bulk-pdf-progress');
+    Route::get('/students-bulk-pdf-download', [StudentController::class, 'downloadBulkPdf'])->name('students.bulk-pdf-download');
 
     // Reports Routes (Admin/Staff only - authorization in controller)
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
@@ -54,4 +55,9 @@ Route::middleware(['auth'])->group(function () {
     // User Management Routes (Admin only - authorization in controller)
     Route::resource('users', UserController::class)->except(['show']);
     Route::post('/users/{user}/reset-password', [UserController::class, 'resetPassword'])->name('users.reset-password');
+
+    // Admin-only diagnostics (lists export archives and server paths)
+    Route::get('/storage-diagnostics', [DeployController::class, 'storageDiagnostics'])
+        ->middleware('can:admin')
+        ->name('storage.diagnostics');
 });

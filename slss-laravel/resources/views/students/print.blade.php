@@ -161,5 +161,18 @@
             @include('students.partials.profile-sections', ['student' => $student])
         </div>
     </div>
+
+    <div class="no-print" style="position: fixed; bottom: 1.5rem; right: 1.5rem;">
+        <button type="button" onclick="window.print()" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-size: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+            🖨️ Print
+        </button>
+    </div>
+
+    <script>
+        // Open the browser's print dialog once the page (photos included) has loaded
+        window.addEventListener('load', function () {
+            window.print();
+        });
+    </script>
 </body>
 </html>

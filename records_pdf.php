@@ -2,19 +2,19 @@
 // records_pdf.php — generate filtered student profiles as a PDF via Dompdf
 // Images are embedded as base64 for reliability (local files). Remote http(s) kept as-is.
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+ini_set('display_errors', 0);
+ini_set('display_startup_errors', 0);
 error_reporting(E_ALL);
 
 @ini_set('memory_limit', '1024M');
 @set_time_limit(120);
 
-require __DIR__ . '/vendor/autoload.php';
+// This report exposes full student records; require a logged-in user.
+require __DIR__ . '/auth_bootstrap.php';
+requireLogin($auth);
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
-
-$pdo = require __DIR__ . '/connect.php';
 
 /* ----------- Filters ----------- */
 $selectedYear  = isset($_GET['year']) ? (int)$_GET['year'] : 0;

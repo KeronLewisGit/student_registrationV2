@@ -66,12 +66,14 @@ class StudentService
         }
 
         if ($photo) {
-            // Delete old photo
-            if ($student->student_passport_photo) {
-                $this->deletePhoto($student->student_passport_photo);
-            }
-
+            // Store the new photo first; only delete the old one once the
+            // upload has succeeded, so a failed store can't lose both.
+            $oldPhoto = $student->student_passport_photo;
             $data['student_passport_photo'] = $this->handlePhotoUpload($photo, $student->id);
+
+            if ($oldPhoto && $data['student_passport_photo']) {
+                $this->deletePhoto($oldPhoto);
+            }
         }
 
         $data = $this->handleDocumentUploads($data, $student);
@@ -136,15 +138,17 @@ class StudentService
             }
 
             $file = $data[$field];
-
-            if ($student && $student->{$field}) {
-                $this->deletePhoto($student->{$field});
-            }
+            $oldDocument = $student?->{$field};
 
             $filename = $field . '_' . ($student?->id ?? 'new') . '_' . time() . '.'
                 . $file->getClientOriginalExtension();
 
             $data[$field] = 'storage/' . $file->storeAs($directory, $filename, 'public');
+
+            // Delete the replaced document only after the new one is stored
+            if ($oldDocument) {
+                $this->deletePhoto($oldDocument);
+            }
         }
 
         return $data;

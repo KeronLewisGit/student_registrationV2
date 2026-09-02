@@ -441,7 +441,7 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">SEA Slip</div>
-                    <div class="info-value">{{ $student->student_sea_slip ?? 'N/A' }}</div>
+                    <div class="info-value">@include('students.partials.document-value', ['value' => $student->student_sea_slip])</div>
                 </div>
             </div>
         </div>
@@ -696,7 +696,7 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Transfer Slip</div>
-                    <div class="info-value">{{ $student->student_transfer_slip ?? 'N/A' }}</div>
+                    <div class="info-value">@include('students.partials.document-value', ['value' => $student->student_transfer_slip])</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Transfer Date</div>

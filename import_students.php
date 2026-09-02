@@ -1,7 +1,10 @@
 <?php
 ini_set('memory_limit', '512M');
 
-$pdo = require_once 'connect.php';               // connect.php should return a PDO
+// Bulk import touches the whole students table; require a logged-in user
+// (auth_bootstrap also provides $pdo).
+require __DIR__ . '/auth_bootstrap.php';
+requireLogin($auth);
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 $csvPath = __DIR__ . '/student20252.csv';

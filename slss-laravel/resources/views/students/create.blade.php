@@ -237,6 +237,7 @@
                         <option value="">Select Gender</option>
                         <option value="Male" {{ old('student_gender') == 'Male' ? 'selected' : '' }}>Male</option>
                         <option value="Female" {{ old('student_gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                        <option value="Other" {{ old('student_gender') == 'Other' ? 'selected' : '' }}>Other</option>
                     </select>
                 </div>
 

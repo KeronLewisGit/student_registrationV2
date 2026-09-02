@@ -15,13 +15,21 @@ class UpdateStudentRequest extends FormRequest
 
     public function rules(): array
     {
-        $studentId = $this->route('student')->id;
+        $student = $this->route('student');
+        $studentId = $student->id;
+
+        // Accept the record's existing class alongside the canonical values so
+        // saving a legacy record (e.g. class "Form 1a") doesn't fail validation.
+        $allowedClasses = array_values(array_unique(array_merge(
+            Student::FORM_CLASSES,
+            array_filter([$student->form_1_class])
+        )));
 
         return [
             // Student Basic Information (optimized based on actual data)
             'student_first_name' => 'required|string',
             'student_last_name' => 'required|string',
-            'form_1_class' => ['nullable', 'string', Rule::in(Student::FORM_CLASSES)],
+            'form_1_class' => ['nullable', 'string', Rule::in($allowedClasses)],
             'student_gender' => 'nullable|string|in:Male,Female,Other',
             'citizen_type' => 'nullable|string|in:Birth,Descent,Naturalisation',
             'student_current_address' => 'nullable|string',

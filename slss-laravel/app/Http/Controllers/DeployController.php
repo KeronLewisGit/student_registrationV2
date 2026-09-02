@@ -14,18 +14,18 @@ class DeployController extends Controller
 
     public function deploy(Request $request)
     {
-        // Security check - token validation
-        $expectedToken = env('DEPLOY_TOKEN');
+        // Security check - token validation (config(), not env(), so it survives config caching)
+        $expectedToken = config('deploy.token');
 
         // If no token is set in env, require setup
         if (empty($expectedToken)) {
             return $this->renderTokenForm('Please set DEPLOY_TOKEN in your .env file to enable deployments.', 'warning');
         }
 
-        // Validate submitted token
-        $submittedToken = $request->input('token');
+        // Validate submitted token (constant-time comparison)
+        $submittedToken = (string) $request->input('token', '');
 
-        if ($submittedToken !== $expectedToken) {
+        if (!hash_equals($expectedToken, $submittedToken)) {
             return $this->renderTokenForm('Invalid deployment token. Access denied.', 'error');
         }
 
@@ -96,7 +96,7 @@ class DeployController extends Controller
             $output[] = $optimize->output();
 
             $endTime = now();
-            $duration = $endTime->diffInSeconds($startTime);
+            $duration = $startTime->diffInSeconds($endTime);
 
             $output[] = "\n=== DEPLOYMENT COMPLETED ===";
             $output[] = "Duration: {$duration} seconds";
@@ -447,9 +447,9 @@ class DeployController extends Controller
         $diagnostics[] = "Writable: " . (is_writable($storageAppPublic) ? 'YES' : 'NO');
         $diagnostics[] = "Permissions: " . (file_exists($storageAppPublic) ? substr(sprintf('%o', fileperms($storageAppPublic)), -4) : 'N/A');
 
-        // List recent ZIP files
-        $diagnostics[] = "\n=== RECENT ZIP FILES ===";
-        $zipFiles = glob(storage_path('app/public/*.zip'));
+        // List recent export archives (private storage, served via authenticated route)
+        $diagnostics[] = "\n=== RECENT EXPORT ARCHIVES ===";
+        $zipFiles = glob(storage_path('app/exports/*.zip'));
         if ($zipFiles) {
             rsort($zipFiles); // Most recent first
             $recentFiles = array_slice($zipFiles, 0, 5); // Show last 5
@@ -459,16 +459,7 @@ class DeployController extends Controller
                 $diagnostics[] = basename($file) . " | Size: " . round($size / 1024, 2) . " KB | Readable: {$readable}";
             }
         } else {
-            $diagnostics[] = "No ZIP files found in storage/app/public/";
-        }
-
-        // Check web accessibility
-        $diagnostics[] = "\n=== WEB ACCESSIBILITY CHECK ===";
-        $diagnostics[] = "Base URL: " . url('/');
-        $diagnostics[] = "Storage URL: " . url('storage/');
-        if ($zipFiles) {
-            $testFile = basename($recentFiles[0]);
-            $diagnostics[] = "Test URL: " . url("storage/{$testFile}");
+            $diagnostics[] = "No export archives found in storage/app/exports/";
         }
 
         // Check permissions on base_path

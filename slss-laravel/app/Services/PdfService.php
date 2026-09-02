@@ -21,9 +21,21 @@ class PdfService
         $pdf = PDF::loadView('students.pdf', compact('student'));
         $pdf->setPaper('letter', 'portrait');
 
-        $filename = 'profile_' . str_replace(' ', '_', strtolower($student->student_name)) . '.pdf';
+        return $pdf->download($this->profileFilename($student));
+    }
 
-        return $pdf->download($filename);
+    /**
+     * Build a unique, filesystem-safe PDF filename for a student.
+     *
+     * The ID prefix guarantees uniqueness — without it, two students with
+     * the same name overwrite each other inside the bulk export ZIP.
+     */
+    private function profileFilename(Student $student): string
+    {
+        $name = trim((string) $student->student_name);
+        $name = $name !== '' ? preg_replace('/[^A-Za-z0-9]+/', '_', strtolower($name)) : 'student';
+
+        return 'profile_' . $student->id . '_' . trim($name, '_') . '.pdf';
     }
 
     /**
@@ -103,8 +115,9 @@ class PdfService
                 }
             }
 
-            // Create temporary directory for PDFs
-            $tempDir = storage_path('app/temp_pdfs_' . time());
+            // Create temporary directory for PDFs (unique per export so
+            // concurrent exports never share or delete each other's files)
+            $tempDir = storage_path('app/temp_pdfs_' . str_replace('.', '', uniqid('', true)));
             if (!file_exists($tempDir)) {
                 if (!mkdir($tempDir, 0755, true)) {
                     throw new \Exception('Failed to create temporary directory for PDF generation.');
@@ -154,10 +167,12 @@ class PdfService
                     $pdf = PDF::loadView('students.pdf', compact('student'));
                     $pdf->setPaper('letter', 'portrait');
 
-                    $filename = 'profile_' . str_replace(' ', '_', strtolower($student->student_name)) . '.pdf';
-                    $pdfPath = $tempDir . '/' . $filename;
+                    $pdfPath = $tempDir . '/' . $this->profileFilename($student);
 
-                    if (!$pdf->save($pdfPath)) {
+                    $pdf->save($pdfPath);
+
+                    // save() returns the PDF object (always truthy), so verify on disk instead
+                    if (!is_file($pdfPath) || filesize($pdfPath) === 0) {
                         throw new \Exception("Failed to save PDF for student: {$student->student_name}");
                     }
 
@@ -190,14 +205,24 @@ class PdfService
                 }
             }
 
-            // Create ZIP archive
-            $zipFilename = 'student_profiles_' . now()->format('Y-m-d_His') . '.zip';
-            $zipPath = storage_path('app/public/' . $zipFilename);
+            // Create ZIP archive in PRIVATE storage (storage/app/exports is not
+            // web-served; downloads go through the authenticated
+            // students.bulk-pdf-download route). The random suffix also makes
+            // filenames unguessable.
+            $exportDir = storage_path('app/exports');
+            $zipFilename = 'student_profiles_' . now()->format('Y-m-d_His') . '_' . \Illuminate\Support\Str::random(16) . '.zip';
+            $zipPath = $exportDir . '/' . $zipFilename;
 
-            // Ensure public storage directory exists
-            if (!file_exists(storage_path('app/public'))) {
-                if (!mkdir(storage_path('app/public'), 0755, true)) {
-                    throw new \Exception('Failed to create public storage directory.');
+            if (!file_exists($exportDir)) {
+                if (!mkdir($exportDir, 0755, true)) {
+                    throw new \Exception('Failed to create exports storage directory.');
+                }
+            }
+
+            // Remove export archives older than 24 hours so PII doesn't accumulate on disk
+            foreach (glob($exportDir . '/student_profiles_*.zip') ?: [] as $oldZip) {
+                if (filemtime($oldZip) < now()->subDay()->getTimestamp()) {
+                    @unlink($oldZip);
                 }
             }
 
@@ -236,21 +261,6 @@ class PdfService
                 throw new \Exception("ZIP file exists but is not readable. Check file permissions.");
             }
 
-            // Check if storage symlink exists
-            $symlinkPath = public_path('storage');
-            $symlinkExists = file_exists($symlinkPath) && is_link($symlinkPath);
-
-            Log::info("Storage symlink check", [
-                'symlink_path' => $symlinkPath,
-                'exists' => $symlinkExists,
-                'is_link' => is_link($symlinkPath),
-                'target' => $symlinkExists ? readlink($symlinkPath) : 'N/A'
-            ]);
-
-            if (!$symlinkExists) {
-                Log::warning("Storage symlink does not exist! ZIP file created but may not be accessible via web.");
-            }
-
             // Clean up temporary PDFs
             array_map('unlink', $generatedFiles);
             if (is_dir($tempDir)) {
@@ -273,10 +283,9 @@ class PdfService
                         'current' => $total,
                         'total' => $total,
                         'message' => $successMsg,
-                        'download_url' => url('storage/' . $zipFilename),
+                        'download_url' => route('students.bulk-pdf-download', ['file' => $zipFilename]),
                         'filename' => $zipFilename,
-                        'failed_count' => count($failedStudents),
-                        'symlink_exists' => $symlinkExists
+                        'failed_count' => count($failedStudents)
                     ], 600);
                 } catch (\Exception $e) {
                     Log::error("Failed to mark export as complete in cache", ['error' => $e->getMessage()]);
@@ -288,7 +297,7 @@ class PdfService
                 return response()->json([
                     'success' => true,
                     'message' => $successMsg,
-                    'download_url' => url('storage/' . $zipFilename),
+                    'download_url' => route('students.bulk-pdf-download', ['file' => $zipFilename]),
                     'filename' => $zipFilename,
                     'total' => count($generatedFiles),
                     'failed' => count($failedStudents)

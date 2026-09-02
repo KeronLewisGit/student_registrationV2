@@ -37,7 +37,12 @@ class Student extends Model
 
         // Reduce "FORM 1A", "1 A", "F1A" and friends down to the bare stream letter.
         $stream = preg_replace('/[^A-Z0-9]/', '', $normalized);
-        $stream = preg_replace('/^(?:FORM|F)?1?/', '', $stream, 1);
+
+        // A bare stream letter ("F") would otherwise be consumed as the "Form"
+        // prefix by the regex below and produce no variants.
+        if (!preg_match('/^[A-Z]$/', $stream)) {
+            $stream = preg_replace('/^(?:FORM|F)?1?/', '', $stream, 1);
+        }
 
         if ($stream === '' || $stream === null) {
             return array_values(array_filter([$normalized]));
@@ -49,6 +54,28 @@ class Student extends Model
             '1 ' . $stream,  // 1 A
             'Form 1' . $stream,
         ]));
+    }
+
+    /**
+     * Map any stored form_1_class variant ("A", "1 a", "Form 1A") to its
+     * canonical FORM_CLASSES value, or null when it isn't recognizable.
+     */
+    public static function canonicalClass($value): ?string
+    {
+        $normalized = preg_replace('/[^A-Z0-9]/', '', strtoupper(trim((string) $value)));
+
+        if ($normalized === '') {
+            return null;
+        }
+
+        // Bare stream letter ("A") — don't let the prefix regex eat "F".
+        $stream = preg_match('/^[A-Z]$/', $normalized)
+            ? $normalized
+            : preg_replace('/^(?:FORM|F)?1?/', '', $normalized, 1);
+
+        $canonical = '1' . $stream;
+
+        return in_array($canonical, self::FORM_CLASSES, true) ? $canonical : null;
     }
 
     protected $fillable = [
@@ -124,6 +151,30 @@ class Student extends Model
     public function getFormattedRegistrationDateAttribute(): string
     {
         return $this->registration_date ? $this->registration_date->format('d/m/Y') : 'No record provided';
+    }
+
+    /**
+     * Resolve a stored document value (SEA slip, transfer slip, certificates)
+     * to a browsable URL, or null when the value isn't an actual file
+     * reference (legacy rows hold plain text like "N/A" or "Yes").
+     */
+    public static function documentUrl(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '' || strcasecmp($value, 'N/A') === 0) {
+            return null;
+        }
+
+        if (preg_match('#^https?://#i', $value)) {
+            return $value;
+        }
+
+        if (str_starts_with($value, 'storage/') && preg_match('/\.(pdf|jpe?g|png|gif|webp)$/i', $value)) {
+            return asset($value);
+        }
+
+        return null;
     }
 
     // Accessor for registrant name based on relationship

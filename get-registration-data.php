@@ -1,6 +1,6 @@
 <?php
 error_reporting(E_ALL);
-ini_set('display_errors', 'On');
+ini_set('display_errors', 'Off');
 
 // —– Bootstrap your PDO connection (returns a $pdo)
 $pdo = require 'connect.php';

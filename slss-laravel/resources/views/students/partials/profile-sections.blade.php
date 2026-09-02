@@ -32,7 +32,7 @@
         </div>
         <div class="col-md-4">
             <h5>Birth Certificate:</h5>
-            <p>{{ $student->student_birth_certificate ?? 'N/A' }}</p>
+            <p>@include('students.partials.document-value', ['value' => $student->student_birth_certificate])</p>
         </div>
     </div>
     <div class="row g-3 mt-2">
@@ -91,7 +91,7 @@
         </div>
         <div class="col-md-3">
             <h5>SEA Slip:</h5>
-            <p>{{ $student->student_sea_slip ?? 'N/A' }}</p>
+            <p>@include('students.partials.document-value', ['value' => $student->student_sea_slip])</p>
         </div>
     </div>
 </div>
@@ -109,7 +109,7 @@
         </div>
         <div class="col-md-3">
             <h5>Transfer Slip:</h5>
-            <p>{{ $student->student_transfer_slip ?? 'N/A' }}</p>
+            <p>@include('students.partials.document-value', ['value' => $student->student_transfer_slip])</p>
         </div>
         <div class="col-md-3">
             <h5>Transfer Date:</h5>
@@ -280,7 +280,7 @@
         </div>
         <div class="col-md-4">
             <h5>Death Certificate:</h5>
-            <p>{{ $student->mother_death_certificate ?? 'N/A' }}</p>
+            <p>@include('students.partials.document-value', ['value' => $student->mother_death_certificate])</p>
         </div>
     </div>
     <div class="row g-3 mt-2">
@@ -337,7 +337,7 @@
         </div>
         <div class="col-md-4">
             <h5>Death Certificate:</h5>
-            <p>{{ $student->father_death_certificate ?? 'N/A' }}</p>
+            <p>@include('students.partials.document-value', ['value' => $student->father_death_certificate])</p>
         </div>
     </div>
     <div class="row g-3 mt-2">

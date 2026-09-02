@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 class WebhookController extends Controller
 {
@@ -14,19 +13,26 @@ class WebhookController extends Controller
      */
     public function handleStudentRegistration(Request $request)
     {
-        // Log raw request data to file for debugging
-        $debugLog = storage_path('logs/webhook_debug.log');
-        file_put_contents($debugLog, "\n\n=== " . date('Y-m-d H:i:s') . " ===\n" . json_encode([
-            'all_data' => $request->all(),
-            'fields' => $request->input('fields'),
-            'ip' => $request->ip()
-        ], JSON_PRETTY_PRINT), FILE_APPEND);
+        if (!$this->hasValidToken($request)) {
+            Log::warning('Webhook rejected: invalid or missing token', ['ip' => $request->ip()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        $fields = $request->input('fields');
+        if (!is_array($fields)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid payload: "fields" must be an object.',
+            ], 422);
+        }
 
         try {
-            // Log incoming data for debugging
             Log::info('Webhook received', [
-                'has_fields' => $request->has('fields'),
-                'field_count' => count($request->input('fields', [])),
+                'field_count' => count($fields),
                 'ip' => $request->ip()
             ]);
 
@@ -63,11 +69,11 @@ class WebhookController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Database error: ' . $e->getMessage(),
+                'message' => 'The registration could not be saved. Please contact the school.',
                 'error_type' => 'database'
             ], 500);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error('Webhook processing failed', [
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -77,10 +83,31 @@ class WebhookController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error: ' . $e->getMessage(),
+                'message' => 'The registration could not be processed. Please contact the school.',
                 'error_type' => 'general'
             ], 500);
         }
+    }
+
+    /**
+     * Validate the shared webhook secret sent by the registration form.
+     *
+     * The token may arrive as an X-Webhook-Token header or a "token"
+     * query/body parameter (Elementor webhooks can only append it to the URL).
+     */
+    private function hasValidToken(Request $request): bool
+    {
+        $secret = config('services.webhook.secret');
+
+        // Fail closed: refuse all requests until a secret is configured.
+        if (empty($secret)) {
+            Log::error('WEBHOOK_SECRET is not configured; rejecting webhook request.');
+            return false;
+        }
+
+        $provided = $request->header('X-Webhook-Token', $request->input('token', ''));
+
+        return is_string($provided) && hash_equals($secret, $provided);
     }
 
     /**

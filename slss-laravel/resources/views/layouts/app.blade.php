@@ -1102,7 +1102,8 @@
                 </a>
             </div>
 
-            <!-- Students Menu with Submenu -->
+            @can('edit-students')
+            <!-- Students Menu with Submenu (hidden for viewers — its only entry is Add Student) -->
             <div class="sidebar-menu-item">
                 <a href="#studentsSubmenu" class="sidebar-menu-link {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'active' : '' }} {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'true' : 'false' }}">
                     <i class="fas fa-users"></i>
@@ -1110,14 +1111,13 @@
                     <i class="fas fa-chevron-down menu-arrow"></i>
                 </a>
                 <div class="sidebar-submenu collapse {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'show' : '' }}" id="studentsSubmenu">
-                    @can('edit-students')
                     <a href="{{ route('students.create') }}" class="sidebar-submenu-link {{ request()->routeIs('students.create') ? 'active' : '' }}">
                         <i class="fas fa-plus-circle"></i>
                         <span>Add Student</span>
                     </a>
-                    @endcan
                 </div>
             </div>
+            @endcan
 
             @can('import-students')
             <!-- Data Management Menu with Submenu -->

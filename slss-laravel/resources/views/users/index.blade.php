@@ -236,7 +236,7 @@
                                     {{ ucfirst($user->role) }}
                                 </span>
                             </td>
-                            <td>
+                            <td data-order="{{ $user->created_at->timestamp }}">
                                 <small>{{ $user->created_at->format('M d, Y') }}</small>
                             </td>
                             <td>
@@ -257,7 +257,7 @@
                                         <form action="{{ route('users.destroy', $user) }}"
                                               method="POST"
                                               class="d-inline"
-                                              onsubmit="return confirm('Are you sure you want to delete {{ $user->name }}? This action cannot be undone.');">
+                                              onsubmit="return confirm({{ Illuminate\Support\Js::from('Are you sure you want to delete ' . $user->name . '? This action cannot be undone.') }});">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit"
@@ -294,6 +294,7 @@
                         </div>
                         <form action="{{ route('users.reset-password', $user) }}" method="POST">
                             @csrf
+                            <input type="hidden" name="reset_user_id" value="{{ $user->id }}">
                             <div class="modal-body">
                                 <div class="alert alert-info">
                                     <i class="fas fa-info-circle me-2"></i>
@@ -301,10 +302,17 @@
                                     You are about to reset the password for <strong>{{ $user->name }}</strong> ({{ $user->email }}).
                                 </div>
 
+                                @if($errors->any() && old('reset_user_id') == $user->id)
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        {{ $errors->first() }}
+                                    </div>
+                                @endif
+
                                 <div class="mb-3">
                                     <label for="new_password{{ $user->id }}" class="form-label">New Password *</label>
                                     <input type="password"
-                                           class="form-control"
+                                           class="form-control @if($errors->any() && old('reset_user_id') == $user->id) is-invalid @endif"
                                            id="new_password{{ $user->id }}"
                                            name="new_password"
                                            required
@@ -434,6 +442,15 @@ $(document).ready(function() {
             }
         });
     }
+
+    // If a password reset failed validation, reopen that user's modal so the
+    // error is visible instead of silently landing on a closed modal.
+    @if($errors->any() && old('reset_user_id'))
+        var failedModal = document.getElementById('resetPasswordModal{{ (int) old('reset_user_id') }}');
+        if (failedModal) {
+            new bootstrap.Modal(failedModal).show();
+        }
+    @endif
 });
 </script>
 @endpush

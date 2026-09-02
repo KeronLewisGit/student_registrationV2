@@ -1,0 +1,4 @@
+# Uploaded files must never execute as code.
+<FilesMatch "\.(php|php8|phtml|phar|cgi|pl)$">
+  Require all denied
+</FilesMatch>

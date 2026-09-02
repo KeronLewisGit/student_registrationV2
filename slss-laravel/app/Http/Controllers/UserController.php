@@ -66,6 +66,18 @@ class UserController extends Controller
             'role' => 'required|in:admin,staff,viewer',
         ]);
 
+        // Prevent demoting the last admin (mirrors the guard in destroy());
+        // otherwise no account can reach user management again.
+        if (
+            $user->role === 'admin'
+            && $validated['role'] !== 'admin'
+            && User::where('role', 'admin')->count() === 1
+        ) {
+            return back()
+                ->withInput()
+                ->with('error', 'Cannot change the role of the last admin user.');
+        }
+
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->role = $validated['role'];

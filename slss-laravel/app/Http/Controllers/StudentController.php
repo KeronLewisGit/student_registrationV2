@@ -22,10 +22,9 @@ class StudentController extends Controller
 
         // Get filter options
         $years = Student::getRegistrationYears();
-        $studentNames = Student::getStudentNames();
         $classes = Student::FORM_CLASSES;
 
-        return view('students.index', compact('students', 'years', 'studentNames', 'classes'));
+        return view('students.index', compact('students', 'years', 'classes'));
     }
 
     public function create()
@@ -68,11 +67,7 @@ class StudentController extends Controller
         );
 
         return redirect()
-            ->route('students.index', [
-                'year' => $student->registration_date?->year,
-                'student_class' => $student->form_1_class,
-                'student_name' => $student->student_name
-            ])
+            ->route('students.show', $student)
             ->with('success', 'Student updated successfully.');
     }
 
@@ -94,14 +89,38 @@ class StudentController extends Controller
 
     public function generateBulkPdf(Request $request)
     {
+        // Bulk export exposes the same data as reports; keep it behind the same gate.
+        $this->authorize('view-reports');
+
         $students = $this->studentService->getFilteredStudents($request->all());
         $progressId = $request->input('progress_id');
 
         return $this->pdfService->generateBulkPdf($students, $progressId);
     }
 
+    public function downloadBulkPdf(Request $request)
+    {
+        $this->authorize('view-reports');
+
+        $filename = (string) $request->query('file', '');
+
+        if (!preg_match('/^student_profiles_\d{4}-\d{2}-\d{2}_\d{6}_[A-Za-z0-9]+\.zip$/', $filename)) {
+            abort(404);
+        }
+
+        $path = storage_path('app/exports/' . $filename);
+
+        if (!is_file($path)) {
+            abort(404, 'Export not found or already expired.');
+        }
+
+        return response()->download($path, $filename);
+    }
+
     public function getBulkPdfProgress(Request $request)
     {
+        $this->authorize('view-reports');
+
         $progressId = $request->input('progress_id');
 
         if (!$progressId) {

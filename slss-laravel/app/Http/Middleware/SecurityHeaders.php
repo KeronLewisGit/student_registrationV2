@@ -23,8 +23,10 @@ class SecurityHeaders
         // Prevent clickjacking
         $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
 
-        // XSS Protection (legacy but still useful for older browsers)
-        $response->headers->set('X-XSS-Protection', '1; mode=block');
+        // Enforce HTTPS for a year once the site has been visited over HTTPS
+        if ($request->secure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+        }
 
         // Referrer Policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
