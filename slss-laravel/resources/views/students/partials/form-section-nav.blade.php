@@ -25,6 +25,18 @@
         nav.appendChild(link);
     });
 
+    // The nav can wrap to multiple rows, so compute the anchor clearance from
+    // its real height (fixed header + nav + breathing room) instead of a fixed
+    // value — otherwise jump targets land hidden underneath the sticky nav.
+    function setScrollMargins() {
+        const clearance = 78 + nav.offsetHeight + 16;
+        sections.forEach(function(section) {
+            section.style.scrollMarginTop = clearance + 'px';
+        });
+    }
+    setScrollMargins();
+    window.addEventListener('resize', setScrollMargins);
+
     // Highlight the section currently in view
     const links = nav.querySelectorAll('a');
     const observer = new IntersectionObserver(function(entries) {

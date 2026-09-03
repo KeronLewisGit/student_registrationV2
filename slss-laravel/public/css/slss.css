@@ -54,16 +54,13 @@
     border-bottom: 2px solid var(--primary-light);
 }
 
-/* --- Section jump navigation (long forms) -------------------------------- */
+/* --- Section jump navigation (long forms) --------------------------------
+   Bootstrap sets `:root { scroll-behavior: smooth }`, but Chrome abandons
+   long smooth scrolls on these tall forms, leaving anchor jumps stuck at the
+   starting position. Instant jumps are reliable everywhere. */
 
 html {
-    scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    html {
-        scroll-behavior: auto;
-    }
+    scroll-behavior: auto !important;
 }
 
 .form-section-nav {
