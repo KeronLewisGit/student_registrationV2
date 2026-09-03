@@ -12,7 +12,7 @@
 @push('styles')
 <style>
     .profile-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
         border-radius: 16px;
         padding: 2rem;
         color: white;
@@ -30,12 +30,12 @@
     }
 
     .info-card {
-        background: white;
+        background: var(--bg-card);
         border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--border-color);
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
@@ -49,12 +49,12 @@
         align-items: center;
         margin-bottom: 1.25rem;
         padding-bottom: 0.75rem;
-        border-bottom: 2px solid #4f46e5;
+        border-bottom: 2px solid var(--primary-color);
     }
 
     .info-card-header i {
         font-size: 1.5rem;
-        color: #4f46e5;
+        color: var(--primary-color);
         margin-right: 0.75rem;
         width: 32px;
         text-align: center;
@@ -64,7 +64,7 @@
         margin: 0;
         font-size: 1.125rem;
         font-weight: 700;
-        color: #1e293b;
+        color: var(--text-normal);
     }
 
     .info-row {
@@ -81,7 +81,7 @@
     .info-label {
         font-size: 0.75rem;
         font-weight: 600;
-        color: #64748b;
+        color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         margin-bottom: 0.25rem;
@@ -90,12 +90,12 @@
     .info-value {
         font-size: 1rem;
         font-weight: 500;
-        color: #1e293b;
+        color: var(--text-normal);
         word-wrap: break-word;
     }
 
     .info-value.empty {
-        color: #94a3b8;
+        color: var(--text-muted);
         font-style: italic;
     }
 
@@ -115,6 +115,11 @@
     .badge-female {
         background: #fce7f3;
         color: #be185d;
+    }
+
+    .badge-other {
+        background: #ede9fe;
+        color: #5b21b6;
     }
 
     .action-buttons {
@@ -269,7 +274,7 @@
         }
 
         .info-label {
-            font-size: 0.65rem;
+            font-size: 0.75rem; /* 12px floor for legibility */
         }
 
         .info-value {
@@ -316,19 +321,26 @@
             @endif
         </div>
         <div class="col">
-            <h2 class="mb-2" style="font-size: 2rem; font-weight: 700;">
+            <h2 class="mb-2" style="font-size: 1.75rem; font-weight: 700;">
                 {{ ucwords(strtolower($student->student_name)) }}
             </h2>
             <div class="d-flex gap-3 flex-wrap align-items-center">
                 @if($student->student_gender)
-                    <span class="badge-status {{ $student->student_gender === 'Male' ? 'badge-male' : 'badge-female' }}">
-                        <i class="fas fa-{{ $student->student_gender === 'Male' ? 'mars' : 'venus' }} me-1"></i>
+                    @php
+                        $genderBadge = match($student->student_gender) {
+                            'Male' => ['badge-male', 'mars'],
+                            'Female' => ['badge-female', 'venus'],
+                            default => ['badge-other', 'user'],
+                        };
+                    @endphp
+                    <span class="badge-status {{ $genderBadge[0] }}">
+                        <i class="fas fa-{{ $genderBadge[1] }} me-1" aria-hidden="true"></i>
                         {{ $student->student_gender }}
                     </span>
                 @endif
                 @if($student->form_1_class)
-                    <span class="badge-status" style="background: white; color: #667eea;">
-                        <i class="fas fa-graduation-cap me-1"></i>{{ $student->form_1_class }}
+                    <span class="badge-status" style="background: white; color: var(--primary-color);">
+                        <i class="fas fa-graduation-cap me-1" aria-hidden="true"></i>{{ $student->form_1_class }}
                     </span>
                 @endif
                 @if($student->student_sea_number)

@@ -107,11 +107,13 @@ class ImportController extends Controller
         try {
             $result = $this->importService->import($request->file('csv_file'));
 
-            return back()->with('success',
-                "Import completed successfully. Imported: {$result['imported']}, Skipped: {$result['skipped']}"
-            );
+            $message = "Import completed. Imported: {$result['imported']}, Skipped: {$result['skipped']}.";
 
-        } catch (\Exception $e) {
+            return back()
+                ->with($result['skipped'] > 0 ? 'warning' : 'success', $message)
+                ->with('import_errors', $result['errors']);
+
+        } catch (\Throwable $e) {
             return back()->with('error', 'Import failed: ' . $e->getMessage());
         }
     }

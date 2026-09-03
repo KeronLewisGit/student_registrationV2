@@ -31,6 +31,11 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Student Management Routes
+    // (registered before the resource so "students-trash" isn't captured by students/{student})
+    Route::get('/students-trash', [StudentController::class, 'trash'])->name('students.trash');
+    Route::post('/students/{student}/restore', [StudentController::class, 'restore'])
+        ->withTrashed()
+        ->name('students.restore');
     Route::resource('students', StudentController::class);
 
     // PDF Generation Routes

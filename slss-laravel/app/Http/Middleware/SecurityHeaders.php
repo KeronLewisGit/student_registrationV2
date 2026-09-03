@@ -31,15 +31,20 @@ class SecurityHeaders
         // Referrer Policy
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        // Content Security Policy
+        // Content Security Policy.
+        // The CDN hosts must be listed explicitly: the app loads Bootstrap,
+        // jQuery, DataTables and Font Awesome from CDNs, and a bare 'self'
+        // policy blocks them all, leaving the app unstyled and non-functional.
         $response->headers->set('Content-Security-Policy',
             "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " .
-            "style-src 'self' 'unsafe-inline'; " .
-            "img-src 'self' data: https:; " .
-            "font-src 'self' data:; " .
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net https://code.jquery.com; " .
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://cdn.datatables.net https://fonts.googleapis.com; " .
+            "img-src 'self' data:; " .
+            "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com; " .
             "connect-src 'self'; " .
-            "frame-ancestors 'self'"
+            "frame-ancestors 'self'; " .
+            "object-src 'none'; " .
+            "base-uri 'self'"
         );
 
         // Permissions Policy (formerly Feature-Policy)

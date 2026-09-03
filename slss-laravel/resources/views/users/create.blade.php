@@ -12,13 +12,7 @@
 
 @push('styles')
 <style>
-    .form-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        border: 1px solid var(--border-color);
-    }
+    /* Page-specific: password helper styles (shared form styles live in css/slss.css) */
     .password-strength {
         margin-top: 0.5rem;
         font-size: 0.875rem;
@@ -34,39 +28,7 @@
         padding-left: 1.5rem;
     }
 
-    /* Mobile Responsive */
     @media (max-width: 768px) {
-        .form-card {
-            padding: 1.5rem;
-            border-radius: 8px;
-        }
-
-        .form-label {
-            font-size: 0.9rem;
-            margin-bottom: 0.375rem;
-        }
-
-        .form-control,
-        .form-select {
-            min-height: 44px;
-            font-size: 16px; /* Prevents iOS zoom */
-        }
-
-        .btn {
-            min-height: 44px;
-            font-size: 0.95rem;
-        }
-
-        /* Header section */
-        .d-flex.justify-content-between {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .d-flex.justify-content-between .btn {
-            width: 100%;
-        }
-
         .password-requirements {
             padding: 0.875rem;
             font-size: 0.9rem;
@@ -74,27 +36,6 @@
     }
 
     @media (max-width: 576px) {
-        .form-card {
-            padding: 1rem;
-        }
-
-        .form-card h2 {
-            font-size: 1.25rem;
-        }
-
-        .form-card p {
-            font-size: 0.875rem;
-        }
-
-        /* Stack action buttons vertically */
-        .d-flex.gap-2 {
-            flex-direction: column;
-        }
-
-        .d-flex.gap-2 .btn {
-            width: 100%;
-        }
-
         .password-requirements {
             padding: 0.75rem;
             font-size: 0.875rem;
@@ -125,9 +66,9 @@
 
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">Full Name *</label>
+                <label class="form-label" for="field_name">Full Name *</label>
                 <input type="text"
-                       name="name"
+                       id="field_name" name="name"
                        class="form-control @error('name') is-invalid @enderror"
                        value="{{ old('name') }}"
                        required
@@ -138,9 +79,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Email Address *</label>
+                <label class="form-label" for="field_email">Email Address *</label>
                 <input type="email"
-                       name="email"
+                       id="field_email" name="email"
                        class="form-control @error('email') is-invalid @enderror"
                        value="{{ old('email') }}"
                        required>
@@ -150,17 +91,17 @@
             </div>
 
             <div class="col-md-12">
-                <label class="form-label">User Role *</label>
-                <select name="role" class="form-select @error('role') is-invalid @enderror" required>
+                <label class="form-label" for="field_role">User Role *</label>
+                <select id="field_role" name="role" class="form-select @error('role') is-invalid @enderror" required>
                     <option value="">Select Role</option>
                     <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>
-                        <i class="fas fa-user-shield"></i> Administrator - Full Access
+                        Administrator - Full Access
                     </option>
                     <option value="staff" {{ old('role') == 'staff' ? 'selected' : '' }}>
-                        <i class="fas fa-user-tie"></i> Staff - Edit Students & Import
+                        Staff - Edit Students & Import
                     </option>
                     <option value="viewer" {{ old('role') == 'viewer' ? 'selected' : '' }}>
-                        <i class="fas fa-user"></i> Viewer - View Only
+                        Viewer - View Only
                     </option>
                 </select>
                 @error('role')
@@ -169,9 +110,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Password *</label>
+                <label class="form-label" for="field_password">Password *</label>
                 <input type="password"
-                       name="password"
+                       id="field_password" name="password"
                        class="form-control @error('password') is-invalid @enderror"
                        required
                        id="password">
@@ -181,9 +122,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Confirm Password *</label>
+                <label class="form-label" for="field_password_confirmation">Confirm Password *</label>
                 <input type="password"
-                       name="password_confirmation"
+                       id="field_password_confirmation" name="password_confirmation"
                        class="form-control"
                        required>
             </div>

@@ -12,99 +12,20 @@
 
 @push('styles')
 <style>
-    .form-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        border: 1px solid var(--border-color);
-    }
+    /* Page-specific: password note (shared form styles live in css/slss.css) */
     .password-note {
         background: var(--bg-light);
         border-radius: 8px;
         padding: 1rem;
         margin-top: 1rem;
+        font-size: 0.875rem;
+        color: var(--text-muted);
     }
 
-    /* Mobile Responsive */
     @media (max-width: 768px) {
-        .form-card {
-            padding: 1.5rem;
-            border-radius: 8px;
-        }
-
-        .form-label {
-            font-size: 0.9rem;
-            margin-bottom: 0.375rem;
-        }
-
-        .form-control,
-        .form-select {
-            min-height: 44px;
-            font-size: 16px; /* Prevents iOS zoom */
-        }
-
-        .btn {
-            min-height: 44px;
-            font-size: 0.95rem;
-        }
-
-        /* Header section */
-        .d-flex.justify-content-between {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .d-flex.justify-content-between .btn {
-            width: 100%;
-        }
-
         .password-note {
             padding: 0.875rem;
             font-size: 0.9rem;
-        }
-
-        .alert {
-            padding: 0.875rem;
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .form-card {
-            padding: 1rem;
-        }
-
-        .form-card h2 {
-            font-size: 1.25rem;
-        }
-
-        .form-card p {
-            font-size: 0.875rem;
-        }
-
-        /* Stack action buttons vertically */
-        .d-flex.gap-2 {
-            flex-direction: column;
-        }
-
-        .d-flex.gap-2 .btn {
-            width: 100%;
-        }
-
-        .password-note {
-            padding: 0.75rem;
-            font-size: 0.875rem;
-        }
-
-        .password-note ul {
-            padding-left: 1.25rem;
-            font-size: 0.85rem;
-        }
-
-        .alert {
-            padding: 0.75rem;
-            font-size: 0.85rem;
         }
     }
 </style>
@@ -128,9 +49,9 @@
 
         <div class="row g-3">
             <div class="col-md-6">
-                <label class="form-label">Full Name *</label>
+                <label class="form-label" for="field_name">Full Name *</label>
                 <input type="text"
-                       name="name"
+                       id="field_name" name="name"
                        class="form-control @error('name') is-invalid @enderror"
                        value="{{ old('name', $user->name) }}"
                        required>
@@ -140,9 +61,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Email Address *</label>
+                <label class="form-label" for="field_email">Email Address *</label>
                 <input type="email"
-                       name="email"
+                       id="field_email" name="email"
                        class="form-control @error('email') is-invalid @enderror"
                        value="{{ old('email', $user->email) }}"
                        required>
@@ -152,8 +73,8 @@
             </div>
 
             <div class="col-md-12">
-                <label class="form-label">User Role *</label>
-                <select name="role" class="form-select @error('role') is-invalid @enderror" required>
+                <label class="form-label" for="field_role">User Role *</label>
+                <select id="field_role" name="role" class="form-select @error('role') is-invalid @enderror" required>
                     <option value="">Select Role</option>
                     <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>
                         Administrator - Full Access
@@ -169,7 +90,7 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
                 @if($user->role === 'admin' && \App\Models\User::where('role', 'admin')->count() === 1)
-                    <small class="text-warning d-block mt-2">
+                    <small class="text-warning-emphasis d-block mt-2">
                         <i class="fas fa-exclamation-triangle me-1"></i>
                         This is the only administrator account. Changing the role will leave the system without an admin.
                     </small>
@@ -185,9 +106,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">New Password (Optional)</label>
+                <label class="form-label" for="field_password">New Password (Optional)</label>
                 <input type="password"
-                       name="password"
+                       id="field_password" name="password"
                        class="form-control @error('password') is-invalid @enderror"
                        id="password">
                 @error('password')
@@ -196,9 +117,9 @@
             </div>
 
             <div class="col-md-6">
-                <label class="form-label">Confirm New Password</label>
+                <label class="form-label" for="field_password_confirmation">Confirm New Password</label>
                 <input type="password"
-                       name="password_confirmation"
+                       id="field_password_confirmation" name="password_confirmation"
                        class="form-control">
             </div>
 

@@ -41,11 +41,6 @@
         font-weight: 700;
         font-size: 1rem;
     }
-    .table-actions {
-        display: flex;
-        gap: 0.25rem;
-    }
-
     /* Mobile Responsive */
     @media (max-width: 768px) {
         .user-avatar {
@@ -68,12 +63,6 @@
     }
 
     @media (max-width: 576px) {
-        /* Hide Created column on small screens */
-        #usersTable th:nth-child(4),
-        #usersTable td:nth-child(4) {
-            display: none;
-        }
-
         .role-badge {
             font-size: 0.7rem;
             padding: 0.2rem 0.4rem;
@@ -149,7 +138,7 @@
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
             </div>
-            <h3 class="stat-value">{{ $users->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $users->count() }}</div>
             <p class="stat-label">Total Users</p>
         </div>
     </div>
@@ -158,7 +147,7 @@
             <div class="stat-icon warning">
                 <i class="fas fa-user-shield"></i>
             </div>
-            <h3 class="stat-value">{{ $users->where('role', 'admin')->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $users->where('role', 'admin')->count() }}</div>
             <p class="stat-label">Administrators</p>
         </div>
     </div>
@@ -167,7 +156,7 @@
             <div class="stat-icon info">
                 <i class="fas fa-user-tie"></i>
             </div>
-            <h3 class="stat-value">{{ $users->where('role', 'staff')->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $users->where('role', 'staff')->count() }}</div>
             <p class="stat-label">Staff Members</p>
         </div>
     </div>
@@ -176,7 +165,7 @@
             <div class="stat-icon success">
                 <i class="fas fa-user"></i>
             </div>
-            <h3 class="stat-value">{{ $users->where('role', 'viewer')->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $users->where('role', 'viewer')->count() }}</div>
             <p class="stat-label">Viewers</p>
         </div>
     </div>
@@ -200,11 +189,11 @@
                 <table class="table table-hover align-middle" id="usersTable">
                     <thead>
                         <tr>
-                            <th>User</th>
-                            <th>Email</th>
-                            <th>Role</th>
-                            <th>Created</th>
-                            <th>Actions</th>
+                            <th scope="col">User</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Role</th>
+                            <th scope="col">Created</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -243,15 +232,17 @@
                                 <div class="table-actions">
                                     <a href="{{ route('users.edit', $user) }}"
                                        class="btn btn-sm btn-outline-primary"
-                                       title="Edit User">
-                                        <i class="fas fa-edit"></i>
+                                       title="Edit User"
+                                       aria-label="Edit user {{ $user->name }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
                                     <button type="button"
                                             class="btn btn-sm btn-outline-warning"
                                             data-bs-toggle="modal"
                                             data-bs-target="#resetPasswordModal{{ $user->id }}"
-                                            title="Reset Password">
-                                        <i class="fas fa-key"></i>
+                                            title="Reset Password"
+                                            aria-label="Reset password for {{ $user->name }}">
+                                        <i class="fas fa-key" aria-hidden="true"></i>
                                     </button>
                                     @if($user->id !== auth()->id())
                                         <form action="{{ route('users.destroy', $user) }}"
@@ -262,8 +253,9 @@
                                             @method('DELETE')
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-danger"
-                                                    title="Delete User">
-                                                <i class="fas fa-trash"></i>
+                                                    title="Delete User"
+                                                    aria-label="Delete user {{ $user->name }}">
+                                                <i class="fas fa-trash" aria-hidden="true"></i>
                                             </button>
                                         </form>
                                     @else
@@ -286,11 +278,11 @@
             <div class="modal fade" id="resetPasswordModal{{ $user->id }}" tabindex="-1" aria-labelledby="resetPasswordModalLabel{{ $user->id }}" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
-                        <div class="modal-header bg-warning text-white">
+                        <div class="modal-header bg-warning text-dark">
                             <h5 class="modal-title" id="resetPasswordModalLabel{{ $user->id }}">
                                 <i class="fas fa-key me-2"></i>Reset Password for {{ $user->name }}
                             </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form action="{{ route('users.reset-password', $user) }}" method="POST">
                             @csrf
@@ -411,6 +403,7 @@ $(document).ready(function() {
         $('#usersTable').DataTable({
             pageLength: pageLength,
             order: [[3, 'desc']], // Sort by created date
+            responsive: true, // collapse overflow columns into a tap-to-expand row
             language: {
                 search: "Search users:",
                 lengthMenu: "Show _MENU_ users per page",
@@ -420,7 +413,9 @@ $(document).ready(function() {
                 zeroRecords: "No matching users found"
             },
             columnDefs: [
-                { orderable: false, targets: [4] } // Disable sorting on actions
+                { orderable: false, targets: [4] }, // Disable sorting on actions
+                { responsivePriority: 1, targets: 0 }, // Always keep the user...
+                { responsivePriority: 2, targets: 4 }  // ...and actions visible
             ],
             // Optimize for mobile
             dom: $(window).width() < 768 ?

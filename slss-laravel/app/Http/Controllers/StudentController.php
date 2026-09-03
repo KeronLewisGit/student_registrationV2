@@ -24,7 +24,15 @@ class StudentController extends Controller
         $years = Student::getRegistrationYears();
         $classes = Student::FORM_CLASSES;
 
-        return view('students.index', compact('students', 'years', 'classes'));
+        // Stat-card counts (school-wide, independent of the active filters)
+        $stats = [
+            'total' => Student::count(),
+            'male' => Student::where('student_gender', 'Male')->count(),
+            'female' => Student::where('student_gender', 'Female')->count(),
+            'registered_this_year' => Student::whereYear('registration_date', now()->year)->count(),
+        ];
+
+        return view('students.index', compact('students', 'years', 'classes', 'stats'));
     }
 
     public function create()
@@ -79,7 +87,27 @@ class StudentController extends Controller
 
         return redirect()
             ->route('students.index')
-            ->with('success', 'Student deleted successfully.');
+            ->with('success', "\"{$student->student_name}\" was deleted. It can be restored from Recently Deleted.");
+    }
+
+    public function trash()
+    {
+        $this->authorize('delete-students');
+
+        $students = Student::onlyTrashed()->orderBy('deleted_at', 'desc')->get();
+
+        return view('students.trash', compact('students'));
+    }
+
+    public function restore(Student $student)
+    {
+        $this->authorize('delete-students');
+
+        $student->restore();
+
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', "\"{$student->student_name}\" has been restored.");
     }
 
     public function generatePdf(Student $student)

@@ -191,6 +191,7 @@ class CsvImportService
 
                 if ($validator->fails()) {
                     $skipped++;
+                    $errors[] = "Row {$rowNumber}: missing student_name — skipped.";
                     continue;
                 }
 
@@ -200,6 +201,7 @@ class CsvImportService
                     $existing = Student::where('student_birth_certificate_pin', $pin)->first();
                     if ($existing) {
                         $skipped++;
+                        $errors[] = "Row {$rowNumber}: duplicate Birth Certificate PIN ({$pin}) — a student with this PIN already exists, skipped.";
                         continue;
                     }
                 }

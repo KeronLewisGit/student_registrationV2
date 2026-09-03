@@ -3,6 +3,11 @@
 @section('title', 'Import Students - SLSS')
 @section('page-title', 'Import Data')
 
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('students.index') }}">Home</a></li>
+    <li class="breadcrumb-item active">Import Data</li>
+@endsection
+
 @push('styles')
 <style>
     .template-box {
@@ -10,7 +15,7 @@
         border-radius: 8px;
         padding: 1.25rem;
         margin-bottom: 1.5rem;
-        background: var(--bg-body, #f8fafc);
+        background: var(--bg-light);
     }
 
     .column-list {
@@ -105,6 +110,17 @@
 @endpush
 
 @section('content')
+@if(session('import_errors') && count(session('import_errors')) > 0)
+    <div class="alert alert-warning">
+        <h6 class="mb-2"><i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>Skipped rows</h6>
+        <ul class="mb-0 small">
+            @foreach(session('import_errors') as $importError)
+                <li>{{ $importError }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
 <div class="card">
     <div class="card-header">
         <i class="fas fa-file-import me-2"></i>Import Students from CSV

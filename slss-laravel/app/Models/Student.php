@@ -258,14 +258,15 @@ class Student extends Model
         return $query;
     }
 
-    // Get all available registration years
+    // Get all available registration years (portable across MySQL and SQLite)
     public static function getRegistrationYears(): array
     {
         return self::whereNotNull('registration_date')
-            ->selectRaw('YEAR(registration_date) as year')
-            ->distinct()
-            ->orderBy('year', 'desc')
-            ->pluck('year')
+            ->pluck('registration_date')
+            ->map(fn ($date) => (int) $date->format('Y'))
+            ->unique()
+            ->sortDesc()
+            ->values()
             ->toArray();
     }
 

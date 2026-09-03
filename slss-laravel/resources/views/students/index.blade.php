@@ -18,11 +18,6 @@
         border-radius: 6px;
     }
 
-    .table-actions {
-        display: flex;
-        gap: 0.25rem;
-    }
-
     .badge-gender-male {
         background: #dbeafe;
         color: #1e40af;
@@ -47,15 +42,21 @@
         }
 
         .table-actions {
-            gap: 0.125rem;
+            gap: 0.25rem;
         }
 
+        /* Keep icon buttons at a comfortable touch size */
         .table-actions .btn-sm {
             padding: 0.375rem 0.5rem;
+            min-width: 44px;
+            min-height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .table-actions .btn-sm i {
-            font-size: 0.75rem;
+            font-size: 0.875rem;
         }
 
         /* Improve DataTables controls spacing */
@@ -72,17 +73,11 @@
     }
 
     @media (max-width: 576px) {
-        /* Hide less important columns on small screens */
-        #studentsTable th:nth-child(5),
-        #studentsTable td:nth-child(5) {
-            display: none;
-        }
-
         .badge-status,
         .badge-class,
         .badge-gender-male,
         .badge-gender-female {
-            font-size: 0.7rem;
+            font-size: 0.75rem; /* 12px legibility floor */
             padding: 0.2rem 0.4rem;
         }
 
@@ -106,18 +101,6 @@
 
     /* Extra Small Mobile - Very aggressive optimization */
     @media (max-width: 480px) {
-        /* Hide photo column on very small screens */
-        #studentsTable th:nth-child(1),
-        #studentsTable td:nth-child(1) {
-            display: none;
-        }
-
-        /* Also hide gender column */
-        #studentsTable th:nth-child(4),
-        #studentsTable td:nth-child(4) {
-            display: none;
-        }
-
         /* Stack action buttons vertically for better touch targets */
         .table-actions {
             flex-direction: column;
@@ -127,7 +110,7 @@
 
         .table-actions .btn-sm {
             width: 100%;
-            min-height: 36px;
+            min-height: 44px;
             padding: 0.5rem;
             display: flex;
             align-items: center;
@@ -171,7 +154,7 @@
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
             </div>
-            <h3 class="stat-value">{{ \App\Models\Student::count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $stats['total'] }}</div>
             <p class="stat-label">Total Students</p>
         </div>
     </div>
@@ -180,7 +163,7 @@
             <div class="stat-icon success">
                 <i class="fas fa-user-graduate"></i>
             </div>
-            <h3 class="stat-value">{{ \App\Models\Student::where('student_gender', 'Male')->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $stats['male'] }}</div>
             <p class="stat-label">Male Students</p>
         </div>
     </div>
@@ -189,7 +172,7 @@
             <div class="stat-icon warning">
                 <i class="fas fa-user-graduate"></i>
             </div>
-            <h3 class="stat-value">{{ \App\Models\Student::where('student_gender', 'Female')->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $stats['female'] }}</div>
             <p class="stat-label">Female Students</p>
         </div>
     </div>
@@ -198,7 +181,7 @@
             <div class="stat-icon info">
                 <i class="fas fa-calendar-plus"></i>
             </div>
-            <h3 class="stat-value">{{ \App\Models\Student::whereYear('registration_date', date('Y'))->count() }}</h3>
+            <div class="stat-value" style="font-size: 1.75rem; font-weight: 700;">{{ $stats['registered_this_year'] }}</div>
             <p class="stat-label">Registered in {{ date('Y') }}</p>
         </div>
     </div>
@@ -286,13 +269,13 @@
                 <table class="table table-hover align-middle" id="studentsTable">
                     <thead>
                         <tr>
-                            <th>Photo</th>
-                            <th>Student Name</th>
-                            <th>Form Class</th>
-                            <th>Gender</th>
-                            <th>Birth Date</th>
-                            <th>Registration Date</th>
-                            <th>Actions</th>
+                            <th scope="col">Photo</th>
+                            <th scope="col">Student Name</th>
+                            <th scope="col">Form Class</th>
+                            <th scope="col">Gender</th>
+                            <th scope="col">Birth Date</th>
+                            <th scope="col">Registration Date</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -345,32 +328,36 @@
                                 <div class="table-actions">
                                     <a href="{{ route('students.show', $student) }}"
                                        class="btn btn-sm btn-outline-secondary"
-                                       title="View Profile">
-                                        <i class="fas fa-eye"></i>
+                                       title="View Profile"
+                                       aria-label="View profile of {{ $student->student_name }}">
+                                        <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
                                     <a href="{{ route('students.pdf', $student) }}"
                                        class="btn btn-sm btn-outline-success"
-                                       title="Download PDF">
-                                        <i class="fas fa-file-pdf"></i>
+                                       title="Download PDF"
+                                       aria-label="Download PDF for {{ $student->student_name }}">
+                                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
                                     </a>
                                     @can('edit-students')
                                     <a href="{{ route('students.edit', $student) }}"
                                        class="btn btn-sm btn-outline-primary"
-                                       title="Edit">
-                                        <i class="fas fa-edit"></i>
+                                       title="Edit"
+                                       aria-label="Edit {{ $student->student_name }}">
+                                        <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
                                     @endcan
                                     @can('delete-students')
                                     <form action="{{ route('students.destroy', $student) }}"
                                           method="POST"
                                           class="d-inline"
-                                          onsubmit="return confirm('Are you sure you want to delete this student?');">
+                                          onsubmit="return confirm({{ Illuminate\Support\Js::from('Delete ' . $student->student_name . '? The record can be restored by an administrator if needed.') }});">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
                                                 class="btn btn-sm btn-outline-danger"
-                                                title="Delete">
-                                            <i class="fas fa-trash"></i>
+                                                title="Delete"
+                                                aria-label="Delete {{ $student->student_name }}">
+                                            <i class="fas fa-trash" aria-hidden="true"></i>
                                         </button>
                                     </form>
                                     @endcan
@@ -389,9 +376,9 @@
 <div class="modal fade" id="pdfExportModal" tabindex="-1" aria-labelledby="pdfExportModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-info text-white">
+            <div class="modal-header text-white" style="background: var(--primary-color);">
                 <h5 class="modal-title" id="pdfExportModalLabel">
-                    <i class="fas fa-file-pdf me-2"></i>Exporting Student Profiles
+                    <i class="fas fa-file-pdf me-2" aria-hidden="true"></i>Exporting Student Profiles
                 </h5>
             </div>
             <div class="modal-body">
@@ -403,19 +390,19 @@
                     <i class="fas fa-times-circle text-danger d-none" id="exportError" style="font-size: 3rem;"></i>
                 </div>
 
-                <p class="text-center mb-3 fw-bold" id="exportMessage">Initializing export...</p>
+                <p class="text-center mb-3 fw-bold" id="exportMessage" aria-live="polite">Initializing export...</p>
 
                 <div class="progress" style="height: 8px;">
                     <div class="progress-bar progress-bar-striped progress-bar-animated bg-info"
                          role="progressbar"
                          id="exportProgressBar"
-                         style="width: 100%"
-                         aria-valuenow="100"
+                         style="width: 0%"
+                         aria-valuenow="0"
                          aria-valuemin="0"
                          aria-valuemax="100"></div>
                 </div>
 
-                <p class="text-center mt-3 small text-muted" id="exportDetails">
+                <p class="text-center mt-3 small text-muted" id="exportDetails" aria-live="polite">
                     This may take a few moments...
                 </p>
             </div>
@@ -442,6 +429,7 @@ $(document).ready(function() {
         $('#studentsTable').DataTable({
             pageLength: pageLength,
             order: [[5, 'desc']], // Sort by registration date (newest first)
+            responsive: true, // collapse overflow columns into a tap-to-expand row
             language: {
                 search: "Search students:",
                 lengthMenu: "Show _MENU_ students per page",
@@ -451,7 +439,10 @@ $(document).ready(function() {
                 zeroRecords: "No matching students found"
             },
             columnDefs: [
-                { orderable: false, targets: [0, 6] } // Disable sorting on photo and actions
+                { orderable: false, targets: [0, 6] }, // Disable sorting on photo and actions
+                { responsivePriority: 1, targets: 1 }, // Always keep name...
+                { responsivePriority: 2, targets: 6 }, // ...and actions visible
+                { responsivePriority: 10001, targets: 0 } // Photo collapses first
             ],
             // Optimize for mobile
             dom: $(window).width() < 768 ?
@@ -569,7 +560,7 @@ $(document).ready(function() {
                         lastProgress = currentProgress;
 
                         // Update progress bar (only if increased)
-                        $('#exportProgressBar').css('width', currentProgress + '%');
+                        $('#exportProgressBar').css('width', currentProgress + '%').attr('aria-valuenow', currentProgress);
 
                         // Update message
                         $('#exportMessage').text(progress.message || 'Processing...');

@@ -6,9 +6,14 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SLSS Student Management')</title>
     <link rel="icon" type="image/png" href="{{ asset('images/successlogo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link href="{{ asset('css/slss.css') }}" rel="stylesheet">
     <style>
         :root {
             --primary-color: #4f46e5;
@@ -18,6 +23,10 @@
             --danger-red: #ef4444;
             --warning-yellow: #f59e0b;
             --info-blue: #3b82f6;
+            /* Accessible button fills: ≥4.5:1 contrast with white label text */
+            --btn-success: #047857;
+            --btn-danger: #dc2626;
+            --btn-info: #1d4ed8;
             --bg-light: #f8fafc;
             --bg-white: #ffffff;
             --bg-sidebar: #1e293b;
@@ -27,6 +36,9 @@
             --text-muted: #64748b;
             --border-color: #e2e8f0;
             --sidebar-width: 260px;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
             --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
             --shadow-md: 0 2px 8px rgba(0,0,0,0.1);
             --shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
@@ -47,14 +59,21 @@
             --shadow-lg: 0 4px 12px rgba(0,0,0,0.5);
         }
 
-        * {
-            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        }
-
         body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: var(--bg-light);
+            color: var(--text-normal);
             min-height: 100vh;
             overflow-x: hidden;
+        }
+
+        /* Respect users who prefer less motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
 
         /* Sidebar Navigation */
@@ -66,7 +85,7 @@
             width: var(--sidebar-width);
             background: var(--bg-sidebar);
             padding: 0;
-            z-index: 1000;
+            z-index: 1020;
             box-shadow: 2px 0 12px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
         }
@@ -97,6 +116,10 @@
 
         .sidebar-menu {
             padding: 1rem 0;
+            /* Scroll the menu on short viewports instead of sliding under
+               the pinned user block at the bottom */
+            overflow-y: auto;
+            max-height: calc(100vh - 90px - 72px); /* brand block + user block */
         }
 
         .sidebar-menu-item {
@@ -250,7 +273,7 @@
             position: fixed;
             top: 1rem;
             left: 1rem;
-            z-index: 1001;
+            z-index: 1030;
             background: var(--bg-sidebar);
             color: white;
             border: none;
@@ -260,7 +283,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* Mobile Overlay */
+        /* Mobile Overlay (above the top header, below the sidebar and toggle) */
         .mobile-overlay {
             display: none;
             position: fixed;
@@ -269,7 +292,7 @@
             right: 0;
             bottom: 0;
             background: rgba(0,0,0,0.5);
-            z-index: 999;
+            z-index: 1010;
             opacity: 0;
             transition: opacity 0.3s;
         }
@@ -350,8 +373,8 @@
 
         /* Stats Cards */
         .stat-card {
-            background: white;
-            border-radius: 12px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
             border: 1px solid var(--border-color);
             transition: all 0.2s;
@@ -359,7 +382,7 @@
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            box-shadow: var(--shadow-md);
         }
 
         .stat-icon {
@@ -409,13 +432,13 @@
         /* Card Styles */
         .card {
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
             overflow: hidden;
         }
 
         .card-header {
-            background: white;
+            background: var(--bg-card);
             border-bottom: 1px solid var(--border-color);
             padding: 1.25rem 1.5rem;
             font-weight: 700;
@@ -427,12 +450,16 @@
             padding: 1.5rem;
         }
 
-        /* Buttons */
+        /* Buttons — solid variants keep no border; outline variants keep
+           Bootstrap's border (a bare `border: none` on .btn erased them). */
         .btn {
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             padding: 0.625rem 1.25rem;
             font-weight: 600;
             transition: all 0.2s;
+        }
+
+        .btn-primary, .btn-success, .btn-danger, .btn-warning, .btn-info, .btn-secondary {
             border: none;
         }
 
@@ -447,41 +474,71 @@
             box-shadow: 0 4px 12px rgba(79,70,229,0.3);
         }
 
+        /* Fill colors chosen for ≥4.5:1 contrast with their label text */
         .btn-success {
-            background: var(--success-green);
+            background: var(--btn-success);
             color: white;
         }
 
         .btn-success:hover {
-            background: #059669;
+            background: #065f46;
+            color: white;
             transform: translateY(-1px);
         }
 
         .btn-danger {
-            background: var(--danger-red);
+            background: var(--btn-danger);
             color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            color: white;
+            transform: translateY(-1px);
         }
 
         .btn-warning {
             background: var(--warning-yellow);
-            color: white;
+            color: #78350f;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            color: #451a03;
+            transform: translateY(-1px);
         }
 
         .btn-info {
-            background: var(--info-blue);
+            background: var(--btn-info);
             color: white;
+        }
+
+        .btn-info:hover {
+            background: #1e40af;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Visible keyboard focus for every interactive element */
+        .btn:focus-visible,
+        a:focus-visible,
+        button:focus-visible,
+        .sidebar-menu-link:focus-visible,
+        .theme-toggle:focus-visible {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
         }
 
         /* Forms */
         .form-control, .form-select {
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             border: 1.5px solid var(--border-color);
             padding: 0.625rem 0.875rem;
         }
 
         .form-control:focus, .form-select:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.4);
         }
 
         .form-label {
@@ -606,61 +663,6 @@
             text-decoration: underline;
         }
 
-        /* Version History Modal Styles */
-        .version-item {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .version-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .version-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .version-badge {
-            display: inline-block;
-            padding: 0.375rem 0.75rem;
-            background: var(--bg-light);
-            color: var(--text-dark);
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-
-        .version-badge.current {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .version-date {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
-
-        .version-features {
-            margin: 0;
-            padding-left: 1.5rem;
-            font-size: 0.875rem;
-            color: var(--text-dark);
-        }
-
-        .version-features li {
-            margin-bottom: 0.375rem;
-        }
-
-        .version-features li:last-child {
-            margin-bottom: 0;
-        }
-
         /* Dark Mode Specific Styles */
         [data-theme="dark"] .card {
             background: var(--bg-card);
@@ -745,6 +747,44 @@
             color: var(--text-muted);
         }
 
+        /* Shared page components — defined once here (with dark-mode support
+           via tokens) instead of per-view hardcoded white backgrounds. */
+        .form-card,
+        .info-card,
+        .report-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-normal);
+        }
+
+        .sticky-bottom-actions {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+        }
+
+        [data-theme="dark"] .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        [data-theme="dark"] .table-light,
+        [data-theme="dark"] .table thead th {
+            background-color: #0f172a;
+            color: var(--text-normal);
+            border-color: var(--border-color);
+        }
+
+        /* Bootstrap 5.3 tables paint via their own CSS variables; point them
+           at the theme tokens so rows follow dark mode too. */
+        [data-theme="dark"] .table {
+            --bs-table-bg: var(--bg-card);
+            --bs-table-color: var(--text-normal);
+            --bs-table-border-color: var(--border-color);
+            --bs-table-striped-bg: #253045;
+            --bs-table-striped-color: var(--text-normal);
+            --bs-table-hover-bg: #2b3650;
+            --bs-table-hover-color: var(--text-normal);
+        }
+
         /* Dark mode transitions */
         body,
         .card,
@@ -764,10 +804,14 @@
             }
             .sidebar {
                 transform: translateX(-100%);
+                /* Keep hidden drawer out of the tab order while off-screen */
+                visibility: hidden;
+                transition: transform 0.3s ease, visibility 0.3s ease;
             }
 
             .sidebar.show {
                 transform: translateX(0);
+                visibility: visible;
             }
 
             .sidebar-toggle {
@@ -1081,8 +1125,8 @@
     <div class="mobile-overlay no-print" id="mobileOverlay"></div>
 
     <!-- Mobile Toggle -->
-    <button class="sidebar-toggle no-print" id="sidebarToggle">
-        <i class="fas fa-bars"></i>
+    <button class="sidebar-toggle no-print" id="sidebarToggle" aria-label="Open navigation menu" aria-expanded="false" aria-controls="sidebar">
+        <i class="fas fa-bars" aria-hidden="true"></i>
     </button>
 
     <!-- Sidebar -->
@@ -1115,6 +1159,12 @@
                         <i class="fas fa-plus-circle"></i>
                         <span>Add Student</span>
                     </a>
+                    @can('delete-students')
+                    <a href="{{ route('students.trash') }}" class="sidebar-submenu-link {{ request()->routeIs('students.trash') ? 'active' : '' }}">
+                        <i class="fas fa-trash-restore"></i>
+                        <span>Recently Deleted</span>
+                    </a>
+                    @endcan
                 </div>
             </div>
             @endcan
@@ -1178,8 +1228,8 @@
                 </div>
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf
-                    <button type="submit" class="sidebar-logout" title="Logout">
-                        <i class="fas fa-sign-out-alt"></i>
+                    <button type="submit" class="sidebar-logout" title="Logout" aria-label="Log out">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     </button>
                 </form>
             </div>
@@ -1210,6 +1260,13 @@
             </div>
         @endif
 
+        @if(session('warning'))
+            <div class="alert alert-warning alert-dismissible fade show no-print" role="alert">
+                <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>{{ session('warning') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
         @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show no-print" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
@@ -1227,6 +1284,9 @@
                 </ul>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
+            {{-- Field-level errors: consumed by the inline-error script below,
+                 which marks each named field is-invalid and scrolls to the first --}}
+            <script id="validationErrors" type="application/json">@json($errors->messages())</script>
         @endif
 
         @yield('content')
@@ -1256,84 +1316,14 @@
         </div>
     </footer>
 
-    <!-- Version History Modal -->
-    <div class="modal fade" id="versionHistoryModal" tabindex="-1" aria-labelledby="versionHistoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="versionHistoryModalLabel">
-                        <i class="fas fa-code-branch me-2"></i>Version History
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge current">v1.1</span>
-                            <span class="version-date">{{ date('F Y') }} - Current</span>
-                        </div>
-                        <ul class="version-features">
-                            <li><strong>Real-time PDF export progress tracking</strong> with live updates</li>
-                            <li><strong>Bulk PDF export to ZIP</strong> with all 127 fields per student</li>
-                            <li><strong>Detailed error messages</strong> showing specific failure points</li>
-                            <li><strong>Optimized progress tracking</strong> with 50-80% reduced cache load</li>
-                            <li><strong>Monotonic progress bar</strong> - never decreases or jumps backward</li>
-                            <li><strong>Administrator password reset</strong> from user management</li>
-                            <li><strong>Storage diagnostics endpoint</strong> for troubleshooting downloads</li>
-                            <li><strong>Fixed deployment system</strong> with automatic storage symlink creation</li>
-                            <li><strong>Cache failure protection</strong> - exports complete even if tracking fails</li>
-                            <li><strong>Production-ready progress tracking</strong> with race condition prevention</li>
-                        </ul>
-                    </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v1.0</span>
-                            <span class="version-date">July 2026</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Complete mobile responsiveness across all devices</li>
-                            <li>127-field comprehensive student profiles</li>
-                            <li>Webhook integration with registration form</li>
-                            <li>User management with role-based access control</li>
-                            <li>PDF generation with official document watermarks</li>
-                            <li>Advanced search and filtering capabilities</li>
-                            <li>DataTables integration for efficient data management</li>
-                        </ul>
-                    </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v0.9</span>
-                            <span class="version-date">January 2026</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Beta testing with form integration</li>
-                            <li>PDF generation functionality</li>
-                            <li>Enhanced security features</li>
-                        </ul>
-                    </div>
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v0.8</span>
-                            <span class="version-date">December 2025</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Initial development</li>
-                            <li>Core student management features</li>
-                            <li>Basic CRUD operations</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('partials.version-history-modal')
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <script>
         // Sidebar toggle for mobile
@@ -1344,14 +1334,25 @@
         function toggleSidebar() {
             sidebar.classList.toggle('show');
             mobileOverlay.classList.toggle('show');
-            document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : '';
+            const open = sidebar.classList.contains('show');
+            document.body.style.overflow = open ? 'hidden' : '';
+            sidebarToggle?.setAttribute('aria-expanded', open ? 'true' : 'false');
         }
 
         function closeSidebar() {
             sidebar.classList.remove('show');
             mobileOverlay.classList.remove('show');
             document.body.style.overflow = '';
+            sidebarToggle?.setAttribute('aria-expanded', 'false');
         }
+
+        // Escape closes the mobile drawer and returns focus to the toggle
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && sidebar?.classList.contains('show')) {
+                closeSidebar();
+                sidebarToggle?.focus();
+            }
+        });
 
         sidebarToggle?.addEventListener('click', function(e) {
             e.stopPropagation();
@@ -1431,6 +1432,95 @@
                 themeToggle.setAttribute('title', 'Switch to Dark Mode');
             }
         }
+
+        // ------------------------------------------------------------------
+        // Inline validation errors: mark each failed field, show its message
+        // next to it, and scroll to the first one. Driven by the JSON blob
+        // emitted alongside the error summary above.
+        // ------------------------------------------------------------------
+        (function() {
+            const blob = document.getElementById('validationErrors');
+            if (!blob) return;
+
+            let errors;
+            try { errors = JSON.parse(blob.textContent); } catch (e) { return; }
+
+            let first = null;
+            Object.entries(errors).forEach(function([field, messages]) {
+                const input = document.querySelector('[name="' + CSS.escape(field) + '"]');
+                if (!input) return;
+
+                input.classList.add('is-invalid');
+                input.setAttribute('aria-invalid', 'true');
+
+                // Don't duplicate a server-rendered error block
+                if (!input.parentElement.querySelector('.invalid-feedback')) {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    feedback.textContent = messages[0];
+                    input.insertAdjacentElement('afterend', feedback);
+                }
+
+                if (!first) first = input;
+            });
+
+            if (first) {
+                first.scrollIntoView({ block: 'center' });
+                first.focus({ preventScroll: true });
+            }
+        })();
+
+        // ------------------------------------------------------------------
+        // Double-submit protection: disable the submit button and show a
+        // spinner once a POST form is submitted.
+        // ------------------------------------------------------------------
+        document.querySelectorAll('form[method="POST"], form[method="post"]').forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                const button = form.querySelector('button[type="submit"]');
+                if (!button || button.disabled) return;
+                // Disable after this tick so the click still submits the form;
+                // skip when another handler (e.g. a confirm()) cancelled it
+                setTimeout(function() {
+                    if (event.defaultPrevented) return;
+                    button.disabled = true;
+                    button.setAttribute('aria-busy', 'true');
+                    const icon = button.querySelector('i.fas, i.far');
+                    if (icon) {
+                        icon.className = 'fas fa-spinner fa-spin me-1';
+                    } else {
+                        button.insertAdjacentHTML('afterbegin', '<i class="fas fa-spinner fa-spin me-1" aria-hidden="true"></i>');
+                    }
+                }, 0);
+            });
+        });
+
+        // ------------------------------------------------------------------
+        // Unsaved-changes warning for long forms marked data-warn-unsaved.
+        // ------------------------------------------------------------------
+        document.querySelectorAll('form[data-warn-unsaved]').forEach(function(form) {
+            let dirty = false;
+            form.addEventListener('input', function() { dirty = true; });
+            form.addEventListener('change', function() { dirty = true; });
+            form.addEventListener('submit', function() { dirty = false; });
+
+            window.addEventListener('beforeunload', function(event) {
+                if (dirty) {
+                    event.preventDefault();
+                    event.returnValue = '';
+                }
+            });
+        });
+
+        // ------------------------------------------------------------------
+        // Auto-dismiss success flashes after 6 seconds (errors stay).
+        // ------------------------------------------------------------------
+        document.querySelectorAll('.alert-success.alert-dismissible').forEach(function(alertEl) {
+            setTimeout(function() {
+                if (window.bootstrap && alertEl.isConnected) {
+                    bootstrap.Alert.getOrCreateInstance(alertEl).close();
+                }
+            }, 6000);
+        });
     </script>
     @stack('scripts')
 </body>

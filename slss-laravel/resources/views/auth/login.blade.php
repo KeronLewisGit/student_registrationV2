@@ -5,17 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - SLSS Student Management</title>
     <link rel="icon" type="image/png" href="{{ asset('images/successlogo.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     <style>
         :root {
+            /* Shared brand tokens — keep in sync with layouts/app.blade.php */
             --primary-color: #4f46e5;
             --primary-dark: #4338ca;
-            --bg-gradient-1: #6366f1;
-            --bg-gradient-2: #8b5cf6;
+            --bg-gradient-1: #4f46e5;
+            --bg-gradient-2: #7c3aed;
         }
 
-        * {
+        body {
             font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -69,7 +73,6 @@
         }
 
         .login-left p {
-            opacity: 0.9;
             font-size: 1rem;
         }
 
@@ -111,16 +114,16 @@
         }
 
         .form-control {
-            border-radius: 10px;
+            border-radius: 8px;
             padding: 0.75rem 1rem;
             border: 2px solid #e2e8f0;
-            font-size: 0.95rem;
+            font-size: 16px; /* ≥16px prevents iOS zoom-on-focus */
             transition: all 0.2s;
         }
 
         .form-control:focus {
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79,70,229,0.1);
+            box-shadow: 0 0 0 3px rgba(79,70,229,0.4);
         }
 
         .btn-primary {
@@ -197,77 +200,6 @@
             opacity: 0.8;
         }
 
-        /* Version History Modal */
-        .modal-content {
-            border-radius: 15px;
-            border: none;
-        }
-
-        .modal-header {
-            background: var(--primary-color);
-            color: white;
-            border-radius: 15px 15px 0 0;
-            border-bottom: none;
-        }
-
-        .modal-header .btn-close {
-            filter: brightness(0) invert(1);
-        }
-
-        .version-item {
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .version-item:last-child {
-            margin-bottom: 0;
-            padding-bottom: 0;
-            border-bottom: none;
-        }
-
-        .version-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .version-badge {
-            display: inline-block;
-            padding: 0.375rem 0.75rem;
-            background: #f8fafc;
-            color: #0f172a;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.875rem;
-        }
-
-        .version-badge.current {
-            background: var(--primary-color);
-            color: white;
-        }
-
-        .version-date {
-            font-size: 0.875rem;
-            color: #64748b;
-        }
-
-        .version-features {
-            margin: 0;
-            padding-left: 1.5rem;
-            font-size: 0.875rem;
-            color: #0f172a;
-        }
-
-        .version-features li {
-            margin-bottom: 0.375rem;
-        }
-
-        .version-features li:last-child {
-            margin-bottom: 0;
-        }
-
         @media (max-width: 768px) {
             body {
                 gap: 1.5rem;
@@ -306,7 +238,7 @@
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-container" role="main">
         <!-- Left Side - Branding -->
         <div class="login-left">
             <img src="{{ asset('images/successlogo.png') }}" alt="SLSS Logo">
@@ -403,93 +335,7 @@
         </div>
     </div>
 
-    <!-- Version History Modal -->
-    <div class="modal fade" id="versionHistoryModal" tabindex="-1" aria-labelledby="versionHistoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="versionHistoryModalLabel">
-                        <i class="fas fa-code-branch me-2"></i>Version History
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Version 1.1 -->
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge current">v1.1</span>
-                            <span class="version-date">{{ date('F Y') }} - Current</span>
-                        </div>
-                        <ul class="version-features">
-                            <li><strong>Real-time PDF export progress tracking</strong> with live updates</li>
-                            <li><strong>Bulk PDF export to ZIP</strong> with all 127 fields per student</li>
-                            <li><strong>Detailed error messages</strong> showing specific failure points</li>
-                            <li><strong>Optimized progress tracking</strong> with 50-80% reduced cache load</li>
-                            <li><strong>Monotonic progress bar</strong> - never decreases or jumps backward</li>
-                            <li><strong>Administrator password reset</strong> from user management</li>
-                            <li><strong>Storage diagnostics endpoint</strong> for troubleshooting downloads</li>
-                            <li><strong>Fixed deployment system</strong> with automatic storage symlink creation</li>
-                            <li><strong>Cache failure protection</strong> - exports complete even if tracking fails</li>
-                            <li><strong>Production-ready progress tracking</strong> with race condition prevention</li>
-                            <li><strong>Enhanced error logging</strong> throughout export process</li>
-                            <li><strong>Throttled progress updates</strong> showing more student names during export</li>
-                        </ul>
-                    </div>
-
-                    <!-- Version 1.0 -->
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v1.0</span>
-                            <span class="version-date">July 2026</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Complete mobile responsiveness across all devices</li>
-                            <li>127-field comprehensive student profiles</li>
-                            <li>Webhook integration with Elementor registration form</li>
-                            <li>Automated student data import from public form</li>
-                            <li>Role-based access control (Admin, Staff, Viewer)</li>
-                            <li>User management system with safety checks</li>
-                            <li>Advanced DataTables with search and pagination</li>
-                            <li>Print and PDF export functionality</li>
-                            <li>CSV bulk import with duplicate detection</li>
-                            <li>Professional UI with Bootstrap 5.3.2</li>
-                            <li>Touch-friendly interface meeting international standards</li>
-                            <li>Secure authentication with Laravel Sanctum</li>
-                        </ul>
-                    </div>
-
-                    <!-- Version 0.9 -->
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v0.9</span>
-                            <span class="version-date">December 2024</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Initial student management system</li>
-                            <li>Basic CRUD operations for students</li>
-                            <li>User authentication system</li>
-                            <li>Student list view with basic filtering</li>
-                            <li>Manual student creation forms</li>
-                        </ul>
-                    </div>
-
-                    <!-- Version 0.8 -->
-                    <div class="version-item">
-                        <div class="version-header">
-                            <span class="version-badge">v0.8</span>
-                            <span class="version-date">November 2024</span>
-                        </div>
-                        <ul class="version-features">
-                            <li>Project initialization</li>
-                            <li>Database schema design</li>
-                            <li>Laravel 11 setup</li>
-                            <li>Basic authentication scaffolding</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('partials.version-history-modal')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
