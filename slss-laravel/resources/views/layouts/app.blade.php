@@ -565,8 +565,10 @@
         .dataTables_wrapper .dataTables_length select {
             border-radius: 8px;
             border: 1.5px solid var(--border-color);
-            padding: 0.375rem 0.75rem;
+            /* Extra right padding keeps the value clear of the dropdown arrow */
+            padding: 0.375rem 2.25rem 0.375rem 0.875rem;
             min-height: 44px;
+            min-width: 5rem;
         }
 
         /* DataTables Pagination - Touch-Friendly */
