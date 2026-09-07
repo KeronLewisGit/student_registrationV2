@@ -2,9 +2,9 @@
      otherwise as plain text. Usage: @include('students.partials.document-value', ['value' => $student->student_sea_slip]) --}}
 @php($documentUrl = \App\Models\Student::documentUrl($value ?? null))
 @if($documentUrl)
-    <a href="{{ $documentUrl }}" target="_blank" rel="noopener">
+    <a href="{{ $documentUrl }}" target="_blank" rel="noopener" class="no-print">
         <i class="fas fa-file-alt me-1"></i>View document
-    </a>
+    </a><span class="print-only">On file</span>
 @else
-    {{ $value ?? 'N/A' }}
+    {{ filled($value) ? $value : 'N/A' }}
 @endif
