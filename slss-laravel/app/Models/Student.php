@@ -81,6 +81,50 @@ class Student extends Model
     ];
 
     /**
+     * Split a stored full name into first and last name for sorting.
+     * The last name keeps common two-word surname prefixes together
+     * ("Deandre Mc Cully" -> last "Mc Cully", "Ana De La Cruz" -> "De La Cruz").
+     *
+     * @return array{first:string, last:string}
+     */
+    public static function splitName(?string $name): array
+    {
+        $words = preg_split('/\s+/', trim((string) $name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        if (count($words) <= 1) {
+            return ['first' => $words[0] ?? '', 'last' => $words[0] ?? ''];
+        }
+
+        $prefixes = ['mc', 'mac', 'de', 'da', 'di', 'du', 'la', 'le', 'van', 'von', 'der', 'del', 'st', 'st.', 'san', 'bin', 'al'];
+        $lastStart = count($words) - 1;
+
+        // Pull surname prefixes into the last name, but always leave a first name
+        while ($lastStart > 1 && in_array(strtolower($words[$lastStart - 1]), $prefixes, true)) {
+            $lastStart--;
+        }
+
+        return [
+            'first' => implode(' ', array_slice($words, 0, $lastStart)),
+            'last' => implode(' ', array_slice($words, $lastStart)),
+        ];
+    }
+
+    /**
+     * Sort keys for the student list: by first name or by last name.
+     *
+     * @return array{first:string, last:string}
+     */
+    public function nameSortKeys(): array
+    {
+        $parts = self::splitName($this->student_name);
+
+        return [
+            'first' => strtolower($parts['first'] . ' ' . $parts['last']),
+            'last' => strtolower($parts['last'] . ' ' . $parts['first']),
+        ];
+    }
+
+    /**
      * Human label for a column name ("mother_contact" -> "Mother contact").
      */
     public static function fieldLabel(string $field): string

@@ -363,9 +363,18 @@
 
 <!-- Students Table -->
 <div class="card">
-    <div class="card-header">
-        <i class="fas fa-table me-2"></i>Student Records
-        <span class="badge bg-primary ms-2">{{ $students->count() }} {{ $students->count() === 1 ? 'student' : 'students' }}</span>
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span>
+            <i class="fas fa-table me-2"></i>Student Records
+            <span class="badge bg-primary ms-2">{{ $students->count() }} {{ $students->count() === 1 ? 'student' : 'students' }}</span>
+        </span>
+        <label class="d-flex align-items-center gap-2 mb-0 small text-muted" for="nameSortMode">
+            Sort names by
+            <select id="nameSortMode" class="form-select form-select-sm w-auto" title="Choose whether the Student Name column sorts by first name or by last name">
+                <option value="first">First name</option>
+                <option value="last">Last name</option>
+            </select>
+        </label>
     </div>
     <div class="card-body">
         @if($students->isEmpty())
@@ -378,7 +387,7 @@
                     <thead>
                         <tr>
                             <th scope="col">Photo</th>
-                            <th scope="col">Student Name</th>
+                            <th scope="col">Student Name <small class="text-muted fw-normal" id="nameSortHint"></small></th>
                             <th scope="col">Class</th>
                             <th scope="col">Complete</th>
                             <th scope="col">Gender</th>
@@ -402,7 +411,8 @@
                                          class="student-photo-thumbnail">
                                 @endif
                             </td>
-                            <td>
+                            @php($nameKeys = $student->nameSortKeys())
+                            <td data-sort-first="{{ $nameKeys['first'] }}" data-sort-last="{{ $nameKeys['last'] }}">
                                 <strong>{{ ucwords(strtolower($student->student_name)) }}</strong>
                                 @if($student->student_sea_number)
                                     <br><small class="text-muted">SEA: {{ $student->student_sea_number }}</small>
@@ -550,6 +560,15 @@ $(document).ready(function() {
         // Adjust page length based on screen size
         var pageLength = $(window).width() < 768 ? 10 : 25;
 
+        // Student Name column: sort by first or last name, chosen with #nameSortMode and remembered per browser
+        var nameSortMode = 'first';
+        try { nameSortMode = localStorage.getItem('studentsNameSort') === 'last' ? 'last' : 'first'; } catch (e) {}
+        $.fn.dataTable.ext.order['name-mode'] = function (settings, col) {
+            return this.api().column(col, { order: 'index' }).nodes().map(function (td) {
+                return td.getAttribute('data-sort-' + nameSortMode) || '';
+            });
+        };
+
         $('#studentsTable').DataTable({
             pageLength: pageLength,
             order: [[6, 'desc']], // Sort by registration date (newest first)
@@ -563,6 +582,7 @@ $(document).ready(function() {
                 zeroRecords: "No matching students found"
             },
             columnDefs: [
+                { orderDataType: 'name-mode', targets: 1 }, // sort by first or last name (see nameSortMode)
                 { orderable: false, targets: [0, 7] }, // Disable sorting on photo and actions
                 { responsivePriority: 1, targets: 1 }, // Always keep name...
                 { responsivePriority: 2, targets: 7 }, // ...and actions visible
@@ -578,6 +598,25 @@ $(document).ready(function() {
                 $('.table-actions').css('display', 'flex');
             }
         });
+
+        // Name sort mode switch
+        (function () {
+            var select = document.getElementById('nameSortMode');
+            var hint = document.getElementById('nameSortHint');
+            if (!select) { return; }
+            function apply(mode, redraw) {
+                nameSortMode = mode;
+                select.value = mode;
+                hint.textContent = mode === 'last' ? '(by last name)' : '';
+                try { localStorage.setItem('studentsNameSort', mode); } catch (e) {}
+                if (redraw) {
+                    var table = $('#studentsTable').DataTable();
+                    table.rows().invalidate().order([1, 'asc']).draw();
+                }
+            }
+            apply(nameSortMode, false);
+            select.addEventListener('change', function () { apply(this.value, true); });
+        })();
 
         // Handle responsive page length on window resize
         $(window).on('resize', function() {
