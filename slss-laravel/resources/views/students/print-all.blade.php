@@ -18,50 +18,19 @@
             break-after: auto;
         }
 
-        /* A single fixed watermark for the whole document instead of one per card,
-           so hundreds of overlapping copies don't darken the page. */
-        .profile-card::before {
-            display: none;
-        }
-        body::before {
-            content: "OFFICIAL DOCUMENT";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            font-size: 5rem;
-            font-weight: 900;
-            color: rgba(79, 70, 229, 0.08);
-            text-transform: uppercase;
-            letter-spacing: 0.5rem;
-            white-space: nowrap;
-            pointer-events: none;
-            z-index: 1;
-            user-select: none;
-        }
-
         .print-toolbar {
             position: sticky;
             top: 0;
             z-index: 10;
             background: #fff;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #d1d5db;
             padding: 0.75rem 1rem;
-            margin: -2rem -2rem 1rem;
+            margin: -2rem -1rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
             flex-wrap: wrap;
-        }
-
-        @media print {
-            body::before {
-                font-size: 4.5rem;
-                color: rgba(79, 70, 229, 0.06);
-                print-color-adjust: exact;
-                -webkit-print-color-adjust: exact;
-            }
         }
     </style>
 </head>

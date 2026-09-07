@@ -6,7 +6,10 @@
             <div class="col-md-3">
                 <h6 class="fw-bold mb-2">Passport Size Photo</h6>
                 @if($student->student_passport_photo)
-                    <img src="{{ asset($student->student_passport_photo) }}" alt="Passport photo of {{ $student->student_name }}" class="passport-photo">
+                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}"
+                         alt=""
+                         class="passport-photo"
+                         onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">
                 @else
                     <img src="{{ asset('images/noimage.jpg') }}" alt="No Image" class="passport-photo">
                 @endif
