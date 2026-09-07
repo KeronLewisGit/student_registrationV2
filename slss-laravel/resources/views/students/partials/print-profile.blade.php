@@ -1,4 +1,5 @@
 {{-- One printable student profile (header + all profile sections). Expects $student. --}}
+@php($student = $student->forPrint())
 <div class="profile-card">
     <div class="profile-inner">
         <div class="row align-items-start mb-4 print-header">

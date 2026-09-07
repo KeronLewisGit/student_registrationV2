@@ -70,6 +70,7 @@
         <div>
             <strong><i class="fas fa-print me-2"></i>{{ $students->count() }} {{ $students->count() === 1 ? 'student profile' : 'student profiles' }}</strong>
             <span class="text-muted ms-2">{{ $filterSummary }}</span>
+            <span class="text-muted ms-2 small">&middot; Formatted for Legal (8.5 &times; 14 in) paper, one student per sheet</span>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('students.index', request()->query()) }}" class="btn btn-outline-secondary btn-sm">

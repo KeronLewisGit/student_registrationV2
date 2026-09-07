@@ -1,8 +1,8 @@
 {{-- Shared print stylesheet for the single-student and bulk print pages --}}
 <style>
         @page {
-            size: Letter;
-            margin: 10mm;
+            size: Legal;
+            margin: 14mm 12mm;
         }
 
         body {
@@ -75,6 +75,12 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
+        .section-card-compact .compact-value {
+            font-weight: 500;
+            color: #1e293b;
+            margin-left: 0.75rem;
+        }
+
         .section-card h5 {
             font-size: 0.875rem;
             font-weight: 600;
@@ -127,18 +133,20 @@
         .print-only { display: none; }
 
         @media print {
-            /* Letter with a 12 mm frame; the footer sits inside the page box. */
+            /* Legal (8.5 x 14 in) with a 14 mm frame. The profile card adds its own
+               inner padding so the content keeps a margin even when the print
+               dialog's margins are set to "None". */
             @page {
-                size: Letter;
-                margin: 12mm 12mm 14mm;
+                size: Legal;
+                margin: 15mm 12mm 13mm;
             }
 
             html, body {
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #fff !important;
-                font-size: 11px;
-                line-height: 1.35;
+                font-size: 10.5px;
+                line-height: 1.3;
                 color: #111;
             }
 
@@ -146,7 +154,7 @@
             .print-only { display: inline; }
 
             .profile-card {
-                padding: 0 !important;
+                padding: 1mm 5mm 0 !important;
                 min-height: 0 !important;
             }
 
@@ -182,8 +190,8 @@
                 display: flex;
                 flex-wrap: nowrap;
                 align-items: center;
-                padding-bottom: 0.6rem;
-                margin-bottom: 0.4rem !important;
+                padding-bottom: 0.5rem;
+                margin-bottom: 0.3rem !important;
                 border-bottom: 2px solid #4f46e5;
                 break-inside: avoid;
             }
@@ -198,7 +206,7 @@
                 margin-bottom: 0.3rem;
             }
             .print-header h2 {
-                font-size: 1.45rem !important;
+                font-size: 1.35rem !important;
                 line-height: 1.2;
                 margin-bottom: 0.25rem !important;
             }
@@ -216,13 +224,13 @@
                 margin: 0.35rem 0 0;
             }
             .passport-photo {
-                width: 105px;
-                height: 105px;
+                width: 88px;
+                height: 88px;
                 border-radius: 8px;
                 border-width: 2px;
                 box-shadow: none;
             }
-            .school-logo { width: 115px; }
+            .school-logo { width: 96px; }
 
             /* Sections */
             .section-card {
@@ -230,26 +238,29 @@
                 border: 1px solid #d1d5db;
                 border-left: 3px solid #4f46e5;
                 border-radius: 6px;
-                padding: 0.6rem 0.85rem 0.45rem;
-                margin-top: 0.55rem;
+                padding: 0.45rem 0.85rem 0.3rem;
+                margin-top: 0.34rem;
                 box-shadow: none;
                 break-inside: avoid;
                 page-break-inside: avoid;
             }
             .section-card .fw-bold.border-bottom {
-                font-size: 0.9rem !important;
-                padding-bottom: 0.3rem !important;
-                margin-bottom: 0.45rem !important;
+                font-size: 0.88rem !important;
+                padding-bottom: 0.25rem !important;
+                margin-bottom: 0.35rem !important;
                 border-width: 1px !important;
             }
+            .section-card-compact { padding: 0.4rem 0.85rem; }
+            .section-card-compact .fw-bold { font-size: 0.88rem !important; }
+            .section-card-compact .compact-value { font-size: 0.8rem; }
             .section-card h5 {
                 font-size: 0.62rem;
                 letter-spacing: 0.4px;
                 margin-bottom: 0.1rem;
             }
             .section-card p {
-                font-size: 0.82rem;
-                padding: 0 0 0.4rem;
+                font-size: 0.8rem;
+                padding: 0 0 0.22rem;
                 line-height: 1.3;
             }
             .section-card a {
@@ -262,8 +273,8 @@
                 display: flex;
                 justify-content: space-between;
                 gap: 1rem;
-                margin-top: 0.7rem;
-                padding-top: 0.35rem;
+                margin-top: 0.4rem;
+                padding-top: 0.25rem;
                 border-top: 1px solid #d1d5db;
                 font-size: 0.66rem;
                 color: #64748b;

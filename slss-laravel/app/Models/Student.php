@@ -158,6 +158,37 @@ class Student extends Model
      * to a browsable URL, or null when the value isn't an actual file
      * reference (legacy rows hold plain text like "N/A" or "Yes").
      */
+    /**
+     * A copy of this student with legacy placeholder values blanked out, for
+     * printed documents. Records imported from the old portal carry Elementor
+     * dropdown defaults ("Select Blood Type"), strings made only of "N/A"
+     * tokens, and 1900-01-01 as an "empty" date; none of those should print
+     * as if they were real data.
+     */
+    public function forPrint(): static
+    {
+        $clean = clone $this;
+        $attributes = $this->getAttributes();
+
+        foreach ($attributes as $key => $value) {
+            if (!is_string($value)) {
+                continue;
+            }
+
+            $trimmed = trim($value);
+
+            if (preg_match('/^select(?: [a-z ]+)?$/i', $trimmed)                    // "Select", "Select Blood Type"
+                || preg_match('/^(?:n\/?a|none|null|nil|-)(?:[\s,.]+(?:n\/?a|none|null|nil|-))*$/i', $trimmed) // "N/a N/a N/a"
+                || preg_match('/^(?:1900|0000)-01-01/', $trimmed)) {
+                $attributes[$key] = null;
+            }
+        }
+
+        $clean->setRawAttributes($attributes, true);
+
+        return $clean;
+    }
+
     public static function documentUrl(?string $value): ?string
     {
         $value = trim((string) $value);

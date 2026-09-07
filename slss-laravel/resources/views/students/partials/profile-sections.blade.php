@@ -97,7 +97,20 @@
 </div>
 
 <!-- Transfer Information -->
-@if($student->student_transfer_status || $student->student_transfer_slip || $student->student_transfer_reason || $student->student_transfer_date || $student->student_previous_form_class || $student->student_previous_secondary_school || $student->student_previous_school_location)
+@php
+    $hasTransferDetails = $student->student_transfer_slip || $student->student_transfer_reason || $student->student_transfer_date
+        || $student->student_previous_form_class || $student->student_previous_secondary_school || $student->student_previous_school_location;
+    $isTransfer = $student->student_transfer_status && !in_array(strtolower(trim($student->student_transfer_status)), ['no', 'n/a', 'none'], true);
+@endphp
+@if($student->student_transfer_status && !$isTransfer && !$hasTransferDetails)
+{{-- Not a transfer student: one line instead of a block of N/A fields --}}
+<div class="section-card section-card-compact">
+    <div class="fw-bold" style="font-size: 1.1rem; color: #111;">
+        <i class="fas fa-exchange-alt me-2"></i>Transfer Information
+        <span class="compact-value">Not a transfer student</span>
+    </div>
+</div>
+@elseif($isTransfer || $hasTransferDetails)
 <div class="section-card">
     <div class="fw-bold mb-3 pb-2 border-bottom" style="font-size: 1.1rem; color: #111;">
         <i class="fas fa-exchange-alt me-2"></i>Transfer Information
