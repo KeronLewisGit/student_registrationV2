@@ -208,6 +208,42 @@ After running the seeders, you can login with:
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Record Completeness
+
+Every student has a completeness score (the share of tracked fields that hold real data) and a list of **essential items** still missing: passport photo, date of birth, gender, birth certificate PIN and copy, current address, current class, SEA number, a parent/guardian phone number, an emergency contact and medical information. The score appears on the student list (Complete column) and profile page, the list can be filtered to **Incomplete records only**, and the **Outstanding Items** printable turns the gaps into a per-class checklist for the office.
+
+### Academic Year and Class Progression
+
+- `form_1_class` is the historical intake class; `current_class` (1A–6F) is where the student is now and is shown throughout the app.
+- `intake_year` is set from the registration date. New records (form, CSV import, webhook, legacy import) get their intake year and current class filled in automatically.
+- `enrolment_status` is one of Active, Left school, Graduated or Transferred out, with a date and note. Lists and printables show active students by default; use the Status filter to see others.
+- **Year-End Promotion** (Students menu, admin only) previews and then moves every active student up one form, marking Form 6 as graduated. Each change is written to the student's history, and the page warns if a promotion has already run this academic year (academic years start in September).
+
+### Printables for Teachers and the Office
+
+Reports → Printables offers per-class (or whole-school) sheets that open in a new tab ready to print: Class Register, Emergency Contact Sheet, Medical Alert List, Birthday List and Outstanding Items.
+
+### Audit Trail
+
+Every create, update, delete, restore, promotion, status change, photo and document change is recorded in `student_activities` with the user, time, IP and the before/after value of each field. The last entries show on the student profile; admins can browse and filter the full **Activity Log** from the sidebar.
+
+### Search
+
+The list search matches every word you type against the student's name, PIN, SEA number, class, contact details and address, parents' names, phone numbers, emails and ID numbers, the emergency contact and the registrant. Phone numbers match with or without dashes and spaces. The **Export This View** button downloads exactly the filtered list as a spreadsheet.
+
+### Photos and Documents
+
+- **Bulk Photo Upload** (Students menu) accepts many image files at once and matches each to a student by file name: the birth certificate PIN (`7235365011.jpg`), the student ID (`id-123.jpg`) or the full name.
+- Photos and documents that still point at the old WordPress site can be copied into local storage:
+
+```bash
+php artisan students:localize-documents --dry-run   # count what would be copied
+php artisan students:localize-documents             # download and update the records
+php artisan students:localize-documents --clear-dead # also blank links whose file is gone (404)
+```
+
+Run `php artisan storage:link` once on the server so `storage/` paths are served.
+
 ### Importing Students from the Legacy Student Portal
 
 Students that exist in the old cPanel student portal (`student_registration_data` table) but not in this app can be pulled in from a phpMyAdmin/mysqldump export of that database:

@@ -315,7 +315,7 @@
     <div class="row align-items-center">
         <div class="col-auto">
             @if($student->student_passport_photo)
-                <img src="{{ asset($student->student_passport_photo) }}" alt="{{ $student->student_name }}" class="profile-photo-large">
+                <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="{{ $student->student_name }}" class="profile-photo-large">
             @else
                 <img src="{{ asset('images/noimage.jpg') }}" alt="No Photo" class="profile-photo-large">
             @endif
@@ -338,9 +338,18 @@
                         {{ $student->student_gender }}
                     </span>
                 @endif
-                @if($student->form_1_class)
+                @if($student->current_class)
+                    <span class="badge-status" style="background: white; color: var(--primary-color);" title="Current class (intake {{ $student->intake_year ?? '?' }}, Form 1 class {{ $student->form_1_class ?? '?' }})">
+                        <i class="fas fa-graduation-cap me-1" aria-hidden="true"></i>Class {{ $student->current_class }}
+                    </span>
+                @elseif($student->form_1_class)
                     <span class="badge-status" style="background: white; color: var(--primary-color);">
                         <i class="fas fa-graduation-cap me-1" aria-hidden="true"></i>{{ $student->form_1_class }}
+                    </span>
+                @endif
+                @if(!$student->isActive())
+                    <span class="badge-status" style="background: #fee2e2; color: #991b1b;">
+                        <i class="fas fa-user-slash me-1" aria-hidden="true"></i>{{ $student->enrolment_status_label }}@if($student->status_changed_at) since {{ $student->status_changed_at->format('d/m/Y') }}@endif
                     </span>
                 @endif
                 @if($student->student_sea_number)
@@ -370,6 +379,73 @@
 
 <div class="row">
     <div class="col-md-6">
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="fas fa-clipboard-check"></i>
+                <h5>Record Completeness</h5>
+            </div>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="flex-grow-1" style="height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden;">
+                    <div style="width: {{ $completeness['percent'] }}%; height: 100%; background: {{ $completeness['missing'] ? (count($completeness['missing']) > 3 ? '#dc2626' : '#f59e0b') : '#16a34a' }};"></div>
+                </div>
+                <strong>{{ $completeness['percent'] }}%</strong>
+            </div>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;">{{ $completeness['recorded'] }} of {{ $completeness['total'] }} fields recorded.</p>
+            @if($completeness['missing'])
+                <p class="mb-1"><strong>Essential items still missing:</strong></p>
+                <ul class="mb-2" style="padding-left: 1.25rem;">
+                    @foreach($completeness['missing'] as $label)
+                        <li>{{ $label }}</li>
+                    @endforeach
+                </ul>
+                @can('edit-students')
+                    <a href="{{ route('students.edit', $student) }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit me-1"></i> Add missing information</a>
+                @endcan
+            @else
+                <p class="mb-0 text-success"><i class="fas fa-check-circle me-1"></i> All essential items are recorded.</p>
+            @endif
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="info-card">
+            <div class="info-card-header">
+                <i class="fas fa-history"></i>
+                <h5>History</h5>
+            </div>
+            @if($activities->isEmpty())
+                <p class="text-muted mb-0">No changes recorded yet.</p>
+            @else
+                <ul class="list-unstyled mb-2" style="font-size: 0.875rem;">
+                    @foreach($activities as $activity)
+                        <li class="mb-2 pb-2 border-bottom">
+                            <div class="d-flex justify-content-between gap-2">
+                                <span><strong>{{ $activity->action_label }}</strong> &middot; {{ $activity->summary }}</span>
+                                <span class="text-muted text-nowrap" title="{{ $activity->created_at->format('d/m/Y H:i') }}">{{ $activity->created_at->diffForHumans() }}</span>
+                            </div>
+                            <div class="text-muted">by {{ $activity->user_name }}</div>
+                            @if($activity->changes && $activity->action === 'updated')
+                                <details class="mt-1">
+                                    <summary class="text-muted" style="cursor: pointer;">{{ count($activity->changes) }} field(s) changed</summary>
+                                    <ul class="mb-0 mt-1" style="padding-left: 1.25rem;">
+                                        @foreach($activity->changes as $field => $change)
+                                            <li><strong>{{ \App\Models\Student::fieldLabel($field) }}:</strong> <span class="text-muted">{{ $change['from'] ?? '(blank)' }}</span> &rarr; {{ $change['to'] ?? '(blank)' }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+                @can('admin')
+                    <a href="{{ route('activity.index', ['student' => $student->id]) }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-list me-1"></i> Full history</a>
+                @endcan
+            @endif
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
         <!-- Student Personal Information -->
         <div class="info-card">
             <div class="info-card-header">
@@ -390,8 +466,16 @@
                     <div class="info-value">{{ $student->formatted_dob }}</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Form Class</div>
-                    <div class="info-value">{{ $student->form_1_class ?? 'N/A' }}</div>
+                    <div class="info-label">Current Class</div>
+                    <div class="info-value">{{ $student->current_class ?? 'N/A' }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Form 1 Class / Intake</div>
+                    <div class="info-value">{{ $student->form_1_class ?? 'N/A' }}@if($student->intake_year) &middot; {{ $student->intake_year }}@endif</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Enrolment Status</div>
+                    <div class="info-value">{{ $student->enrolment_status_label }}@if($student->status_note) &middot; {{ $student->status_note }}@endif</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Citizenship Type</div>

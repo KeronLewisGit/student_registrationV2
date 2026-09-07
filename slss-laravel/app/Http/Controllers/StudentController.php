@@ -23,6 +23,13 @@ class StudentController extends Controller
         // Get filter options
         $years = Student::getRegistrationYears();
         $classes = Student::FORM_CLASSES;
+        $currentClasses = Student::query()
+            ->whereNotNull('current_class')
+            ->distinct()
+            ->orderBy('current_class')
+            ->pluck('current_class')
+            ->all();
+        $statuses = Student::ENROLMENT_STATUSES;
 
         // Stat-card counts (school-wide, independent of the active filters)
         $stats = [
@@ -32,7 +39,7 @@ class StudentController extends Controller
             'registered_this_year' => Student::whereYear('registration_date', now()->year)->count(),
         ];
 
-        return view('students.index', compact('students', 'years', 'classes', 'stats'));
+        return view('students.index', compact('students', 'years', 'classes', 'currentClasses', 'statuses', 'stats'));
     }
 
     public function create()
@@ -56,7 +63,10 @@ class StudentController extends Controller
 
     public function show(Student $student)
     {
-        return view('students.show', compact('student'));
+        $completeness = $student->completeness();
+        $activities = $student->activities()->limit(15)->get();
+
+        return view('students.show', compact('student', 'completeness', 'activities'));
     }
 
     public function edit(Student $student)

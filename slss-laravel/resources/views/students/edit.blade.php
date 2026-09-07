@@ -84,6 +84,47 @@
                     </select>
                 </div>
 
+                <div class="col-md-2">
+                    <label class="form-label" for="field_intake_year">Intake Year</label>
+                    <input type="number" id="field_intake_year" name="intake_year" class="form-control" min="2000" max="2100"
+                           value="{{ old('intake_year', $student->intake_year) }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" for="field_current_class">Current Class</label>
+                    <select id="field_current_class" name="current_class" class="form-select">
+                        <option value="">Not assigned</option>
+                        @foreach(\App\Models\Student::allClasses() as $class)
+                            <option value="{{ $class }}" {{ old('current_class', $student->current_class) === $class ? 'selected' : '' }}>{{ $class }}</option>
+                        @endforeach
+                    </select>
+                    @if($student->expectedForm() && $student->currentForm() !== $student->expectedForm())
+                        <small class="text-warning">Intake year suggests Form {{ $student->expectedForm() }} this year.</small>
+                    @endif
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label" for="field_enrolment_status">Enrolment Status</label>
+                    <select id="field_enrolment_status" name="enrolment_status" class="form-select">
+                        @foreach(\App\Models\Student::ENROLMENT_STATUSES as $code => $label)
+                            <option value="{{ $code }}" {{ old('enrolment_status', $student->enrolment_status ?? 'active') === $code ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label" for="field_status_changed_at">Status Date</label>
+                    <input type="date" id="field_status_changed_at" name="status_changed_at" class="form-control"
+                           value="{{ old('status_changed_at', $student->status_changed_at?->format('Y-m-d')) }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" for="field_status_note">Status Note</label>
+                    <input type="text" id="field_status_note" name="status_note" class="form-control" maxlength="255"
+                           placeholder="e.g. Transferred to St. Mary's College"
+                           value="{{ old('status_note', $student->status_note) }}">
+                </div>
+
                 <div class="col-md-5">
                     <label class="form-label" for="field_student_first_name">First Name <span class="text-danger">*</span></label>
                     @php

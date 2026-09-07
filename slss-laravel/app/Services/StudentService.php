@@ -44,6 +44,7 @@ class StudentService
 
         $data = $this->handleDocumentUploads($data);
 
+        // Intake year / current class / status defaults are applied by StudentObserver::creating
         return Student::create($data);
     }
 
@@ -80,6 +81,24 @@ class StudentService
 
         $student->update($data);
         return $student->fresh();
+    }
+
+    /**
+     * Store a passport photo for an existing student (used by the bulk photo
+     * upload as well as the edit form) and record it on the student.
+     */
+    public function attachPhoto(Student $student, UploadedFile $photo): Student
+    {
+        $oldPhoto = $student->student_passport_photo;
+        $path = $this->handlePhotoUpload($photo, $student->id);
+
+        $student->update(['student_passport_photo' => $path]);
+
+        if ($oldPhoto && str_starts_with($oldPhoto, 'storage/')) {
+            $this->deletePhoto($oldPhoto);
+        }
+
+        return $student;
     }
 
     /**
@@ -177,7 +196,15 @@ class StudentService
      */
     public function getFilteredStudents(array $filters): \Illuminate\Database\Eloquent\Collection
     {
-        return $this->buildFilteredQuery($filters)->orderBy('student_name')->get();
+        $students = $this->buildFilteredQuery($filters)->orderBy('student_name')->get();
+
+        // Completeness is computed in PHP (it spans many columns), so the
+        // "incomplete only" filter is applied after the query.
+        if (!empty($filters['incomplete'])) {
+            $students = $students->filter(fn (Student $s) => !$s->isComplete())->values();
+        }
+
+        return $students;
     }
 
     /**
@@ -200,6 +227,13 @@ class StudentService
         if (!empty($filters['student_class']) && $filters['student_class'] !== '0') {
             $query->byClass($filters['student_class']);
         }
+
+        if (!empty($filters['current_class']) && $filters['current_class'] !== '0') {
+            $query->byCurrentClass($filters['current_class']);
+        }
+
+        // Active students are shown unless another status (or "all") is asked for.
+        $query->byStatus($filters['status'] ?? 'active');
 
         if (!empty($filters['student_name']) && $filters['student_name'] !== '0') {
             $query->byName($filters['student_name']);

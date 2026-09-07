@@ -1,0 +1,77 @@
+@extends('layouts.app')
+
+@section('title', 'Year-End Promotion - SLSS')
+@section('page-title', 'Year-End Promotion')
+
+@section('breadcrumbs')
+    <li class="breadcrumb-item"><a href="{{ route('students.index') }}">Home</a></li>
+    <li class="breadcrumb-item active">Year-End Promotion</li>
+@endsection
+
+@section('content')
+<div class="form-card">
+    <h2 class="mb-1">Promote students for {{ $academicYear }}</h2>
+    <p class="text-muted">
+        Moves every active student up one form, keeping their stream letter (3C becomes 4C).
+        Students in Form {{ \App\Models\Student::MAX_FORM }} are marked as graduated.
+        Students who have left, or who have no current class, are not touched.
+        Every change is written to each student's history.
+    </p>
+
+    @if($lastRun)
+        <div class="alert {{ $ranThisYear ? 'alert-warning' : 'alert-info' }}">
+            <i class="fas fa-info-circle me-1"></i>
+            Last promotion ran on <strong>{{ $lastRun->created_at->format('d/m/Y H:i') }}</strong> by {{ $lastRun->user_name }}.
+            @if($ranThisYear)
+                <strong>That was already in the {{ $academicYear }} academic year.</strong> Running it again will move students up a second time.
+            @endif
+        </div>
+    @endif
+
+    <div class="table-responsive mb-4">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Current class</th>
+                    <th>Students</th>
+                    <th>Becomes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($preview as $row)
+                    <tr>
+                        <td><span class="badge bg-primary">{{ $row['from'] }}</span></td>
+                        <td>{{ $row['count'] }}</td>
+                        <td>
+                            @if($row['to'] === 'Graduated')
+                                <span class="badge bg-success">Graduated</span>
+                            @elseif($row['to'] === 'Unchanged')
+                                <span class="text-muted">Unchanged</span>
+                            @else
+                                <span class="badge bg-primary">{{ $row['to'] }}</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3" class="text-muted">No active students with a current class.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <form method="POST" action="{{ route('students.promotion.run') }}" onsubmit="return this.confirm.checked;">
+        @csrf
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="confirm" id="confirm" value="1">
+            <label class="form-check-label" for="confirm">
+                I have checked the table above and want to promote all active students now.
+            </label>
+            @error('confirm')<div class="text-danger small">{{ $message }}</div>@enderror
+        </div>
+        <button type="submit" class="btn btn-primary" {{ empty($preview) ? 'disabled' : '' }}>
+            <i class="fas fa-level-up-alt me-1"></i> Run promotion
+        </button>
+        <a href="{{ route('students.index') }}" class="btn btn-secondary ms-2">Cancel</a>
+    </form>
+</div>
+@endsection

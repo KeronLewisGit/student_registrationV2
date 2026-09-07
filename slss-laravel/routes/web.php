@@ -8,6 +8,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\DeployController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\PromotionController;
+use App\Http\Controllers\PrintableController;
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\PhotoController;
 
 // Deployment Routes (token-authenticated in controller, CSRF exempted, throttled against brute force)
 Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
@@ -33,6 +37,10 @@ Route::middleware(['auth'])->group(function () {
     // Student Management Routes
     // (registered before the resource so "students-trash" isn't captured by students/{student})
     Route::get('/students-trash', [StudentController::class, 'trash'])->name('students.trash');
+    Route::get('/students-promotion', [PromotionController::class, 'index'])->name('students.promotion');
+    Route::post('/students-promotion', [PromotionController::class, 'store'])->name('students.promotion.run');
+    Route::get('/students-photos', [PhotoController::class, 'index'])->name('students.photos');
+    Route::post('/students-photos', [PhotoController::class, 'store'])->middleware('throttle:20,1')->name('students.photos.store');
     Route::post('/students/{student}/restore', [StudentController::class, 'restore'])
         ->withTrashed()
         ->name('students.restore');
@@ -50,6 +58,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
     Route::get('/reports/all-students/export', [ReportController::class, 'allStudents'])->name('reports.all-students.export');
     Route::get('/reports/{report}', [ReportController::class, 'show'])->name('reports.show');
+
+    // Printables for teachers / office (Admin/Staff only - authorization in controller)
+    Route::get('/printables', [PrintableController::class, 'index'])->name('printables.index');
+    Route::get('/printables/{printable}', [PrintableController::class, 'show'])->name('printables.show');
+
+    // Audit trail (Admin only - authorization in controller)
+    Route::get('/activity', [ActivityController::class, 'index'])->name('activity.index');
 
     // CSV Import Routes (Admin/Staff only)
     Route::middleware(['can:edit-students'])->group(function () {

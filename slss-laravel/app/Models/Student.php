@@ -19,6 +19,238 @@ class Student extends Model
      */
     public const FORM_CLASSES = ['1A', '1B', '1C', '1D', '1E', '1F'];
 
+    /** Stream letters used for every form. */
+    public const STREAMS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+    /** Highest form taught. */
+    public const MAX_FORM = 6;
+
+    /** Enrolment status codes and their labels. */
+    public const ENROLMENT_STATUSES = [
+        'active'      => 'Active',
+        'left'        => 'Left school',
+        'graduated'   => 'Graduated',
+        'transferred' => 'Transferred out',
+    ];
+
+    /**
+     * Fields that make up an "essential" record. A student missing any of
+     * these shows up in the outstanding-items report. Each entry is a label
+     * plus a check; a check may look at more than one column.
+     */
+    public const ESSENTIAL_ITEMS = [
+        'photo'      => ['label' => 'Passport photo',            'fields' => ['student_passport_photo']],
+        'dob'        => ['label' => 'Date of birth',             'fields' => ['student_dob']],
+        'gender'     => ['label' => 'Gender',                    'fields' => ['student_gender']],
+        'pin'        => ['label' => 'Birth certificate PIN',     'fields' => ['student_birth_certificate_pin']],
+        'birth_cert' => ['label' => 'Birth certificate copy',    'fields' => ['student_birth_certificate']],
+        'address'    => ['label' => 'Current address',           'fields' => ['student_current_address']],
+        'class'      => ['label' => 'Current class',             'fields' => ['current_class']],
+        'sea'        => ['label' => 'SEA number',                'fields' => ['student_sea_number']],
+        'parent'     => ['label' => 'Parent/guardian contact',   'fields' => ['mother_contact', 'father_contact'], 'any' => true],
+        'emergency'  => ['label' => 'Emergency contact',         'fields' => ['emergency_contact_name', 'emergency_contact_number']],
+        'medical'    => ['label' => 'Medical information',       'fields' => ['student_bloodtype', 'student_allergies', 'student_medical_condition'], 'any' => true],
+    ];
+
+    /**
+     * Every data field counted towards the completeness percentage.
+     */
+    public const TRACKED_FIELDS = [
+        'form_1_class', 'current_class', 'student_name', 'student_gender', 'citizen_type', 'student_current_address',
+        'student_dob', 'student_birth_certificate', 'student_birth_certificate_pin', 'student_religion',
+        'student_country_of_birth', 'student_nationality', 'student_ethnicity', 'student_contact', 'student_email',
+        'student_passport_photo', 'student_sea_date', 'student_primary_school', 'student_sea_number',
+        'student_transfer_status', 'student_medical_condition', 'student_bloodtype', 'student_allergies',
+        'student_immunization_status', 'student_school_feeding_option', 'student_social_welfare_status',
+        'student_mode_of_transport', 'student_access_to_device', 'mother_name', 'is_mother_active_or_deceased',
+        'mother_identification_type', 'mother_identification_number', 'mother_home_address', 'mother_contact',
+        'mother_profession', 'mother_email', 'father_name', 'is_father_active_or_deceased',
+        'father_identification_type', 'father_identification_number', 'father_home_address', 'father_contact',
+        'father_profession', 'father_email_address', 'emergency_contact_name', 'emergency_contact_address',
+        'emergency_contact_relation_to_student', 'emergency_contact_number', 'registration_date',
+        'registrant_relationship_to_student', 'registrant_name', 'registrant_identification_type',
+        'registrant_identification_number', 'registrant_nationality', 'registrant_email',
+    ];
+
+    /**
+     * Human label for a column name ("mother_contact" -> "Mother contact").
+     */
+    public static function fieldLabel(string $field): string
+    {
+        static $special = [
+            'student_dob' => 'Date of birth',
+            'student_birth_certificate_pin' => 'Birth certificate PIN',
+            'student_passport_photo' => 'Passport photo',
+            'form_1_class' => 'Form 1 class',
+            'current_class' => 'Current class',
+            'intake_year' => 'Intake year',
+            'enrolment_status' => 'Enrolment status',
+            'is_mother_active_or_deceased' => 'Mother status',
+            'is_father_active_or_deceased' => 'Father status',
+            'student_sea_number' => 'SEA number',
+            'student_sea_date' => 'SEA date',
+            'student_sea_slip' => 'SEA slip',
+            'student_bloodtype' => 'Blood type',
+        ];
+
+        if (isset($special[$field])) {
+            return $special[$field];
+        }
+
+        $label = preg_replace('/^(student|registrant)_/', '', $field);
+
+        return ucfirst(str_replace('_', ' ', $label));
+    }
+
+    /**
+     * The academic year that is running now, as its starting calendar year
+     * (September 2026 to August 2027 is 2026).
+     */
+    public static function currentAcademicYear(?Carbon $on = null): int
+    {
+        $on = $on ?? now();
+
+        return (int) $on->format('Y') - ($on->month < 9 ? 1 : 0);
+    }
+
+    public static function academicYearLabel(?int $start = null): string
+    {
+        $start = $start ?? self::currentAcademicYear();
+
+        return $start . '/' . ($start + 1);
+    }
+
+    /**
+     * All class codes for every form: 1A ... 6F.
+     *
+     * @return array<int, string>
+     */
+    public static function allClasses(): array
+    {
+        $classes = [];
+        for ($form = 1; $form <= self::MAX_FORM; $form++) {
+            foreach (self::STREAMS as $stream) {
+                $classes[] = $form . $stream;
+            }
+        }
+
+        return $classes;
+    }
+
+    /**
+     * Stream letter of the intake class ("1C" / "C" / "Form 1c" -> "C").
+     */
+    public function stream(): ?string
+    {
+        $canonical = self::canonicalClass($this->form_1_class);
+
+        return $canonical ? substr($canonical, -1) : null;
+    }
+
+    /**
+     * Form number the student would be in this academic year, from intake year.
+     */
+    public function expectedForm(): ?int
+    {
+        if (!$this->intake_year) {
+            return null;
+        }
+
+        return min(self::MAX_FORM, max(1, self::currentAcademicYear() - $this->intake_year + 1));
+    }
+
+    /**
+     * Form number of the current class ("3C" -> 3).
+     */
+    public function currentForm(): ?int
+    {
+        return preg_match('/^(\d)/', (string) $this->current_class, $m) ? (int) $m[1] : null;
+    }
+
+    /**
+     * The class this student moves to at the year-end promotion, or null when
+     * they are in the top form (and should be marked graduated instead).
+     */
+    public function nextClass(): ?string
+    {
+        $form = $this->currentForm();
+        if (!$form || $form >= self::MAX_FORM) {
+            return null;
+        }
+
+        return ($form + 1) . substr($this->current_class, 1);
+    }
+
+    public function getEnrolmentStatusLabelAttribute(): string
+    {
+        return self::ENROLMENT_STATUSES[$this->enrolment_status] ?? ucfirst((string) $this->enrolment_status);
+    }
+
+    public function isActive(): bool
+    {
+        return ($this->enrolment_status ?? 'active') === 'active';
+    }
+
+    /**
+     * How complete this record is.
+     *
+     * @return array{percent:int, recorded:int, total:int, missing:array<string,string>}
+     *         missing is keyed by ESSENTIAL_ITEMS key => label
+     */
+    public function completeness(): array
+    {
+        $recorded = 0;
+        foreach (self::TRACKED_FIELDS as $field) {
+            if (self::hasValue($this->{$field})) {
+                $recorded++;
+            }
+        }
+
+        $missing = [];
+        foreach (self::ESSENTIAL_ITEMS as $key => $item) {
+            $present = array_map(fn ($f) => self::hasValue($this->{$f}), $item['fields']);
+            $ok = ($item['any'] ?? false) ? in_array(true, $present, true) : !in_array(false, $present, true);
+            if (!$ok) {
+                $missing[$key] = $item['label'];
+            }
+        }
+
+        $total = count(self::TRACKED_FIELDS);
+
+        return [
+            'percent' => (int) round($recorded / $total * 100),
+            'recorded' => $recorded,
+            'total' => $total,
+            'missing' => $missing,
+        ];
+    }
+
+    public function isComplete(): bool
+    {
+        return $this->completeness()['missing'] === [];
+    }
+
+    /**
+     * True when a stored value is real data rather than blank or a legacy placeholder.
+     */
+    public static function hasValue($value): bool
+    {
+        if ($value === null) {
+            return false;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return (int) $value->format('Y') > 1900;
+        }
+        $text = trim((string) $value);
+
+        return $text !== '' && !self::isPlaceholder($text);
+    }
+
+    public function activities()
+    {
+        return $this->hasMany(StudentActivity::class)->orderByDesc('created_at')->orderByDesc('id');
+    }
+
     /**
      * Build the list of stored values that are equivalent to a filter class.
      *
@@ -79,6 +311,9 @@ class Student extends Model
     }
 
     protected $fillable = [
+        // Enrolment / progression
+        'intake_year', 'current_class', 'enrolment_status', 'status_changed_at', 'status_note',
+
         // Student Basic Information
         'form_1_class', 'student_name', 'student_gender', 'citizen_type',
         'student_current_address', 'student_dob', 'student_birth_certificate',
@@ -129,6 +364,7 @@ class Student extends Model
     ];
 
     protected $casts = [
+        'status_changed_at' => 'date',
         'student_dob' => 'date',
         'student_sea_date' => 'date',
         'student_transfer_date' => 'date',
@@ -308,6 +544,24 @@ class Student extends Model
         return $query;
     }
 
+    // Scope for filtering by the class the student is in now
+    public function scopeByCurrentClass($query, $class)
+    {
+        if ($class && $class !== '0') {
+            return $query->where('current_class', strtoupper(trim($class)));
+        }
+        return $query;
+    }
+
+    // Scope for filtering by enrolment status ("all" disables the filter)
+    public function scopeByStatus($query, $status)
+    {
+        if ($status && $status !== 'all') {
+            return $query->where('enrolment_status', $status);
+        }
+        return $query;
+    }
+
     // Scope for filtering by name
     public function scopeByName($query, $name)
     {
@@ -317,16 +571,50 @@ class Student extends Model
         return $query;
     }
 
-    // Scope for searching
+    /**
+     * Columns covered by the search box.
+     */
+    public const SEARCH_COLUMNS = [
+        'student_name', 'student_birth_certificate_pin', 'student_sea_number', 'current_class', 'form_1_class',
+        'student_contact', 'student_email', 'student_current_address',
+        'mother_name', 'mother_contact', 'mother_email', 'mother_identification_number',
+        'father_name', 'father_contact', 'father_email_address', 'father_identification_number',
+        'emergency_contact_name', 'emergency_contact_number',
+        'registrant_name', 'registrant_email', 'registrant_identification_number',
+        'student_primary_school',
+    ];
+
+    /**
+     * Search across the student, parents, emergency contact and registrant.
+     * Every word must match somewhere, so "smith 868-555" finds a Smith with
+     * that phone number. Phone-like terms also match with punctuation removed.
+     */
     public function scopeSearch($query, $search)
     {
-        if ($search) {
-            return $query->where(function ($q) use ($search) {
-                $q->where('student_name', 'like', "%{$search}%")
-                  ->orWhere('student_birth_certificate_pin', 'like', "%{$search}%")
-                  ->orWhere('student_sea_number', 'like', "%{$search}%");
+        $terms = preg_split('/\s+/', trim((string) $search), -1, PREG_SPLIT_NO_EMPTY);
+        if (!$terms) {
+            return $query;
+        }
+
+        foreach ($terms as $term) {
+            $query->where(function ($q) use ($term) {
+                foreach (self::SEARCH_COLUMNS as $column) {
+                    $q->orWhere($column, 'like', "%{$term}%");
+                }
+
+                $digits = preg_replace('/\D/', '', $term);
+                if (strlen($digits) >= 4) {
+                    foreach (['student_contact', 'mother_contact', 'father_contact', 'emergency_contact_number'] as $phone) {
+                        $q->orWhere(DB::raw("REPLACE(REPLACE(REPLACE({$phone}, '-', ''), ' ', ''), '+', '')"), 'like', "%{$digits}%");
+                    }
+                }
+
+                if (preg_match('/^\d+$/', $term)) {
+                    $q->orWhere('id', (int) $term);
+                }
             });
         }
+
         return $query;
     }
 

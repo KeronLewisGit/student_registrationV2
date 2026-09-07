@@ -67,6 +67,8 @@ class ReportController extends Controller
         $validated = $request->validate([
             'year' => 'nullable|integer|digits:4',
             'student_class' => ['nullable', 'string', Rule::in(Student::FORM_CLASSES)],
+            'current_class' => ['nullable', 'string', Rule::in(Student::allClasses())],
+            'status' => ['nullable', 'string', Rule::in(array_merge(['all'], array_keys(Student::ENROLMENT_STATUSES)))],
             'search' => 'nullable|string|max:255',
             'format' => 'nullable|string|in:xlsx,csv',
         ]);
@@ -75,6 +77,8 @@ class ReportController extends Controller
         $filters = array_filter([
             'year' => $validated['year'] ?? null,
             'student_class' => $validated['student_class'] ?? null,
+            'current_class' => $validated['current_class'] ?? null,
+            'status' => $validated['status'] ?? null,
             'search' => $validated['search'] ?? null,
         ], fn ($value) => $value !== null && $value !== '');
 

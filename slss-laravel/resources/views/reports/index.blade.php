@@ -82,5 +82,13 @@
             </div>
         </div>
     @endforeach
+    <div class="col-md-6 col-lg-4">
+        <div class="report-card">
+            <div class="report-icon"><i class="fas fa-print"></i></div>
+            <h3>Printables</h3>
+            <p>Class registers, emergency contact sheets, medical alert lists, birthday lists and the outstanding-items checklist, ready to print per class.</p>
+            <a href="{{ route('printables.index') }}" class="btn btn-primary mt-3"><i class="fas fa-print me-1"></i> Open Printables</a>
+        </div>
+    </div>
 </div>
 @endsection

@@ -46,6 +46,20 @@
         }
 
         /* Keep icon buttons at a comfortable touch size */
+        .completeness { min-width: 90px; }
+        .completeness-bar {
+            height: 6px;
+            background: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 2px;
+        }
+        .completeness-bar span { display: block; height: 100%; border-radius: 3px; }
+        .completeness-bar .is-ok { background: #16a34a; }
+        .completeness-bar .is-mid { background: #f59e0b; }
+        .completeness-bar .is-low { background: #dc2626; }
+        .completeness small { color: #6b7280; white-space: nowrap; }
+
         .table-actions .btn-sm {
             padding: 0.375rem 0.5rem;
             min-width: 44px;
@@ -199,7 +213,7 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('students.index') }}" class="row g-3">
-            <div class="col-md-3 col-sm-6">
+            <div class="col-md-2 col-sm-6">
                 <label for="year" class="form-label">Registration Year</label>
                 <select name="year" id="year" class="form-select">
                     <option value="">All Years</option>
@@ -211,10 +225,20 @@
                 </select>
             </div>
 
-            <div class="col-md-3 col-sm-6">
-                <label for="student_class" class="form-label">Form Class</label>
-                <select name="student_class" id="student_class" class="form-select">
+            <div class="col-md-2 col-sm-6">
+                <label for="current_class" class="form-label">Current Class</label>
+                <select name="current_class" id="current_class" class="form-select">
                     <option value="0">All Classes</option>
+                    @foreach($currentClasses as $class)
+                        <option value="{{ $class }}" {{ request('current_class') === $class ? 'selected' : '' }}>{{ $class }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-2 col-sm-6">
+                <label for="student_class" class="form-label">Form 1 Class</label>
+                <select name="student_class" id="student_class" class="form-select">
+                    <option value="0">Any</option>
                     @php
                         // The stored value may be "A" or "1A"; normalize both sides so the
                         // dropdown highlights the right option whichever format came back.
@@ -228,16 +252,33 @@
                 </select>
             </div>
 
-            <div class="col-md-4 col-sm-12">
+            <div class="col-md-2 col-sm-6">
+                <label for="status" class="form-label">Status</label>
+                <select name="status" id="status" class="form-select">
+                    @foreach($statuses as $code => $label)
+                        <option value="{{ $code }}" {{ request('status', 'active') === $code ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                    <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All statuses</option>
+                </select>
+            </div>
+
+            <div class="col-md-3 col-sm-12">
                 <label for="search" class="form-label">Search</label>
                 <input type="text" name="search" id="search" class="form-control"
-                       placeholder="Search name, SEA #, or cert..."
+                       placeholder="Name, PIN, SEA #, parent, phone, email..."
                        value="{{ request('search') }}">
             </div>
 
-            <div class="col-md-2 col-sm-12 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100">
-                    <i class="fas fa-search me-1"></i> Filter
+            <div class="col-md-2 col-sm-6 d-flex align-items-end">
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="incomplete" id="incomplete" value="1" {{ request('incomplete') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="incomplete">Incomplete records only</label>
+                </div>
+            </div>
+
+            <div class="col-md-1 col-sm-6 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100" title="Apply filters">
+                    <i class="fas fa-search"></i><span class="d-md-none"> Filter</span>
                 </button>
             </div>
         </form>
@@ -250,6 +291,11 @@
                 <i class="fas fa-file-pdf me-1"></i><span class="d-none d-sm-inline"> Export to PDF</span><span class="d-inline d-sm-none">PDF</span>
             </button>
             @can('view-reports')
+            <a href="{{ route('reports.all-students.export', array_merge(request()->only(['year', 'student_class', 'current_class', 'status', 'search']), ['format' => 'xlsx'])) }}"
+               class="btn btn-outline-success btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
+               title="Download the students in the current selection as a spreadsheet">
+                <i class="fas fa-file-excel me-1"></i><span class="d-none d-sm-inline"> Export This View</span><span class="d-inline d-sm-none">Export</span>
+            </a>
             <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener"
                class="btn btn-outline-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
                title="Open a printable page with every student in the current selection">
@@ -278,7 +324,8 @@
                         <tr>
                             <th scope="col">Photo</th>
                             <th scope="col">Student Name</th>
-                            <th scope="col">Form Class</th>
+                            <th scope="col">Class</th>
+                            <th scope="col">Complete</th>
                             <th scope="col">Gender</th>
                             <th scope="col">Birth Date</th>
                             <th scope="col">Registration Date</th>
@@ -290,9 +337,10 @@
                         <tr>
                             <td>
                                 @if($student->student_passport_photo)
-                                    <img src="{{ asset($student->student_passport_photo) }}"
+                                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}"
                                          alt="{{ $student->student_name }}"
-                                         class="student-photo-thumbnail">
+                                         class="student-photo-thumbnail"
+                                         onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">
                                 @else
                                     <img src="{{ asset('images/noimage.jpg') }}"
                                          alt="No photo"
@@ -305,12 +353,24 @@
                                     <br><small class="text-muted">SEA: {{ $student->student_sea_number }}</small>
                                 @endif
                             </td>
-                            <td>
-                                @if($student->form_1_class)
-                                    <span class="badge badge-class">{{ $student->form_1_class }}</span>
+                            <td data-order="{{ $student->current_class ?? 'zz' }}">
+                                @if($student->current_class)
+                                    <span class="badge badge-class">{{ $student->current_class }}</span>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif
+                                @if(!$student->isActive())
+                                    <br><small class="text-danger">{{ $student->enrolment_status_label }}</small>
+                                @elseif($student->form_1_class)
+                                    <br><small class="text-muted">Intake {{ $student->intake_year ?? '?' }} · {{ \App\Models\Student::canonicalClass($student->form_1_class) ?? $student->form_1_class }}</small>
+                                @endif
+                            </td>
+                            @php($completeness = $student->completeness())
+                            <td data-order="{{ $completeness['percent'] }}" title="{{ $completeness['missing'] ? 'Missing: ' . implode(', ', $completeness['missing']) : 'All essential items recorded' }}">
+                                <div class="completeness">
+                                    <div class="completeness-bar"><span style="width: {{ $completeness['percent'] }}%" class="{{ $completeness['missing'] ? (count($completeness['missing']) > 3 ? 'is-low' : 'is-mid') : 'is-ok' }}"></span></div>
+                                    <small>{{ $completeness['percent'] }}%@if($completeness['missing']) · {{ count($completeness['missing']) }} missing @endif</small>
+                                </div>
                             </td>
                             <td>
                                 @if($student->student_gender === 'Male')
@@ -446,9 +506,9 @@ $(document).ready(function() {
                 zeroRecords: "No matching students found"
             },
             columnDefs: [
-                { orderable: false, targets: [0, 6] }, // Disable sorting on photo and actions
+                { orderable: false, targets: [0, 7] }, // Disable sorting on photo and actions
                 { responsivePriority: 1, targets: 1 }, // Always keep name...
-                { responsivePriority: 2, targets: 6 }, // ...and actions visible
+                { responsivePriority: 2, targets: 7 }, // ...and actions visible
                 { responsivePriority: 10001, targets: 0 } // Photo collapses first
             ],
             // Optimize for mobile

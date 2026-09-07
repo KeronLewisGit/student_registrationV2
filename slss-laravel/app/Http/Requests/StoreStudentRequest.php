@@ -21,6 +21,13 @@ class StoreStudentRequest extends FormRequest
             'student_last_name' => 'required|string',
             'form_1_class' => ['nullable', 'string', Rule::in(Student::FORM_CLASSES)],
             'student_gender' => 'nullable|string|in:Male,Female,Other',
+
+            // Enrolment / progression
+            'intake_year' => 'nullable|integer|min:2000|max:2100',
+            'current_class' => ['nullable', 'string', Rule::in(Student::allClasses())],
+            'enrolment_status' => ['nullable', 'string', Rule::in(array_keys(Student::ENROLMENT_STATUSES))],
+            'status_changed_at' => 'nullable|date',
+            'status_note' => 'nullable|string|max:255',
             'citizen_type' => 'nullable|string|in:Birth,Descent,Naturalisation',
             'student_current_address' => 'nullable|string',
             'student_dob' => 'nullable|date|before:today|after:1990-01-01',

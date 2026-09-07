@@ -24,7 +24,10 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public const COLUMNS = [
         'id' => 'ID',
         'student_name' => 'Student Name',
-        'form_1_class' => 'Form Class',
+        'form_1_class' => 'Form 1 Class',
+        'intake_year' => 'Intake Year',
+        'current_class' => 'Current Class',
+        'enrolment_status' => 'Enrolment Status',
         'student_gender' => 'Gender',
         'student_dob' => 'Date of Birth',
         'citizen_type' => 'Citizenship Type',

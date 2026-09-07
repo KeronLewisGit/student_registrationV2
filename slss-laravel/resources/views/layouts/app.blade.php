@@ -1162,6 +1162,16 @@
                         <i class="fas fa-plus-circle"></i>
                         <span>Add Student</span>
                     </a>
+                    <a href="{{ route('students.photos') }}" class="sidebar-submenu-link {{ request()->routeIs('students.photos') ? 'active' : '' }}">
+                        <i class="fas fa-images"></i>
+                        <span>Bulk Photo Upload</span>
+                    </a>
+                    @can('admin')
+                    <a href="{{ route('students.promotion') }}" class="sidebar-submenu-link {{ request()->routeIs('students.promotion') ? 'active' : '' }}">
+                        <i class="fas fa-level-up-alt"></i>
+                        <span>Year-End Promotion</span>
+                    </a>
+                    @endcan
                     @can('delete-students')
                     <a href="{{ route('students.trash') }}" class="sidebar-submenu-link {{ request()->routeIs('students.trash') ? 'active' : '' }}">
                         <i class="fas fa-trash-restore"></i>
@@ -1196,17 +1206,23 @@
                     <span>User Management</span>
                 </a>
             </div>
+            <div class="sidebar-menu-item">
+                <a href="{{ route('activity.index') }}" class="sidebar-menu-link {{ request()->routeIs('activity.*') ? 'active' : '' }}">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Log</span>
+                </a>
+            </div>
             @endif
 
             @can('view-reports')
             <!-- Reports Menu with Submenu -->
             <div class="sidebar-menu-item">
-                <a href="#reportsSubmenu" class="sidebar-menu-link {{ request()->routeIs('reports.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('reports.*') ? 'true' : 'false' }}">
+                <a href="#reportsSubmenu" class="sidebar-menu-link {{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? 'true' : 'false' }}">
                     <i class="fas fa-chart-bar"></i>
                     <span>Reports</span>
                     <i class="fas fa-chevron-down menu-arrow"></i>
                 </a>
-                <div class="sidebar-submenu collapse {{ request()->routeIs('reports.*') ? 'show' : '' }}" id="reportsSubmenu">
+                <div class="sidebar-submenu collapse {{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? 'show' : '' }}" id="reportsSubmenu">
                     <a href="{{ route('reports.index') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.index') ? 'active' : '' }}">
                         <i class="fas fa-folder-open"></i>
                         <span>All Reports</span>
@@ -1214,6 +1230,10 @@
                     <a href="{{ route('reports.show', 'all-students') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.show') ? 'active' : '' }}">
                         <i class="fas fa-users"></i>
                         <span>All Students</span>
+                    </a>
+                    <a href="{{ route('printables.index') }}" class="sidebar-submenu-link {{ request()->routeIs('printables.*') ? 'active' : '' }}">
+                        <i class="fas fa-print"></i>
+                        <span>Printables</span>
                     </a>
                 </div>
             </div>
