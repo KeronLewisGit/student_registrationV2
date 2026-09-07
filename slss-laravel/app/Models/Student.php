@@ -163,7 +163,8 @@ class Student extends Model
      * printed documents. Records imported from the old portal carry Elementor
      * dropdown defaults ("Select Blood Type"), strings made only of "N/A"
      * tokens, and 1900-01-01 as an "empty" date; none of those should print
-     * as if they were real data.
+     * as if they were real data. Empty strings become null too, so every
+     * missing value falls through to the template's "N/A".
      */
     public function forPrint(): static
     {
@@ -177,9 +178,7 @@ class Student extends Model
 
             $trimmed = trim($value);
 
-            if (preg_match('/^select(?: [a-z ]+)?$/i', $trimmed)                    // "Select", "Select Blood Type"
-                || preg_match('/^(?:n\/?a|none|null|nil|-)(?:[\s,.]+(?:n\/?a|none|null|nil|-))*$/i', $trimmed) // "N/a N/a N/a"
-                || preg_match('/^(?:1900|0000)-01-01/', $trimmed)) {
+            if ($trimmed === '' || self::isPlaceholder($trimmed)) {
                 $attributes[$key] = null;
             }
         }
@@ -187,6 +186,48 @@ class Student extends Model
         $clean->setRawAttributes($attributes, true);
 
         return $clean;
+    }
+
+    /**
+     * Prepare one value for a printed record. Returns null when nothing usable
+     * was recorded (null, blank, whitespace, or a legacy placeholder), so the
+     * template can print a uniform "Not recorded" marker instead of a gap.
+     *
+     * @param  mixed        $value
+     * @param  string|null  $format  'name' | 'date' | 'document' | 'yesno' | null
+     */
+    public static function printValue($value, ?string $format = null): ?string
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('d/m/Y');
+        }
+
+        if ($value === null) {
+            return null;
+        }
+
+        $text = trim((string) $value);
+
+        if ($text === '' || self::isPlaceholder($text)) {
+            return null;
+        }
+
+        return match ($format) {
+            'name'  => ucwords(strtolower($text)),
+            'date'  => (($ts = strtotime($text)) !== false) ? date('d/m/Y', $ts) : $text,
+            'yesno' => match ($text) { '0' => 'No', '1' => 'Yes', default => $text },
+            default => $text,
+        };
+    }
+
+    /**
+     * Legacy "empty" markers that should never be printed as data.
+     */
+    public static function isPlaceholder(string $text): bool
+    {
+        return preg_match('/^select(?: [a-z ]+)?$/i', $text)                                   // "Select", "Select Blood Type"
+            || preg_match('/^(?:n\/?a|none|null|nil|-)(?:[\s,.]+(?:n\/?a|none|null|nil|-))*$/i', $text) // "N/A", "N/a N/a N/a"
+            || preg_match('/^(?:1900|0000)-01-01/', $text);                                   // 1900-01-01 "empty" date
     }
 
     public static function documentUrl(?string $value): ?string

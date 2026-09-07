@@ -1,5 +1,5 @@
 {{-- Shared stylesheet for the single-student and bulk print pages.
-     Deliberately plain: no watermark, gradients, shadows or icons, so the
+     Deliberately plain: a faint watermark but no gradients, shadows or icons, so the
      printed record reads as a clean official document. --}}
 <style>
     @page {
@@ -26,6 +26,25 @@
 
     .profile-inner {
         position: relative;
+        z-index: 1;
+    }
+
+    /* Faint diagonal watermark centred on each sheet, well below the
+       contrast of any text so it never competes with the record itself. */
+    .profile-card::before {
+        content: "OFFICIAL DOCUMENT";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-40deg);
+        font-size: 4.5rem;
+        font-weight: 800;
+        letter-spacing: 0.4rem;
+        white-space: nowrap;
+        color: rgba(0, 0, 0, 0.035);
+        pointer-events: none;
+        user-select: none;
+        z-index: 0;
     }
 
     /* Letterhead */
@@ -149,6 +168,12 @@
         text-decoration: none;
     }
 
+    /* Uniform marker for fields with nothing recorded */
+    .not-recorded {
+        color: #777;
+        font-style: italic;
+    }
+
     /* Grid: pinned to the intended columns (the sheet is narrower than
        Bootstrap's "md" breakpoint, so its responsive classes would stack). */
     .row {
@@ -200,6 +225,12 @@
 
         .no-print { display: none !important; }
         .print-only { display: inline; }
+
+        .profile-card::before {
+            color: rgba(0, 0, 0, 0.07);
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
 
         .profile-card {
             max-width: none;
