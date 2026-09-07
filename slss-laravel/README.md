@@ -208,6 +208,24 @@ After running the seeders, you can login with:
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Importing Students from the Legacy Student Portal
+
+Students that exist in the old cPanel student portal (`student_registration_data` table) but not in this app can be pulled in from a phpMyAdmin/mysqldump export of that database:
+
+```bash
+# Preview what would be added (nothing is written)
+php artisan students:import-old-data --file=/path/to/student-portal.sql --dry-run -v
+
+# Import for real
+php artisan students:import-old-data --file=/path/to/student-portal.sql
+```
+
+- The dump is parsed directly, so it never has to be loaded into the app database
+- Students already present are skipped, matched by Birth Certificate PIN first and then by name + date of birth
+- Legacy `0000-00-00` dates and Elementor "Select ..." placeholder values are stored as empty
+- Class values are normalised to `1A`–`1F`; the command is safe to run repeatedly
+- Without `--file` the command reads a `student_registration_data` table in the current database instead
+
 ## 🗂️ Project Structure & Architecture
 
 ### Directory Structure

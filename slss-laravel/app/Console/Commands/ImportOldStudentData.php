@@ -8,183 +8,389 @@ use App\Models\Student;
 
 class ImportOldStudentData extends Command
 {
-    protected $signature = 'students:import-old-data';
-    protected $description = 'Import student data from old student_registration_data table to new students table';
+    protected $signature = 'students:import-old-data
+                            {--file= : Path to a MySQL dump (.sql) of the legacy student-portal database; when omitted, reads the student_registration_data table in the current database}
+                            {--dry-run : Report what would be imported without writing anything}
+                            {--force : Skip the confirmation prompt}';
+
+    protected $description = 'Import students from the legacy student_registration_data table (or a MySQL dump of it) into the students table, skipping ones already present';
+
+    /**
+     * Legacy column => students column, for the columns whose names differ.
+     */
+    private const COLUMN_RENAMES = [
+        'student_birth_certficate_pin'  => 'student_birth_certificate_pin',
+        'student_recieving_counselling' => 'student_receiving_counselling',
+        'student_physical_disibilities' => 'student_physical_disabilities',
+    ];
+
+    private const DATE_COLUMNS = [
+        'student_dob', 'student_sea_date', 'student_transfer_date', 'registration_date',
+    ];
 
     public function handle()
     {
+        $dryRun = (bool) $this->option('dry-run');
+        $file = $this->option('file');
+
         $this->info('Starting data migration from old system...');
 
-        // Check if old table exists
-        if (!DB::getSchemaBuilder()->hasTable('student_registration_data')) {
-            $this->error('Old table student_registration_data not found!');
-            $this->info('Please import the SQL file first using:');
-            $this->line('mysql -u username -p database_name < backup.sql');
+        $oldStudents = $file !== null
+            ? $this->rowsFromDump($file)
+            : $this->rowsFromTable();
+
+        if ($oldStudents === null) {
             return 1;
         }
 
-        // Get count of old records
-        $oldCount = DB::table('student_registration_data')->count();
-        $this->info("Found {$oldCount} students in old table.");
+        $oldCount = count($oldStudents);
+        $this->info("Found {$oldCount} students in the legacy data.");
 
         if ($oldCount === 0) {
             $this->warn('No students to import.');
             return 0;
         }
 
-        // Confirm before proceeding
-        if (!$this->confirm('Do you want to proceed with the import?', true)) {
+        $existingCount = Student::withTrashed()->count();
+        $this->info("The students table currently holds {$existingCount} records (including soft-deleted).");
+
+        if ($dryRun) {
+            $this->warn('Dry run: nothing will be written.');
+        } elseif (!$this->option('force') && !$this->confirm('Do you want to proceed with the import?', true)) {
             $this->warn('Import cancelled.');
             return 0;
+        }
+
+        // Index existing students so each legacy row can be matched without a query.
+        $byPin = [];
+        $byNameDob = [];
+        foreach (Student::withTrashed()->get(['id', 'student_name', 'student_dob', 'student_birth_certificate_pin']) as $student) {
+            $pin = $this->normalizePin($student->student_birth_certificate_pin);
+            if ($pin !== null) {
+                $byPin[$pin] = $student->id;
+            }
+            $byNameDob[$this->nameDobKey($student->student_name, optional($student->student_dob)->format('Y-m-d'))] = $student->id;
         }
 
         $imported = 0;
         $skipped = 0;
         $errors = 0;
+        $skippedRows = [];
+        $importedRows = [];
 
-        // Fetch all old records
-        $oldStudents = DB::table('student_registration_data')->get();
-
-        $this->info('Importing students...');
+        $this->info($dryRun ? 'Checking students...' : 'Importing students...');
         $bar = $this->output->createProgressBar($oldCount);
         $bar->start();
 
-        foreach ($oldStudents as $oldStudent) {
-            try {
-                // Check if student already exists (by name and DOB)
-                $exists = Student::where('student_name', $oldStudent->student_name)
-                    ->where('student_dob', $oldStudent->student_dob)
-                    ->exists();
+        DB::beginTransaction();
 
-                if ($exists) {
+        try {
+            foreach ($oldStudents as $oldStudent) {
+                $attributes = $this->mapRow($oldStudent);
+                $pin = $attributes['student_birth_certificate_pin'];
+                $nameDob = $this->nameDobKey($attributes['student_name'], $attributes['student_dob']);
+
+                $matchedId = ($pin !== null ? ($byPin[$pin] ?? null) : null) ?? ($byNameDob[$nameDob] ?? null);
+
+                if ($matchedId !== null) {
                     $skipped++;
+                    $skippedRows[] = [$oldStudent->id, $attributes['student_name'], $pin ?? '', "already #{$matchedId}"];
                     $bar->advance();
                     continue;
                 }
 
-                // Map old column names to new ones
-                Student::create([
-                    'form_1_class' => $oldStudent->form_1_class,
-                    'student_name' => $oldStudent->student_name,
-                    'student_gender' => $oldStudent->student_gender,
-                    'citizen_type' => $oldStudent->citizen_type,
-                    'student_current_address' => $oldStudent->student_current_address,
-                    'student_dob' => $oldStudent->student_dob,
-                    'student_birth_certificate' => $oldStudent->student_birth_certificate,
-                    // Fix typo in old column name; normalize so legacy "N/A"
-                    // placeholders become null instead of colliding on the
-                    // column's unique constraint after the first row
-                    'student_birth_certificate_pin' => $this->normalizePin($oldStudent->student_birth_certficate_pin ?? null),
-                    'student_religion' => $oldStudent->student_religion,
-                    'student_country_of_birth' => $oldStudent->student_country_of_birth,
-                    'student_nationality' => $oldStudent->student_nationality,
-                    'student_ethnicity' => $oldStudent->student_ethnicity,
-                    'student_contact' => $oldStudent->student_contact,
-                    'student_email' => $oldStudent->student_email,
-                    'student_passport_photo' => $oldStudent->student_passport_photo,
+                try {
+                    $newId = null;
 
-                    // SEA Information
-                    'student_sea_date' => $oldStudent->student_sea_date,
-                    'student_primary_school' => $oldStudent->student_primary_school,
-                    'student_sea_slip' => $oldStudent->student_sea_slip,
-                    'student_sea_number' => $oldStudent->student_sea_number,
+                    if (!$dryRun) {
+                        $newId = Student::create($attributes)->id;
+                    }
 
-                    // Transfer Information
-                    'student_transfer_status' => $oldStudent->student_transfer_status,
-                    'student_transfer_slip' => $oldStudent->student_transfer_slip,
-                    'student_transfer_date' => $oldStudent->student_transfer_date,
-                    'student_previous_secondary_school' => $oldStudent->student_previous_secondary_school,
-                    'student_previous_school_location' => $oldStudent->student_previous_school_location,
+                    // Track within-run duplicates too (e.g. the same child submitted twice).
+                    if ($pin !== null) {
+                        $byPin[$pin] = $newId ?? 'new';
+                    }
+                    $byNameDob[$nameDob] = $newId ?? 'new';
 
-                    // Medical Information
-                    'student_medical_condition' => $oldStudent->student_medical_condition,
-                    'student_bloodtype' => $oldStudent->student_bloodtype,
-                    'student_allergies' => $oldStudent->student_allergies,
-                    'student_immunization_status' => $oldStudent->student_immunization_status,
+                    $imported++;
+                    $importedRows[] = [$oldStudent->id, $attributes['student_name'], $attributes['form_1_class'] ?? '', $pin ?? ''];
+                } catch (\Exception $e) {
+                    $errors++;
+                    $this->newLine();
+                    $this->error("Error importing legacy #{$oldStudent->id} {$attributes['student_name']}: " . $e->getMessage());
+                }
 
-                    // Special Needs - Fix typos in old column names
-                    'student_family_crisis' => $oldStudent->student_family_crisis,
-                    'student_receiving_counselling' => $oldStudent->student_recieving_counselling ?? null,
-                    'student_physical_disabilities' => $oldStudent->student_physical_disibilities ?? null,
-                    'student_learning_disabilities' => $oldStudent->student_learning_disabilities,
-                    'student_educational_aid' => $oldStudent->student_educational_aid,
-                    'student_special_sea_concessions' => $oldStudent->student_special_sea_concessions,
-                    'student_emotional_factors' => $oldStudent->student_emotional_factors,
-                    'student_other_intervention_information' => $oldStudent->student_other_intervention_information,
-
-                    // Personal Preferences
-                    'student_school_feeding_option' => $oldStudent->student_school_feeding_option,
-                    'student_social_welfare_status' => $oldStudent->student_social_welfare_status,
-                    'student_mode_of_transport' => $oldStudent->student_mode_of_transport,
-                    'student_access_to_device' => $oldStudent->student_access_to_device,
-
-                    // Mother Information
-                    'mother_name' => $oldStudent->mother_name,
-                    'is_mother_active_or_deceased' => $oldStudent->is_mother_active_or_deceased,
-                    'mother_identification_type' => $oldStudent->mother_identification_type,
-                    'mother_identification_number' => $oldStudent->mother_identification_number,
-                    'mother_home_address' => $oldStudent->mother_home_address,
-                    'mother_contact' => $oldStudent->mother_contact,
-                    'mother_profession' => $oldStudent->mother_profession,
-                    'mother_work_address' => $oldStudent->mother_work_address,
-                    'mother_email' => $oldStudent->mother_email,
-
-                    // Father Information
-                    'father_name' => $oldStudent->father_name,
-                    'is_father_active_or_deceased' => $oldStudent->is_father_active_or_deceased,
-                    'father_identification_type' => $oldStudent->father_identification_type,
-                    'father_identification_number' => $oldStudent->father_identification_number,
-                    'father_home_address' => $oldStudent->father_home_address,
-                    'father_contact' => $oldStudent->father_contact,
-                    'father_profession' => $oldStudent->father_profession,
-                    'father_work_address' => $oldStudent->father_work_address,
-                    'father_email_address' => $oldStudent->father_email_address,
-
-                    // Emergency Contact
-                    'emergency_contact_name' => $oldStudent->emergency_contact_name,
-                    'emergency_contact_address' => $oldStudent->emergency_contact_address,
-                    'emergency_contact_relation_to_student' => $oldStudent->emergency_contact_relation_to_student,
-                    'emergency_contact_number' => $oldStudent->emergency_contact_number,
-
-                    // Registration Information
-                    'registration_date' => $oldStudent->registration_date,
-                    'registrant_relationship_to_student' => $oldStudent->registrant_relationship_to_student,
-                    'registrant_name' => $oldStudent->registrant_name,
-                    'registrant_identification_type' => $oldStudent->registrant_identification_type,
-                    'registrant_identification_number' => $oldStudent->registrant_identification_number,
-                    'registrant_nationality' => $oldStudent->registrant_nationality,
-                    'registrant_email' => $oldStudent->registrant_email,
-                ]);
-
-                $imported++;
-            } catch (\Exception $e) {
-                $errors++;
-                $this->newLine();
-                $this->error("Error importing student {$oldStudent->student_name}: " . $e->getMessage());
+                $bar->advance();
             }
 
-            $bar->advance();
+            if ($dryRun) {
+                DB::rollBack();
+            } else {
+                DB::commit();
+            }
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            $this->newLine();
+            $this->error('Import aborted, nothing was written: ' . $e->getMessage());
+            return 1;
         }
 
         $bar->finish();
         $this->newLine(2);
 
+        if ($this->output->isVerbose()) {
+            if ($importedRows) {
+                $this->info($dryRun ? 'Would import:' : 'Imported:');
+                $this->table(['Legacy ID', 'Name', 'Class', 'PIN'], $importedRows);
+            }
+            if ($skippedRows) {
+                $this->warn('Skipped (already present):');
+                $this->table(['Legacy ID', 'Name', 'PIN', 'Matched'], $skippedRows);
+            }
+        }
+
         // Summary
         $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-        $this->info('Import Summary:');
-        $this->info("  ✓ Imported: {$imported} students");
-        $this->warn("  ⊘ Skipped (duplicates): {$skipped}");
+        $this->info($dryRun ? 'Dry-run Summary:' : 'Import Summary:');
+        $this->info("  ✓ " . ($dryRun ? 'Would import' : 'Imported') . ": {$imported} students");
+        $this->warn("  ⊘ Skipped (already present): {$skipped}");
         if ($errors > 0) {
             $this->error("  ✗ Errors: {$errors}");
         }
+        $this->info("  Σ Students table now: " . Student::withTrashed()->count());
         $this->info('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-        if ($this->confirm('Do you want to drop the old student_registration_data table?', false)) {
+        if ($file === null && !$dryRun && !$this->option('force')
+            && $this->confirm('Do you want to drop the old student_registration_data table?', false)) {
             DB::statement('DROP TABLE student_registration_data');
             $this->info('Old table dropped successfully.');
         }
 
-        return 0;
+        return $errors > 0 ? 1 : 0;
+    }
+
+    /**
+     * Read legacy rows from the student_registration_data table in the current database.
+     *
+     * @return array<int, object>|null
+     */
+    private function rowsFromTable(): ?array
+    {
+        if (!DB::getSchemaBuilder()->hasTable('student_registration_data')) {
+            $this->error('Old table student_registration_data not found!');
+            $this->info('Either import the SQL file into this database first, or pass it directly:');
+            $this->line('  php artisan students:import-old-data --file=/path/to/student-portal.sql');
+            return null;
+        }
+
+        return DB::table('student_registration_data')->orderBy('id')->get()->all();
+    }
+
+    /**
+     * Read legacy rows straight out of a MySQL dump file, so the dump never has
+     * to be loaded into the application database (which may be SQLite).
+     *
+     * @return array<int, object>|null
+     */
+    private function rowsFromDump(string $path): ?array
+    {
+        if (!is_readable($path)) {
+            $this->error("Cannot read dump file: {$path}");
+            return null;
+        }
+
+        $sql = file_get_contents($path);
+        $rows = [];
+        $offset = 0;
+
+        // phpMyAdmin dumps split the table across several INSERT statements.
+        while (preg_match(
+            '/INSERT INTO `student_registration_data`\s*\(([^)]*)\)\s*VALUES\s*/i',
+            $sql,
+            $m,
+            PREG_OFFSET_CAPTURE,
+            $offset
+        )) {
+            $columns = array_map(fn ($c) => trim($c, " `\r\n"), explode(',', $m[1][0]));
+            $pos = $m[0][1] + strlen($m[0][0]);
+
+            foreach ($this->parseTuples($sql, $pos) as $values) {
+                if (count($values) !== count($columns)) {
+                    $this->warn("\nSkipping malformed row near byte {$pos}: expected " . count($columns) . ' values, got ' . count($values));
+                    continue;
+                }
+                $rows[] = (object) array_combine($columns, $values);
+            }
+
+            $offset = $pos;
+        }
+
+        if (!$rows) {
+            $this->error('No student_registration_data rows found in the dump.');
+            return null;
+        }
+
+        usort($rows, fn ($a, $b) => (int) $a->id <=> (int) $b->id);
+
+        $this->info('Read ' . count($rows) . " rows from {$path}");
+
+        return $rows;
+    }
+
+    /**
+     * Parse the "(...), (...), ...;" tuple list of a MySQL INSERT statement.
+     * Advances $pos to just past the terminating semicolon.
+     *
+     * @return array<int, array<int, string|null>>
+     */
+    private function parseTuples(string $sql, int &$pos): array
+    {
+        $tuples = [];
+        $len = strlen($sql);
+
+        while ($pos < $len) {
+            // Skip whitespace and separators between tuples.
+            while ($pos < $len && (ctype_space($sql[$pos]) || $sql[$pos] === ',')) {
+                $pos++;
+            }
+
+            if ($pos >= $len || $sql[$pos] === ';') {
+                $pos++;
+                break;
+            }
+
+            if ($sql[$pos] !== '(') {
+                throw new \RuntimeException("Unexpected '{$sql[$pos]}' at byte {$pos} while parsing dump");
+            }
+            $pos++; // (
+
+            $values = [];
+            while (true) {
+                while ($pos < $len && ctype_space($sql[$pos])) {
+                    $pos++;
+                }
+
+                $ch = $sql[$pos];
+
+                if ($ch === "'") {
+                    $pos++;
+                    $buf = '';
+                    while ($pos < $len) {
+                        $c = $sql[$pos];
+                        if ($c === '\\') {
+                            $next = $sql[$pos + 1];
+                            $buf .= match ($next) {
+                                'n' => "\n", 'r' => "\r", 't' => "\t", '0' => "\0",
+                                'Z' => "\x1a", 'b' => "\x08",
+                                default => $next,
+                            };
+                            $pos += 2;
+                        } elseif ($c === "'") {
+                            if (($sql[$pos + 1] ?? '') === "'") { // doubled quote
+                                $buf .= "'";
+                                $pos += 2;
+                            } else {
+                                $pos++;
+                                break;
+                            }
+                        } else {
+                            $buf .= $c;
+                            $pos++;
+                        }
+                    }
+                    $values[] = $buf;
+                } else {
+                    $start = $pos;
+                    while ($pos < $len && $sql[$pos] !== ',' && $sql[$pos] !== ')') {
+                        $pos++;
+                    }
+                    $raw = trim(substr($sql, $start, $pos - $start));
+                    $values[] = strcasecmp($raw, 'NULL') === 0 ? null : $raw;
+                }
+
+                while ($pos < $len && ctype_space($sql[$pos])) {
+                    $pos++;
+                }
+
+                if ($sql[$pos] === ',') {
+                    $pos++;
+                    continue;
+                }
+                if ($sql[$pos] === ')') {
+                    $pos++;
+                    break;
+                }
+                throw new \RuntimeException("Unexpected '{$sql[$pos]}' at byte {$pos} while parsing dump");
+            }
+
+            $tuples[] = $values;
+        }
+
+        return $tuples;
+    }
+
+    /**
+     * Map a legacy row onto students-table attributes, fixing renamed columns
+     * and cleaning legacy placeholder values.
+     *
+     * @return array<string, mixed>
+     */
+    private function mapRow(object $old): array
+    {
+        $fillable = array_flip((new Student)->getFillable());
+        $attributes = [];
+
+        foreach ((array) $old as $column => $value) {
+            $column = self::COLUMN_RENAMES[$column] ?? $column;
+
+            if (!isset($fillable[$column])) {
+                continue;
+            }
+
+            if (is_string($value)) {
+                $value = trim($value);
+
+                // Elementor leaves its dropdown placeholder ("Select", "Select Gender",
+                // "Select Religion", ...) in the column when nothing was chosen.
+                if (preg_match('/^select(?: [a-z]+)?$/i', $value)) {
+                    $value = null;
+                }
+            }
+
+            if (in_array($column, self::DATE_COLUMNS, true)) {
+                $value = $this->normalizeDate($value);
+            }
+
+            $attributes[$column] = $value;
+        }
+
+        $attributes['student_birth_certificate_pin'] = $this->normalizePin($attributes['student_birth_certificate_pin'] ?? null);
+        $attributes['form_1_class'] = Student::canonicalClass($attributes['form_1_class'] ?? null) ?? ($attributes['form_1_class'] ?: null);
+
+        // These columns are NOT NULL in the students table.
+        foreach ([
+            'student_family_crisis', 'student_receiving_counselling', 'student_physical_disabilities',
+            'student_learning_disabilities', 'student_educational_aid', 'student_special_sea_concessions',
+            'student_emotional_factors', 'student_other_intervention_information',
+        ] as $required) {
+            $attributes[$required] = $attributes[$required] ?? '';
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * MySQL's zero date and blanks become null; everything else is kept as Y-m-d.
+     */
+    private function normalizeDate($value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '' || str_starts_with($value, '0000-00-00')) {
+            return null;
+        }
+
+        return substr($value, 0, 10);
     }
 
     /**
@@ -196,6 +402,15 @@ class ImportOldStudentData extends Command
     {
         $pin = preg_replace('/[^0-9A-Z]/', '', strtoupper(trim((string) $pin)));
 
-        return ($pin === '' || $pin === 'NA') ? null : $pin;
+        // A PIN always carries digits; anything else ("N/A", "None", a name typed
+        // into the wrong box) is treated as missing.
+        return preg_match('/[0-9]/', $pin) ? $pin : null;
+    }
+
+    private function nameDobKey(?string $name, ?string $dob): string
+    {
+        $name = preg_replace('/\s+/', ' ', strtolower(trim((string) $name)));
+
+        return $name . '|' . ($dob ?: '');
     }
 }
