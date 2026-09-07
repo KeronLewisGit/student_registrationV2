@@ -21,6 +21,13 @@ class DatabaseSeeder extends Seeder
         $staffPassword = env('DEFAULT_STAFF_PASSWORD', 'staff123');
         $viewerPassword = env('DEFAULT_VIEWER_PASSWORD', 'viewer123');
 
+        // Never seed the well-known default passwords on a production database.
+        if (app()->environment('production')
+            && ($adminPassword === 'admin123' || $staffPassword === 'staff123' || $viewerPassword === 'viewer123')) {
+            $this->command->error('Refusing to seed default passwords in production. Set DEFAULT_ADMIN_PASSWORD, DEFAULT_STAFF_PASSWORD and DEFAULT_VIEWER_PASSWORD in .env first.');
+            return;
+        }
+
         // Security warning for default passwords
         if ($adminPassword === 'admin123' || $staffPassword === 'staff123' || $viewerPassword === 'viewer123') {
             $this->command->warn('');

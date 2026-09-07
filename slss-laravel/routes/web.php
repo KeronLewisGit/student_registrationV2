@@ -12,10 +12,13 @@ use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\PrintableController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\PhotoController;
+use App\Http\Controllers\DocumentController;
 
-// Deployment Routes (token-authenticated in controller, CSRF exempted, throttled against brute force)
-Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
-Route::post('/deploy', [DeployController::class, 'deploy'])->middleware('throttle:5,1')->name('deploy');
+// Deployment Routes: admin login AND the deploy token are both required.
+Route::middleware(['auth', 'can:admin'])->group(function () {
+    Route::get('/deploy', [DeployController::class, 'showForm'])->name('deploy.form');
+    Route::post('/deploy', [DeployController::class, 'deploy'])->middleware('throttle:5,1')->name('deploy');
+});
 
 // Webhook Routes (shared-secret authenticated in controller, CSRF exempted, throttled)
 Route::post('/webhook/student-registration', [WebhookController::class, 'handleStudentRegistration'])
@@ -24,7 +27,7 @@ Route::post('/webhook/student-registration', [WebhookController::class, 'handleS
 
 // Authentication Routes
 Route::get('/login', [AuthController::class, 'showLogin'])->middleware('guest')->name('login');
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Protected Routes
@@ -47,8 +50,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('students', StudentController::class);
 
     // PDF Generation Routes
-    Route::get('/students/{student}/pdf', [StudentController::class, 'generatePdf'])->name('students.pdf');
-    Route::get('/students/{student}/print', [StudentController::class, 'print'])->name('students.print');
+    Route::get('/students/{student}/pdf', [StudentController::class, 'generatePdf'])->middleware('can:view-sensitive')->name('students.pdf');
+    Route::get('/students/{student}/print', [StudentController::class, 'print'])->middleware('can:view-sensitive')->name('students.print');
+
+    // Uploaded photos and documents are served from private storage through this route
+    Route::get('/documents/{path}', [DocumentController::class, 'show'])->where('path', '.*')->name('documents.show');
     Route::get('/students-print', [StudentController::class, 'printAll'])->name('students.print-all');
     Route::get('/students-bulk-pdf', [StudentController::class, 'generateBulkPdf'])->name('students.bulk-pdf');
     Route::get('/students-bulk-pdf-progress', [StudentController::class, 'getBulkPdfProgress'])->name('students.bulk-pdf-progress');

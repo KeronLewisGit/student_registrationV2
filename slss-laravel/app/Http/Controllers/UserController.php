@@ -36,7 +36,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()],
             'role' => 'required|in:admin,staff,viewer',
         ]);
 
@@ -62,7 +62,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => ['nullable', 'confirmed', Password::min(12)->mixedCase()->numbers()],
             'role' => 'required|in:admin,staff,viewer',
         ]);
 
@@ -117,7 +117,7 @@ class UserController extends Controller
     public function resetPassword(Request $request, User $user)
     {
         $validated = $request->validate([
-            'new_password' => ['required', 'confirmed', Password::min(8)],
+            'new_password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()],
         ]);
 
         $user->password = Hash::make($validated['new_password']);

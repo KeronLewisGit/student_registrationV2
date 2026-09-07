@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Student;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class StudentService
 {
@@ -72,7 +73,7 @@ class StudentService
             $oldPhoto = $student->student_passport_photo;
             $data['student_passport_photo'] = $this->handlePhotoUpload($photo, $student->id);
 
-            if ($oldPhoto && $data['student_passport_photo']) {
+            if ($oldPhoto && $oldPhoto !== $data['student_passport_photo']) {
                 $this->deletePhoto($oldPhoto);
             }
         }
@@ -94,7 +95,7 @@ class StudentService
 
         $student->update(['student_passport_photo' => $path]);
 
-        if ($oldPhoto && str_starts_with($oldPhoto, 'storage/')) {
+        if ($oldPhoto && $oldPhoto !== $path) {
             $this->deletePhoto($oldPhoto);
         }
 
@@ -109,11 +110,8 @@ class StudentService
      */
     public function deleteStudent(Student $student): bool
     {
-        // Delete photo if exists
-        if ($student->student_passport_photo) {
-            $this->deletePhoto($student->student_passport_photo);
-        }
-
+        // Soft delete only: files stay on disk so Restore brings the record back
+        // intact. StudentObserver::forceDeleted removes them on permanent deletion.
         return $student->delete();
     }
 
@@ -126,11 +124,22 @@ class StudentService
      */
     protected function handlePhotoUpload(UploadedFile $photo, ?int $studentId = null): string
     {
-        $timestamp = time();
-        $filename = 'student_' . ($studentId ?? $timestamp) . '_' . $timestamp . '.' . $photo->getClientOriginalExtension();
-        $path = $photo->storeAs('passports', $filename, 'public');
+        return $this->storePrivately($photo, 'passports', 'student_' . ($studentId ?? 'new'));
+    }
 
-        return 'storage/' . $path;
+    /**
+     * Save an upload into private storage (storage/app/private/<dir>) with a
+     * random, unguessable name and an extension derived from the file's real
+     * MIME type, never from the client-supplied name.
+     */
+    protected function storePrivately(UploadedFile $file, string $directory, string $stem): string
+    {
+        $extension = strtolower($file->extension() ?: 'bin');
+        $filename = $stem . '_' . Str::random(12) . '.' . $extension;
+
+        $file->storeAs('private/' . $directory, $filename, 'local');
+
+        return 'private/' . $directory . '/' . $filename;
     }
 
     /**
@@ -159,13 +168,10 @@ class StudentService
             $file = $data[$field];
             $oldDocument = $student?->{$field};
 
-            $filename = $field . '_' . ($student?->id ?? 'new') . '_' . time() . '.'
-                . $file->getClientOriginalExtension();
-
-            $data[$field] = 'storage/' . $file->storeAs($directory, $filename, 'public');
+            $data[$field] = $this->storePrivately($file, $directory, $field . '_' . ($student?->id ?? 'new'));
 
             // Delete the replaced document only after the new one is stored
-            if ($oldDocument) {
+            if ($oldDocument && $oldDocument !== $data[$field]) {
                 $this->deletePhoto($oldDocument);
             }
         }
@@ -181,11 +187,7 @@ class StudentService
      */
     protected function deletePhoto(string $photoPath): void
     {
-        $path = str_replace('storage/', '', $photoPath);
-
-        if (Storage::disk('public')->exists($path)) {
-            Storage::disk('public')->delete($path);
-        }
+        Student::deleteStoredFile($photoPath);
     }
 
     /**

@@ -11,6 +11,9 @@ use Illuminate\Http\Request;
 
 class StudentController extends Controller
 {
+    /** Maximum students in one bulk PDF export (each PDF takes ~0.3 s on shared hosting). */
+    public const BULK_PDF_LIMIT = 250;
+
     public function __construct(
         protected StudentService $studentService,
         protected PdfService $pdfService
@@ -133,6 +136,15 @@ class StudentController extends Controller
         $students = $this->studentService->getFilteredStudents($request->all());
         $progressId = $request->input('progress_id');
 
+        // Shared hosting kills long requests; keep one export inside the PHP time limit.
+        if ($students->count() > self::BULK_PDF_LIMIT) {
+            return response()->json([
+                'success' => false,
+                'message' => "That selection has {$students->count()} students. Export at most " . self::BULK_PDF_LIMIT . " at a time — filter by class or year first.",
+                'error_details' => 'Too many students for one export.',
+            ], 422);
+        }
+
         return $this->pdfService->generateBulkPdf($students, $progressId);
     }
 
@@ -191,9 +203,14 @@ class StudentController extends Controller
         $students = $this->studentService->getFilteredStudents($filters);
 
         $parts = array_filter([
+            !empty($filters['current_class']) && $filters['current_class'] !== '0' ? 'Class ' . $filters['current_class'] : null,
+            !empty($filters['status']) && $filters['status'] !== 'active'
+                ? ($filters['status'] === 'all' ? 'All statuses' : (Student::ENROLMENT_STATUSES[$filters['status']] ?? $filters['status']))
+                : null,
             !empty($filters['year']) ? 'Registered ' . $filters['year'] : null,
-            !empty($filters['student_class']) && $filters['student_class'] !== '0' ? 'Class ' . $filters['student_class'] : null,
+            !empty($filters['student_class']) && $filters['student_class'] !== '0' ? 'Form 1 class ' . $filters['student_class'] : null,
             !empty($filters['search']) ? 'Search "' . $filters['search'] . '"' : null,
+            !empty($filters['incomplete']) ? 'Incomplete records' : null,
         ]);
         $filterSummary = $parts ? implode(' · ', $parts) : 'All students';
 

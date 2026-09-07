@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        // Apply the saved theme before first paint so dark mode doesn't flash light
+        (function () { try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t); document.documentElement.setAttribute('data-bs-theme', t); } catch (e) {} })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -616,7 +620,7 @@
 
         /* Footer Styles */
         .app-footer {
-            background: white;
+            background: var(--bg-white, #fff);
             border-top: 1px solid var(--border-color);
             padding: 1.5rem 2rem;
             margin-left: var(--sidebar-width);
@@ -1444,6 +1448,7 @@
 
         function setTheme(theme) {
             htmlElement.setAttribute('data-theme', theme);
+            htmlElement.setAttribute('data-bs-theme', theme); // Bootstrap's own components (dropdowns, list groups, pagination)
 
             if (theme === 'dark') {
                 themeIcon.classList.remove('fa-moon');

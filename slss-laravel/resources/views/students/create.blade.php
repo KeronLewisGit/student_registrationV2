@@ -52,6 +52,23 @@
                     </select>
                 </div>
 
+                <div class="col-md-2">
+                    <label class="form-label" for="field_intake_year">Intake Year</label>
+                    <input type="number" id="field_intake_year" name="intake_year" class="form-control" min="2000" max="2100"
+                           value="{{ old('intake_year', \App\Models\Student::promotionTargetYear()) }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label" for="field_current_class">Current Class</label>
+                    <select id="field_current_class" name="current_class" class="form-select">
+                        <option value="">Same as Form 1 class</option>
+                        @foreach(\App\Models\Student::allClasses() as $class)
+                            <option value="{{ $class }}" {{ old('current_class') === $class ? 'selected' : '' }}>{{ $class }}</option>
+                        @endforeach
+                    </select>
+                    <small class="text-muted">Set this for a student joining above Form 1.</small>
+                </div>
+
                 <div class="col-md-5">
                     <label class="form-label" for="field_student_first_name">First Name <span class="text-danger">*</span></label>
                     <input type="text" id="field_student_first_name" name="student_first_name" class="form-control @error('student_first_name') is-invalid @enderror" value="{{ old('student_first_name') }}" placeholder="First Name" required>
@@ -246,14 +263,11 @@
                     <label class="form-label" for="field_student_bloodtype">Blood Type</label>
                     <select id="field_student_bloodtype" name="student_bloodtype" class="form-select">
                         <option value="">Select</option>
-                        <option value="A+" {{ old('student_bloodtype') == 'A+' ? 'selected' : '' }}>A+</option>
-                        <option value="A-" {{ old('student_bloodtype') == 'A-' ? 'selected' : '' }}>A-</option>
-                        <option value="B+" {{ old('student_bloodtype') == 'B+' ? 'selected' : '' }}>B+</option>
-                        <option value="B-" {{ old('student_bloodtype') == 'B-' ? 'selected' : '' }}>B-</option>
-                        <option value="AB+" {{ old('student_bloodtype') == 'AB+' ? 'selected' : '' }}>AB+</option>
-                        <option value="AB-" {{ old('student_bloodtype') == 'AB-' ? 'selected' : '' }}>AB-</option>
-                        <option value="O+" {{ old('student_bloodtype') == 'O+' ? 'selected' : '' }}>O+</option>
-                        <option value="O-" {{ old('student_bloodtype') == 'O-' ? 'selected' : '' }}>O-</option>
+                        <option value="Blood Group A" {{ old('student_bloodtype') == 'Blood Group A' ? 'selected' : '' }}>Blood Group A</option>
+                        <option value="Blood Group B" {{ old('student_bloodtype') == 'Blood Group B' ? 'selected' : '' }}>Blood Group B</option>
+                        <option value="Blood Group AB" {{ old('student_bloodtype') == 'Blood Group AB' ? 'selected' : '' }}>Blood Group AB</option>
+                        <option value="Blood Group O" {{ old('student_bloodtype') == 'Blood Group O' ? 'selected' : '' }}>Blood Group O</option>
+                        <option value="Unknown" {{ old('student_bloodtype') == 'Unknown' ? 'selected' : '' }}>Unknown</option>
                     </select>
                 </div>
 
@@ -331,8 +345,10 @@
                     <label class="form-label" for="field_student_school_feeding_option">School Feeding Programme</label>
                     <select id="field_student_school_feeding_option" name="student_school_feeding_option" class="form-select">
                         <option value="">Select</option>
-                        <option value="Yes" {{ old('student_school_feeding_option') == 'Yes' ? 'selected' : '' }}>Yes</option>
-                        <option value="No" {{ old('student_school_feeding_option') == 'No' ? 'selected' : '' }}>No</option>
+                        <option value="Breakfast Only" {{ old('student_school_feeding_option') == 'Breakfast Only' ? 'selected' : '' }}>Breakfast Only</option>
+                        <option value="Lunch Only" {{ old('student_school_feeding_option') == 'Lunch Only' ? 'selected' : '' }}>Lunch Only</option>
+                        <option value="Both Breakfast and Lunch" {{ old('student_school_feeding_option') == 'Both Breakfast and Lunch' ? 'selected' : '' }}>Both Breakfast and Lunch</option>
+                        <option value="None" {{ old('student_school_feeding_option') == 'None' ? 'selected' : '' }}>None</option>
                     </select>
                 </div>
 
@@ -570,6 +586,14 @@
                         <option value="Mother" {{ old('registrant_relationship_to_student') == 'Mother' ? 'selected' : '' }}>Mother</option>
                         <option value="Father" {{ old('registrant_relationship_to_student') == 'Father' ? 'selected' : '' }}>Father</option>
                         <option value="Guardian" {{ old('registrant_relationship_to_student') == 'Guardian' ? 'selected' : '' }}>Guardian</option>
+                        <option value="Legal Guardian" {{ old('registrant_relationship_to_student') == 'Legal Guardian' ? 'selected' : '' }}>Legal Guardian</option>
+                        <option value="Grandmother" {{ old('registrant_relationship_to_student') == 'Grandmother' ? 'selected' : '' }}>Grandmother</option>
+                        <option value="Grandfather" {{ old('registrant_relationship_to_student') == 'Grandfather' ? 'selected' : '' }}>Grandfather</option>
+                        <option value="Aunt" {{ old('registrant_relationship_to_student') == 'Aunt' ? 'selected' : '' }}>Aunt</option>
+                        <option value="Uncle" {{ old('registrant_relationship_to_student') == 'Uncle' ? 'selected' : '' }}>Uncle</option>
+                        <option value="Sister" {{ old('registrant_relationship_to_student') == 'Sister' ? 'selected' : '' }}>Sister</option>
+                        <option value="Brother" {{ old('registrant_relationship_to_student') == 'Brother' ? 'selected' : '' }}>Brother</option>
+                        <option value="Cousin" {{ old('registrant_relationship_to_student') == 'Cousin' ? 'selected' : '' }}>Cousin</option>
                         <option value="Other" {{ old('registrant_relationship_to_student') == 'Other' ? 'selected' : '' }}>Other</option>
                     </select>
                 </div>

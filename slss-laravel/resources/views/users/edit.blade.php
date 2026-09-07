@@ -109,8 +109,7 @@
                 <label class="form-label" for="field_password">New Password (Optional)</label>
                 <input type="password"
                        id="field_password" name="password"
-                       class="form-control @error('password') is-invalid @enderror"
-                       id="password">
+                       class="form-control @error('password') is-invalid @enderror">
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

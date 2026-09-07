@@ -36,6 +36,9 @@ class CsvImportService
     protected array $mapping = [
         'student_passport_photo' => 'student_passport_photo',
         'form_1_class' => 'form_1_class',
+        'intake_year' => 'intake_year',
+        'current_class' => 'current_class',
+        'enrolment_status' => 'enrolment_status',
         'student_name' => 'student_name',
         'student_gender' => 'student_gender',
         'citizen_type' => 'citizen_type',
@@ -195,13 +198,29 @@ class CsvImportService
                     continue;
                 }
 
-                // Check for duplicate by PIN
+                // Check for duplicate by PIN (deleted students still hold the unique index)
                 $pin = $studentData['student_birth_certificate_pin'] ?? null;
                 if ($pin) {
-                    $existing = Student::where('student_birth_certificate_pin', $pin)->first();
+                    $existing = Student::withTrashed()->where('student_birth_certificate_pin', $pin)->first();
                     if ($existing) {
                         $skipped++;
-                        $errors[] = "Row {$rowNumber}: duplicate Birth Certificate PIN ({$pin}) — a student with this PIN already exists, skipped.";
+                        $errors[] = "Row {$rowNumber}: duplicate Birth Certificate PIN ({$pin}) — matches "
+                            . ($existing->trashed() ? "deleted student #{$existing->id} (restore it from Recently Deleted)" : "student #{$existing->id}")
+                            . ", skipped.";
+                        continue;
+                    }
+                }
+
+                // Check for duplicate by name + date of birth (rows without a PIN)
+                if (!empty($studentData['student_name']) && !empty($studentData['student_dob'])) {
+                    $name = preg_replace('/\s+/', ' ', strtolower(trim($studentData['student_name'])));
+                    $match = Student::withTrashed()
+                        ->whereDate('student_dob', $studentData['student_dob'])
+                        ->get()
+                        ->first(fn ($s) => preg_replace('/\s+/', ' ', strtolower(trim((string) $s->student_name))) === $name);
+                    if ($match) {
+                        $skipped++;
+                        $errors[] = "Row {$rowNumber}: {$studentData['student_name']} with the same date of birth already exists (student #{$match->id}), skipped.";
                         continue;
                     }
                 }
@@ -246,6 +265,19 @@ class CsvImportService
         if (!empty($result['student_birth_certificate_pin'])) {
             $pin = preg_replace('/[^0-9A-Z]/', '', strtoupper($result['student_birth_certificate_pin']));
             $result['student_birth_certificate_pin'] = $pin ?: null;
+        }
+
+        // Progression columns: normalise class codes and status codes, drop anything unrecognised
+        if (!empty($result['current_class'])) {
+            $class = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $result['current_class']));
+            $result['current_class'] = in_array($class, Student::allClasses(), true) ? $class : null;
+        }
+        if (!empty($result['enrolment_status'])) {
+            $status = strtolower(trim($result['enrolment_status']));
+            $result['enrolment_status'] = array_key_exists($status, Student::ENROLMENT_STATUSES) ? $status : null;
+        }
+        if (!empty($result['intake_year']) && !preg_match('/^(19|20)\d{2}$/', trim($result['intake_year']))) {
+            $result['intake_year'] = null;
         }
 
         // Convert dates

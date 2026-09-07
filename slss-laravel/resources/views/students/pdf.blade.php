@@ -139,9 +139,10 @@
         <p>Eastern Main Road, Laventille - Official Student Record</p>
     </div>
 
-    @if($student->student_passport_photo && file_exists(public_path($student->student_passport_photo)))
+    @php($photoPath = \App\Models\Student::documentPath($student->student_passport_photo))
+    @if($photoPath && file_exists($photoPath))
         <div class="passport-container">
-            <img src="{{ public_path($student->student_passport_photo) }}" class="passport">
+            <img src="{{ $photoPath }}" class="passport">
         </div>
     @endif
 
@@ -150,12 +151,16 @@
         <div class="section-title">Student Personal Information</div>
         <div class="row">
             <div class="col">
-                <div class="field-label">Form Class</div>
-                <div class="field-value">{{ $student->form_1_class ?? 'N/A' }}</div>
+                <div class="field-label">Current Class</div>
+                <div class="field-value">{{ $student->current_class ?? 'N/A' }}@if(!$student->isActive()) ({{ $student->enrolment_status_label }})@endif</div>
             </div>
             <div class="col">
                 <div class="field-label">Student Name</div>
                 <div class="field-value">{{ $student->student_name ? ucwords(strtolower($student->student_name)) : 'N/A' }}</div>
+            </div>
+            <div class="col">
+                <div class="field-label">Form 1 Class / Intake</div>
+                <div class="field-value">{{ \App\Models\Student::canonicalClass($student->form_1_class) ?? $student->form_1_class ?? 'N/A' }}@if($student->intake_year) &middot; {{ $student->intake_year }}@endif</div>
             </div>
             <div class="col">
                 <div class="field-label">Gender</div>
@@ -179,7 +184,7 @@
         <div class="row">
             <div class="col">
                 <div class="field-label">Birth Certificate</div>
-                <div class="field-value">{{ $student->student_birth_certificate ?? 'N/A' }}</div>
+                <div class="field-value">{{ \App\Models\Student::documentLabel($student->student_birth_certificate) ?? 'N/A' }}</div>
             </div>
             <div class="col">
                 <div class="field-label">Religion</div>
@@ -236,7 +241,7 @@
         <div class="row">
             <div class="col">
                 <div class="field-label">SEA Slip</div>
-                <div class="field-value">{{ $student->student_sea_slip ?? 'N/A' }}</div>
+                <div class="field-value">{{ \App\Models\Student::documentLabel($student->student_sea_slip) ?? 'N/A' }}</div>
             </div>
         </div>
     </div>
@@ -252,7 +257,7 @@
             </div>
             <div class="col">
                 <div class="field-label">Transfer Slip</div>
-                <div class="field-value">{{ $student->student_transfer_slip ?? 'N/A' }}</div>
+                <div class="field-value">{{ \App\Models\Student::documentLabel($student->student_transfer_slip) ?? 'N/A' }}</div>
             </div>
             <div class="col">
                 <div class="field-label">Transfer Date</div>
@@ -419,7 +424,7 @@
             </div>
             <div class="col">
                 <div class="field-label">Death Certificate</div>
-                <div class="field-value">{{ $student->mother_death_certificate ?? 'N/A' }}</div>
+                <div class="field-value">{{ \App\Models\Student::documentLabel($student->mother_death_certificate) ?? 'N/A' }}</div>
             </div>
         </div>
         <div class="row">
@@ -474,7 +479,7 @@
             </div>
             <div class="col">
                 <div class="field-label">Death Certificate</div>
-                <div class="field-value">{{ $student->father_death_certificate ?? 'N/A' }}</div>
+                <div class="field-value">{{ \App\Models\Student::documentLabel($student->father_death_certificate) ?? 'N/A' }}</div>
             </div>
         </div>
         <div class="row">

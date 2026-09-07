@@ -114,8 +114,7 @@
                 <input type="password"
                        id="field_password" name="password"
                        class="form-control @error('password') is-invalid @enderror"
-                       required
-                       id="password">
+                       required>
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

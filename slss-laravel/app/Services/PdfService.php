@@ -18,6 +18,7 @@ class PdfService
      */
     public function generateStudentPdf(Student $student)
     {
+        $student = $student->forPrint();
         $pdf = PDF::loadView('students.pdf', compact('student'));
         $pdf->setPaper('letter', 'portrait');
 
@@ -52,7 +53,7 @@ class PdfService
         // Initialize progress IMMEDIATELY if progressId is provided
         if ($progressId) {
             try {
-                Cache::put("pdf_progress_{$progressId}", [
+                Cache::put($this->progressKey($progressId), [
                     'status' => 'initializing',
                     'step' => 'validating',
                     'progress' => 0,
@@ -74,7 +75,7 @@ class PdfService
 
             if ($returnJson) {
                 try {
-                    Cache::put("pdf_progress_{$progressId}", [
+                    Cache::put($this->progressKey($progressId), [
                         'status' => 'failed',
                         'step' => 'validation',
                         'progress' => 0,
@@ -102,7 +103,7 @@ class PdfService
             // Update progress to processing
             if ($progressId) {
                 try {
-                    Cache::put("pdf_progress_{$progressId}", [
+                    Cache::put($this->progressKey($progressId), [
                         'status' => 'processing',
                         'step' => 'initializing',
                         'progress' => 1,
@@ -147,7 +148,7 @@ class PdfService
 
                         if ($shouldUpdate) {
                             try {
-                                Cache::put("pdf_progress_{$progressId}", [
+                                Cache::put($this->progressKey($progressId), [
                                     'status' => 'processing',
                                     'step' => 'generating_pdfs',
                                     'progress' => $progress,
@@ -164,7 +165,7 @@ class PdfService
                         }
                     }
 
-                    $pdf = PDF::loadView('students.pdf', compact('student'));
+                    $pdf = PDF::loadView('students.pdf', ['student' => $student->forPrint()]);
                     $pdf->setPaper('letter', 'portrait');
 
                     $pdfPath = $tempDir . '/' . $this->profileFilename($student);
@@ -192,7 +193,7 @@ class PdfService
             // Update progress - Creating ZIP
             if ($progressId) {
                 try {
-                    Cache::put("pdf_progress_{$progressId}", [
+                    Cache::put($this->progressKey($progressId), [
                         'status' => 'processing',
                         'step' => 'creating_zip',
                         'progress' => 85,
@@ -223,6 +224,14 @@ class PdfService
             foreach (glob($exportDir . '/student_profiles_*.zip') ?: [] as $oldZip) {
                 if (filemtime($oldZip) < now()->subDay()->getTimestamp()) {
                     @unlink($oldZip);
+                }
+            }
+
+            // Sweep working directories left behind by exports that were killed mid-run
+            foreach (glob(storage_path('app/temp_pdfs_*')) ?: [] as $oldTemp) {
+                if (is_dir($oldTemp) && filemtime($oldTemp) < now()->subHour()->getTimestamp()) {
+                    array_map('unlink', glob($oldTemp . '/*') ?: []);
+                    @rmdir($oldTemp);
                 }
             }
 
@@ -276,7 +285,7 @@ class PdfService
             // Mark as complete
             if ($progressId) {
                 try {
-                    Cache::put("pdf_progress_{$progressId}", [
+                    Cache::put($this->progressKey($progressId), [
                         'status' => 'completed',
                         'step' => 'completed',
                         'progress' => 100,
@@ -326,7 +335,7 @@ class PdfService
                 }
             }
 
-            $errorMessage = 'Failed to generate PDF export: ' . $e->getMessage();
+            $errorMessage = 'Failed to generate PDF export.';
             $errorDetails = 'Error occurred during export process. Please check server logs for details.';
 
             // Determine specific failure point
@@ -342,7 +351,7 @@ class PdfService
 
             if ($progressId) {
                 try {
-                    Cache::put("pdf_progress_{$progressId}", [
+                    Cache::put($this->progressKey($progressId), [
                         'status' => 'failed',
                         'step' => 'error',
                         'progress' => 0,
@@ -372,10 +381,19 @@ class PdfService
      * @param  string  $progressId
      * @return array
      */
+    /**
+     * Cache key for an export's progress, scoped to the user who started it
+     * so one user cannot read another's export status or download link.
+     */
+    private function progressKey(string $progressId): string
+    {
+        return 'pdf_progress_' . (auth()->id() ?? 'guest') . '_' . substr(preg_replace('/[^A-Za-z0-9_-]/', '', $progressId), 0, 80);
+    }
+
     public function getProgress(string $progressId): array
     {
         try {
-            $progress = Cache::get("pdf_progress_{$progressId}");
+            $progress = Cache::get($this->progressKey($progressId));
 
             if (!$progress) {
                 return [
@@ -419,6 +437,7 @@ class PdfService
      */
     public function streamPdf(Student $student)
     {
+        $student = $student->forPrint();
         $pdf = PDF::loadView('students.pdf', compact('student'));
         $pdf->setPaper('letter', 'portrait');
 

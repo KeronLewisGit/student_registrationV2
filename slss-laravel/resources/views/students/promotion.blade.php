@@ -18,12 +18,19 @@
         Every change is written to each student's history.
     </p>
 
+    @if($newIntake)
+        <div class="alert alert-info">
+            <i class="fas fa-user-plus me-1"></i>
+            <strong>{{ $newIntake }}</strong> students with intake year {{ $targetYear }} are the incoming Form 1 group. They stay in Form 1 and are not included below.
+        </div>
+    @endif
+
     @if($lastRun)
-        <div class="alert {{ $ranThisYear ? 'alert-warning' : 'alert-info' }}">
+        <div class="alert {{ $alreadyRan ? 'alert-danger' : 'alert-secondary' }}">
             <i class="fas fa-info-circle me-1"></i>
-            Last promotion ran on <strong>{{ $lastRun->created_at->format('d/m/Y H:i') }}</strong> by {{ $lastRun->user_name }}.
-            @if($ranThisYear)
-                <strong>That was already in the {{ $academicYear }} academic year.</strong> Running it again will move students up a second time.
+            Last promotion ran on <strong>{{ $lastRun->created_at->format('d/m/Y H:i') }}</strong> by {{ $lastRun->user_name }}: {{ $lastRun->summary }}.
+            @if($alreadyRan)
+                <strong>The promotion into {{ $academicYear }} has already been run</strong>, so the button below is disabled.
             @endif
         </div>
     @endif
@@ -59,16 +66,17 @@
         </table>
     </div>
 
-    <form method="POST" action="{{ route('students.promotion.run') }}" onsubmit="return this.confirm.checked;">
+    <form method="POST" action="{{ route('students.promotion.run') }}"
+          onsubmit="return confirm('This moves every active student up one form and marks Form {{ \App\Models\Student::MAX_FORM }} as graduated. It cannot be undone automatically. Continue?');">
         @csrf
         <div class="form-check mb-3">
-            <input class="form-check-input" type="checkbox" name="confirm" id="confirm" value="1">
+            <input class="form-check-input" type="checkbox" name="confirm" id="confirm" value="1" required>
             <label class="form-check-label" for="confirm">
                 I have checked the table above and want to promote all active students now.
             </label>
             @error('confirm')<div class="text-danger small">{{ $message }}</div>@enderror
         </div>
-        <button type="submit" class="btn btn-primary" {{ empty($preview) ? 'disabled' : '' }}>
+        <button type="submit" class="btn btn-primary" {{ empty($preview) || $alreadyRan ? 'disabled' : '' }}>
             <i class="fas fa-level-up-alt me-1"></i> Run promotion
         </button>
         <a href="{{ route('students.index') }}" class="btn btn-secondary ms-2">Cancel</a>

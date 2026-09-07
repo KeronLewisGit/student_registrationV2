@@ -20,7 +20,8 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($credentials, $request->filled('remember'))) {
+        // No "remember me": a 5-year cookie on a shared office PC is not appropriate for this data.
+        if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->intended(route('students.index'));
         }

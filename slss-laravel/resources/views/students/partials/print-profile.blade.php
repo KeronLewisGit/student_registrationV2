@@ -6,7 +6,7 @@
             <div class="col-md-3">
                 <h6 class="fw-bold mb-2">Passport Size Photo</h6>
                 @if($student->student_passport_photo)
-                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}"
+                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}"
                          alt=""
                          class="passport-photo"
                          onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">
@@ -21,8 +21,13 @@
                 <p class="text-muted record-title">Official Student Record</p>
                 <p class="record-subject">
                     {{ $student->student_name ? ucwords(strtolower($student->student_name)) : 'Unnamed student' }}
-                    @if($student->form_1_class)
+                    @if($student->current_class)
+                        &middot; Class {{ $student->current_class }}
+                    @elseif($student->form_1_class)
                         &middot; Form {{ $student->form_1_class }}
+                    @endif
+                    @if(!$student->isActive())
+                        &middot; {{ $student->enrolment_status_label }}
                     @endif
                 </p>
             </div>

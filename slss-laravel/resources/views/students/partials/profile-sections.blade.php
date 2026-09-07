@@ -5,12 +5,13 @@
 <div class="section-card">
     <div class="fw-bold mb-3 pb-2 border-bottom">Student Personal Information</div>
     <div class="row g-3">
-        @include('students.partials.field', ['label' => 'Form Class', 'value' => $student->form_1_class])
+        @include('students.partials.field', ['label' => 'Current Class', 'value' => $student->current_class])
         @include('students.partials.field', ['label' => 'Student Name', 'value' => $student->student_name, 'format' => 'name'])
         @include('students.partials.field', ['label' => 'Gender', 'value' => $student->student_gender])
         @include('students.partials.field', ['label' => 'Date of Birth', 'value' => $student->student_dob, 'format' => 'date'])
     </div>
     <div class="row g-3 mt-2">
+        @include('students.partials.field', ['label' => 'Form 1 Class / Intake', 'value' => trim((\App\Models\Student::canonicalClass($student->form_1_class) ?? (string) $student->form_1_class) . ($student->intake_year ? ' · ' . $student->intake_year : ''))])
         @include('students.partials.field', ['label' => 'Citizenship Type', 'value' => $student->citizen_type])
         @include('students.partials.field', ['label' => 'Birth Certificate Pin', 'value' => $student->student_birth_certificate_pin])
         @include('students.partials.field', ['label' => 'Birth Certificate', 'value' => $student->student_birth_certificate, 'format' => 'document'])

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -10,7 +12,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class StudentActivity extends Model
 {
+    use Prunable;
+
     public const UPDATED_AT = null;
+
+    /** How long audit entries are kept (see model:prune in routes/console.php). */
+    public const RETENTION_MONTHS = 24;
+
+    public function prunable()
+    {
+        return static::where('created_at', '<', now()->subMonths(self::RETENTION_MONTHS));
+    }
 
     protected $fillable = [
         'student_id', 'user_id', 'user_name', 'action', 'summary', 'changes', 'ip', 'created_at',
@@ -66,7 +78,7 @@ class StudentActivity extends Model
             'user_id' => $user?->id,
             'user_name' => $userName,
             'action' => $action,
-            'summary' => $summary,
+            'summary' => $summary !== null ? Str::limit($summary, 250) : null,
             'changes' => $changes ?: null,
             'ip' => app()->runningInConsole() ? null : request()?->ip(),
             'created_at' => now(),

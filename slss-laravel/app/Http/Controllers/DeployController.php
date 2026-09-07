@@ -121,7 +121,8 @@ class DeployController extends Controller
         $statusColor = $status === 'success' ? '#10b981' : '#ef4444';
         $statusIcon = $status === 'success' ? '✓' : '✗';
 
-        $outputText = implode("\n", $output);
+        $outputText = htmlspecialchars(implode("\n", $output), ENT_QUOTES, 'UTF-8');
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
 
         return response("
 <!DOCTYPE html>
@@ -252,6 +253,7 @@ class DeployController extends Controller
             'info' => '#3b82f6',
         ][$messageType] ?? '#3b82f6';
 
+        $message = $message !== null ? htmlspecialchars($message, ENT_QUOTES, 'UTF-8') : null;
         $alertHtml = $message ? "
             <div class='alert' style='background: {$alertColor}15; border: 1px solid {$alertColor}; color: {$alertColor}; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;'>
                 <strong>⚠️ {$message}</strong>
@@ -384,6 +386,8 @@ class DeployController extends Controller
             {$alertHtml}
 
             <form method='POST' action='/deploy'>
+                " . csrf_field() . "
+
                 <div class='form-group'>
                     <label class='form-label' for='token'>Deployment Token</label>
                     <input

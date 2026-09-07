@@ -51,9 +51,16 @@ class LocalizeStudentDocuments extends Command
         foreach ($students as $student) {
             foreach (self::FIELDS as $field => $dir) {
                 $value = trim((string) $student->{$field});
-                if (preg_match('#^https?://#i', $value)) {
-                    $todo[] = [$student, $field, $dir, $value];
+                if (!preg_match('#^https?://#i', $value)) {
+                    continue;
                 }
+                // Only the school's own legacy site is fetched; anything else is a stray link
+                $host = strtolower((string) parse_url($value, PHP_URL_HOST));
+                if (!in_array($host, Student::allowedDocumentHosts(), true)) {
+                    $this->line("  - #{$student->id} {$field}: skipped link on {$host} (not an allowed host)");
+                    continue;
+                }
+                $todo[] = [$student, $field, $dir, $value];
             }
         }
 
@@ -83,7 +90,7 @@ class LocalizeStudentDocuments extends Command
             }
 
             try {
-                $response = Http::timeout(20)->withOptions(['verify' => true])->get($url);
+                $response = Http::timeout(20)->withOptions(['verify' => true, 'allow_redirects' => false])->get($url);
             } catch (\Throwable $e) {
                 $failed++;
                 $this->line("\n  ✗ #{$student->id} {$field}: " . $e->getMessage());
@@ -110,10 +117,10 @@ class LocalizeStudentDocuments extends Command
             }
 
             $ext = self::ALLOWED_TYPES[$type];
-            $filename = "{$field}_{$student->id}_" . Str::random(6) . ".{$ext}";
-            Storage::disk('public')->put("{$dir}/{$filename}", $response->body());
+            $filename = "{$field}_{$student->id}_" . Str::random(12) . ".{$ext}";
+            Storage::disk('local')->put("private/{$dir}/{$filename}", $response->body());
 
-            $student->update([$field => "storage/{$dir}/{$filename}"]);
+            $student->update([$field => "private/{$dir}/{$filename}"]);
             StudentActivity::record($student, 'document', Student::fieldLabel($field) . ' copied into local storage from ' . parse_url($url, PHP_URL_HOST));
             $done++;
             $bar->advance();

@@ -18,4 +18,9 @@ return [
         'secret' => env('WEBHOOK_SECRET'),
     ],
 
+    // Hosts whose links may be kept as student document references
+    'legacy_documents' => [
+        'hosts' => env('LEGACY_DOCUMENT_HOSTS', 'slss.edu.tt,www.slss.edu.tt'),
+    ],
+
 ];

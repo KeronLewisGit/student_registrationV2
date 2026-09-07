@@ -16,7 +16,7 @@
             @if($student)
                 <input type="hidden" name="student" value="{{ $student->id }}">
                 <div class="col-md-3">
-                    <label class="form-label">Student</label>
+                    <span class="form-label d-block">Student</span>
                     <div class="form-control-plaintext">
                         <strong>{{ $student->student_name }}</strong>
                         <a href="{{ route('activity.index', array_diff_key($filters, ['student' => 1])) }}" class="ms-2 small">clear</a>

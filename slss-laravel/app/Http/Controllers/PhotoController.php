@@ -22,8 +22,9 @@ class PhotoController extends Controller
     {
         $withoutPhoto = Student::query()
             ->where('enrolment_status', 'active')
-            ->get()
-            ->filter(fn (Student $s) => !Student::hasValue($s->student_passport_photo))
+            ->where(fn ($q) => $q->whereNull('student_passport_photo')
+                ->orWhere('student_passport_photo', '')
+                ->orWhereIn('student_passport_photo', ['N/A', 'n/a', 'None', 'Yes', 'No']))
             ->count();
 
         return view('students.photos', [

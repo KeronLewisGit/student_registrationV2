@@ -28,6 +28,11 @@ class AuthServiceProvider extends ServiceProvider
             return in_array($user->role, ['admin', 'staff']);
         });
 
+        // Medical, welfare, identity numbers, full PDF/print and uploaded documents
+        Gate::define('view-sensitive', function (User $user) {
+            return in_array($user->role, ['admin', 'staff']);
+        });
+
         Gate::define('admin', function (User $user) {
             return $user->role === 'admin';
         });

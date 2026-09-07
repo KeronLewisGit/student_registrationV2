@@ -36,7 +36,7 @@
     .completeness-bar .is-ok { background: #16a34a; }
     .completeness-bar .is-mid { background: #f59e0b; }
     .completeness-bar .is-low { background: #dc2626; }
-    .completeness small { color: #6b7280; white-space: nowrap; }
+    .completeness small { color: var(--text-muted, #6b7280); white-space: nowrap; }
 
     .student-photo-thumbnail {
         width: 40px;
@@ -224,7 +224,11 @@
         'student_class' => request('student_class') && request('student_class') !== '0' ? 'Form 1 class ' . request('student_class') : null,
         'incomplete' => request('incomplete') ? 'Incomplete records only' : null,
     ]);
-    $exportQuery = request()->only(['year', 'student_class', 'current_class', 'status', 'search']);
+    // "All" options submit "0"/"" — drop those so the export validation doesn't reject them
+    $exportQuery = array_filter(
+        request()->only(['year', 'student_class', 'current_class', 'status', 'search']),
+        fn ($v) => $v !== null && $v !== '' && $v !== '0'
+    );
     $moreOpen = request()->filled('student_class') && request('student_class') !== '0';
 @endphp
 <div class="card mb-4">
@@ -348,6 +352,7 @@
             </div>
             <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener"
                class="btn btn-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
+               @if($students->isEmpty()) aria-disabled="true" tabindex="-1" @endif
                title="Open a printable page with every student in the current selection">
                 <i class="fas fa-print me-1"></i> Print {{ $students->count() }}
             </a>
@@ -387,7 +392,7 @@
                         <tr>
                             <td>
                                 @if($student->student_passport_photo)
-                                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}"
+                                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}"
                                          alt="{{ $student->student_name }}"
                                          class="student-photo-thumbnail"
                                          onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">
@@ -449,12 +454,14 @@
                                        aria-label="View profile of {{ $student->student_name }}">
                                         <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
+                                    @can('view-sensitive')
                                     <a href="{{ route('students.pdf', $student) }}"
                                        class="btn btn-sm btn-outline-success"
                                        title="Download PDF"
                                        aria-label="Download PDF for {{ $student->student_name }}">
                                         <i class="fas fa-file-pdf" aria-hidden="true"></i>
                                     </a>
+                                    @endcan
                                     @can('edit-students')
                                     <a href="{{ route('students.edit', $student) }}"
                                        class="btn btn-sm btn-outline-primary"
@@ -545,7 +552,7 @@ $(document).ready(function() {
 
         $('#studentsTable').DataTable({
             pageLength: pageLength,
-            order: [[5, 'desc']], // Sort by registration date (newest first)
+            order: [[6, 'desc']], // Sort by registration date (newest first)
             responsive: true, // collapse overflow columns into a tap-to-expand row
             language: {
                 search: "Search students:",

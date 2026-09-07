@@ -57,7 +57,7 @@
                     <label class="form-label" for="field_student_passport_photo">Student Photo (Passport Size)</label>
                     @if($student->student_passport_photo)
                         <div class="mb-2">
-                            <img src="{{ asset($student->student_passport_photo) }}" alt="Current photo of {{ $student->student_name }}" class="img-thumbnail" style="max-width: 200px;">
+                            <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="Current photo of {{ $student->student_name }}" class="img-thumbnail" style="max-width: 200px;">
                             <small class="d-block text-muted mt-1">Current photo</small>
                         </div>
                     @endif
@@ -149,6 +149,11 @@
                         <option value="Male" {{ old('student_gender', $student->student_gender) == 'Male' ? 'selected' : '' }}>Male</option>
                         <option value="Female" {{ old('student_gender', $student->student_gender) == 'Female' ? 'selected' : '' }}>Female</option>
                         <option value="Other" {{ old('student_gender', $student->student_gender) == 'Other' ? 'selected' : '' }}>Other</option>
+                    
+                        @php($__current = old('student_gender', $student->student_gender))
+                        @if(filled($__current) && !in_array($__current, ['Male', 'Female', 'Other'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -164,12 +169,17 @@
                         <option value="Birth" {{ old('citizen_type', $student->citizen_type) == 'Birth' ? 'selected' : '' }}>Birth</option>
                         <option value="Descent" {{ old('citizen_type', $student->citizen_type) == 'Descent' ? 'selected' : '' }}>Descent</option>
                         <option value="Naturalisation" {{ old('citizen_type', $student->citizen_type) == 'Naturalisation' ? 'selected' : '' }}>Naturalisation</option>
+                    
+                        @php($__current = old('citizen_type', $student->citizen_type))
+                        @if(filled($__current) && !in_array($__current, ['Birth', 'Descent', 'Naturalisation'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label" for="field_student_birth_certificate_pin">Birth Certificate PIN</label>
-                    <input type="text" id="field_student_birth_certificate_pin" name="student_birth_certificate_pin" class="form-control" value="{{ old('student_birth_certificate_pin', $student->student_birth_certificate_pin) }}" placeholder="Birth Cert PIN">
+                    <input type="text" id="field_student_birth_certificate_pin" name="student_birth_certificate_pin" class="form-control @error(\'student_birth_certificate_pin\') is-invalid @enderror" maxlength="20" value="{{ old('student_birth_certificate_pin', $student->student_birth_certificate_pin) }}" placeholder="Birth Cert PIN">
                 </div>
 
                 <div class="col-md-4">
@@ -220,6 +230,9 @@
                 <div class="col-md-12">
                     <label class="form-label" for="field_student_birth_certificate">Birth Certificate (Upload)</label>
                     <input type="file" id="field_student_birth_certificate" name="student_birth_certificate" class="form-control" accept=".pdf,.jpg,.png">
+                    @if(\App\Models\Student::documentUrl($student->student_birth_certificate))
+                        <small class="d-block mt-1"><i class="fas fa-paperclip me-1"></i>A file is on record: <a href="{{ \App\Models\Student::documentUrl($student->student_birth_certificate) }}" target="_blank" rel="noopener">view current file</a>. Uploading a new one replaces it.</small>
+                    @endif
                     <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                 </div>
             </div>
@@ -251,6 +264,9 @@
                 <div class="col-md-12">
                     <label class="form-label" for="field_student_sea_slip">SEA Slip (Upload)</label>
                     <input type="file" id="field_student_sea_slip" name="student_sea_slip" class="form-control" accept=".pdf,.jpg,.png">
+                    @if(\App\Models\Student::documentUrl($student->student_sea_slip))
+                        <small class="d-block mt-1"><i class="fas fa-paperclip me-1"></i>A file is on record: <a href="{{ \App\Models\Student::documentUrl($student->student_sea_slip) }}" target="_blank" rel="noopener">view current file</a>. Uploading a new one replaces it.</small>
+                    @endif
                     <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                 </div>
             </div>
@@ -270,6 +286,11 @@
                         <option value="">Select</option>
                         <option value="Yes" {{ old('student_transfer_status', $student->student_transfer_status) == 'Yes' ? 'selected' : '' }}>Yes</option>
                         <option value="No" {{ old('student_transfer_status', $student->student_transfer_status) == 'No' ? 'selected' : '' }}>No</option>
+                    
+                        @php($__current = old('student_transfer_status', $student->student_transfer_status))
+                        @if(filled($__current) && !in_array($__current, ['Yes', 'No'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -301,6 +322,9 @@
                 <div class="col-md-12">
                     <label class="form-label" for="field_student_transfer_slip">Transfer Slip (Upload)</label>
                     <input type="file" id="field_student_transfer_slip" name="student_transfer_slip" class="form-control" accept=".pdf,.jpg,.png">
+                    @if(\App\Models\Student::documentUrl($student->student_transfer_slip))
+                        <small class="d-block mt-1"><i class="fas fa-paperclip me-1"></i>A file is on record: <a href="{{ \App\Models\Student::documentUrl($student->student_transfer_slip) }}" target="_blank" rel="noopener">view current file</a>. Uploading a new one replaces it.</small>
+                    @endif
                     <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                 </div>
             </div>
@@ -323,14 +347,16 @@
                     <label class="form-label" for="field_student_bloodtype">Blood Type</label>
                     <select id="field_student_bloodtype" name="student_bloodtype" class="form-select">
                         <option value="">Select</option>
-                        <option value="A+" {{ old('student_bloodtype', $student->student_bloodtype) == 'A+' ? 'selected' : '' }}>A+</option>
-                        <option value="A-" {{ old('student_bloodtype', $student->student_bloodtype) == 'A-' ? 'selected' : '' }}>A-</option>
-                        <option value="B+" {{ old('student_bloodtype', $student->student_bloodtype) == 'B+' ? 'selected' : '' }}>B+</option>
-                        <option value="B-" {{ old('student_bloodtype', $student->student_bloodtype) == 'B-' ? 'selected' : '' }}>B-</option>
-                        <option value="AB+" {{ old('student_bloodtype', $student->student_bloodtype) == 'AB+' ? 'selected' : '' }}>AB+</option>
-                        <option value="AB-" {{ old('student_bloodtype', $student->student_bloodtype) == 'AB-' ? 'selected' : '' }}>AB-</option>
-                        <option value="O+" {{ old('student_bloodtype', $student->student_bloodtype) == 'O+' ? 'selected' : '' }}>O+</option>
-                        <option value="O-" {{ old('student_bloodtype', $student->student_bloodtype) == 'O-' ? 'selected' : '' }}>O-</option>
+                        <option value="Blood Group A" {{ old('student_bloodtype', $student->student_bloodtype) == 'Blood Group A' ? 'selected' : '' }}>Blood Group A</option>
+                        <option value="Blood Group B" {{ old('student_bloodtype', $student->student_bloodtype) == 'Blood Group B' ? 'selected' : '' }}>Blood Group B</option>
+                        <option value="Blood Group AB" {{ old('student_bloodtype', $student->student_bloodtype) == 'Blood Group AB' ? 'selected' : '' }}>Blood Group AB</option>
+                        <option value="Blood Group O" {{ old('student_bloodtype', $student->student_bloodtype) == 'Blood Group O' ? 'selected' : '' }}>Blood Group O</option>
+                        <option value="Unknown" {{ old('student_bloodtype', $student->student_bloodtype) == 'Unknown' ? 'selected' : '' }}>Unknown</option>
+                    
+                        @php($__current = old('student_bloodtype', $student->student_bloodtype))
+                        @if(filled($__current) && !in_array($__current, ['Blood Group A', 'Blood Group B', 'Blood Group AB', 'Blood Group O', 'Unknown'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -408,8 +434,15 @@
                     <label class="form-label" for="field_student_school_feeding_option">School Feeding Programme</label>
                     <select id="field_student_school_feeding_option" name="student_school_feeding_option" class="form-select">
                         <option value="">Select</option>
-                        <option value="Yes" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'Yes' ? 'selected' : '' }}>Yes</option>
-                        <option value="No" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'No' ? 'selected' : '' }}>No</option>
+                        <option value="Breakfast Only" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'Breakfast Only' ? 'selected' : '' }}>Breakfast Only</option>
+                        <option value="Lunch Only" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'Lunch Only' ? 'selected' : '' }}>Lunch Only</option>
+                        <option value="Both Breakfast and Lunch" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'Both Breakfast and Lunch' ? 'selected' : '' }}>Both Breakfast and Lunch</option>
+                        <option value="None" {{ old('student_school_feeding_option', $student->student_school_feeding_option) == 'None' ? 'selected' : '' }}>None</option>
+                    
+                        @php($__current = old('student_school_feeding_option', $student->student_school_feeding_option))
+                        @if(filled($__current) && !in_array($__current, ['Breakfast Only', 'Lunch Only', 'Both Breakfast and Lunch', 'None'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -419,6 +452,11 @@
                         <option value="">Select</option>
                         <option value="Yes" {{ old('student_social_welfare_status', $student->student_social_welfare_status) == 'Yes' ? 'selected' : '' }}>Yes</option>
                         <option value="No" {{ old('student_social_welfare_status', $student->student_social_welfare_status) == 'No' ? 'selected' : '' }}>No</option>
+                    
+                        @php($__current = old('student_social_welfare_status', $student->student_social_welfare_status))
+                        @if(filled($__current) && !in_array($__current, ['Yes', 'No'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -443,6 +481,11 @@
                         <option value="">Select</option>
                         <option value="Yes" {{ old('student_device_shared', $student->student_device_shared) == 'Yes' ? 'selected' : '' }}>Yes</option>
                         <option value="No" {{ old('student_device_shared', $student->student_device_shared) == 'No' ? 'selected' : '' }}>No</option>
+                    
+                        @php($__current = old('student_device_shared', $student->student_device_shared))
+                        @if(filled($__current) && !in_array($__current, ['Yes', 'No'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -452,6 +495,11 @@
                         <option value="">Select</option>
                         <option value="Yes" {{ old('student_reliable_internet', $student->student_reliable_internet) == 'Yes' ? 'selected' : '' }}>Yes</option>
                         <option value="No" {{ old('student_reliable_internet', $student->student_reliable_internet) == 'No' ? 'selected' : '' }}>No</option>
+                    
+                        @php($__current = old('student_reliable_internet', $student->student_reliable_internet))
+                        @if(filled($__current) && !in_array($__current, ['Yes', 'No'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -486,6 +534,11 @@
                         <option value="">Select</option>
                         <option value="Alive" {{ old('is_mother_active_or_deceased', $student->is_mother_active_or_deceased) == 'Alive' ? 'selected' : '' }}>Alive</option>
                         <option value="Deceased" {{ old('is_mother_active_or_deceased', $student->is_mother_active_or_deceased) == 'Deceased' ? 'selected' : '' }}>Deceased</option>
+                    
+                        @php($__current = old('is_mother_active_or_deceased', $student->is_mother_active_or_deceased))
+                        @if(filled($__current) && !in_array($__current, ['Alive', 'Deceased'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -527,6 +580,9 @@
                 <div class="col-md-12">
                     <label class="form-label" for="field_mother_death_certificate">Death Certificate (if deceased)</label>
                     <input type="file" id="field_mother_death_certificate" name="mother_death_certificate" class="form-control" accept=".pdf,.jpg,.png">
+                    @if(\App\Models\Student::documentUrl($student->mother_death_certificate))
+                        <small class="d-block mt-1"><i class="fas fa-paperclip me-1"></i>A file is on record: <a href="{{ \App\Models\Student::documentUrl($student->mother_death_certificate) }}" target="_blank" rel="noopener">view current file</a>. Uploading a new one replaces it.</small>
+                    @endif
                     <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                 </div>
             </div>
@@ -551,6 +607,11 @@
                         <option value="">Select</option>
                         <option value="Alive" {{ old('is_father_active_or_deceased', $student->is_father_active_or_deceased) == 'Alive' ? 'selected' : '' }}>Alive</option>
                         <option value="Deceased" {{ old('is_father_active_or_deceased', $student->is_father_active_or_deceased) == 'Deceased' ? 'selected' : '' }}>Deceased</option>
+                    
+                        @php($__current = old('is_father_active_or_deceased', $student->is_father_active_or_deceased))
+                        @if(filled($__current) && !in_array($__current, ['Alive', 'Deceased'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 
@@ -592,6 +653,9 @@
                 <div class="col-md-12">
                     <label class="form-label" for="field_father_death_certificate">Death Certificate (if deceased)</label>
                     <input type="file" id="field_father_death_certificate" name="father_death_certificate" class="form-control" accept=".pdf,.jpg,.png">
+                    @if(\App\Models\Student::documentUrl($student->father_death_certificate))
+                        <small class="d-block mt-1"><i class="fas fa-paperclip me-1"></i>A file is on record: <a href="{{ \App\Models\Student::documentUrl($student->father_death_certificate) }}" target="_blank" rel="noopener">view current file</a>. Uploading a new one replaces it.</small>
+                    @endif
                     <small class="text-muted">Allowed: PDF, JPG, PNG</small>
                 </div>
             </div>
@@ -647,7 +711,20 @@
                         <option value="Mother" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Mother' ? 'selected' : '' }}>Mother</option>
                         <option value="Father" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Father' ? 'selected' : '' }}>Father</option>
                         <option value="Guardian" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Guardian' ? 'selected' : '' }}>Guardian</option>
+                        <option value="Legal Guardian" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Legal Guardian' ? 'selected' : '' }}>Legal Guardian</option>
+                        <option value="Grandmother" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Grandmother' ? 'selected' : '' }}>Grandmother</option>
+                        <option value="Grandfather" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Grandfather' ? 'selected' : '' }}>Grandfather</option>
+                        <option value="Aunt" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Aunt' ? 'selected' : '' }}>Aunt</option>
+                        <option value="Uncle" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Uncle' ? 'selected' : '' }}>Uncle</option>
+                        <option value="Sister" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Sister' ? 'selected' : '' }}>Sister</option>
+                        <option value="Brother" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Brother' ? 'selected' : '' }}>Brother</option>
+                        <option value="Cousin" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Cousin' ? 'selected' : '' }}>Cousin</option>
                         <option value="Other" {{ old('registrant_relationship_to_student', $student->registrant_relationship_to_student) == 'Other' ? 'selected' : '' }}>Other</option>
+                    
+                        @php($__current = old('registrant_relationship_to_student', $student->registrant_relationship_to_student))
+                        @if(filled($__current) && !in_array($__current, ['Mother', 'Father', 'Guardian', 'Legal Guardian', 'Grandmother', 'Grandfather', 'Aunt', 'Uncle', 'Sister', 'Brother', 'Cousin', 'Other'], true))
+                            <option value="{{ $__current }}" selected>{{ $__current }} (current value)</option>
+                        @endif
                     </select>
                 </div>
 

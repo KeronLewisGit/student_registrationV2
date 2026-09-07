@@ -10,7 +10,15 @@ use Carbon\Carbon;
 
 class Student extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \Illuminate\Database\Eloquent\Prunable;
+
+    /** Soft-deleted records are permanently removed after this long (model:prune). */
+    public const TRASH_RETENTION_DAYS = 365;
+
+    public function prunable()
+    {
+        return static::onlyTrashed()->where('deleted_at', '<', now()->subDays(self::TRASH_RETENTION_DAYS));
+    }
 
     /**
      * The valid Form 1 class values.
@@ -113,6 +121,18 @@ class Student extends Model
         return (int) $on->format('Y') - ($on->month < 9 ? 1 : 0);
     }
 
+    /**
+     * The academic year a year-end promotion moves students INTO: the one
+     * starting this coming September (or the one that just started, when the
+     * promotion is run late, from September onwards).
+     */
+    public static function promotionTargetYear(?Carbon $on = null): int
+    {
+        $on = $on ?? now();
+
+        return $on->month >= 9 ? self::currentAcademicYear($on) : self::currentAcademicYear($on) + 1;
+    }
+
     public static function academicYearLabel(?int $start = null): string
     {
         $start = $start ?? self::currentAcademicYear();
@@ -174,7 +194,7 @@ class Student extends Model
     public function nextClass(): ?string
     {
         $form = $this->currentForm();
-        if (!$form || $form >= self::MAX_FORM) {
+        if (!$form || $form >= self::MAX_FORM || !preg_match('/^[1-6][A-F]$/', (string) $this->current_class)) {
             return null;
         }
 
@@ -285,6 +305,7 @@ class Student extends Model
             $stream,         // A
             '1 ' . $stream,  // 1 A
             'Form 1' . $stream,
+            'F1' . $stream,  // F1A
         ]));
     }
 
@@ -457,13 +478,86 @@ class Student extends Model
     }
 
     /**
+     * Printable label for a document field: "On file" when a file is stored,
+     * otherwise the cleaned text value (null when nothing is recorded).
+     */
+    public static function documentLabel($value): ?string
+    {
+        if (self::documentUrl(is_string($value) ? $value : null)) {
+            return 'On file';
+        }
+
+        return self::printValue($value);
+    }
+
+    /**
      * Legacy "empty" markers that should never be printed as data.
      */
     public static function isPlaceholder(string $text): bool
     {
         return preg_match('/^select(?: [a-z ]+)?$/i', $text)                                   // "Select", "Select Blood Type"
+            || preg_match('/^(?:citizenship type|blood type|gender|religion|nationality|ethnicity|relationship)$/i', $text) // a dropdown's own label
+
             || preg_match('/^(?:n\/?a|none|null|nil|-)(?:[\s,.]+(?:n\/?a|none|null|nil|-))*$/i', $text) // "N/A", "N/a N/a N/a"
             || preg_match('/^(?:1900|0000)-01-01/', $text);                                   // 1900-01-01 "empty" date
+    }
+
+    /** Upload field => storage directory. */
+    public const FILE_DIRECTORIES = [
+        'student_passport_photo' => 'passports',
+        'student_birth_certificate' => 'birth_certificates',
+        'student_sea_slip' => 'sea_slips',
+        'student_transfer_slip' => 'transfer_slips',
+        'mother_death_certificate' => 'death_certificates',
+        'father_death_certificate' => 'death_certificates',
+    ];
+
+    public const FILE_FIELDS = [
+        'student_passport_photo', 'student_birth_certificate', 'student_sea_slip',
+        'student_transfer_slip', 'mother_death_certificate', 'father_death_certificate',
+    ];
+
+    /**
+     * Shape of a stored file reference: "private/<dir>/<file>" (private disk)
+     * or the legacy "storage/<dir>/<file>" (public disk, until moved).
+     */
+    public const STORED_FILE_PATTERN = '#^(?<prefix>private|storage)/(?<dir>passports|birth_certificates|sea_slips|transfer_slips|death_certificates)/(?<file>[A-Za-z0-9_.-]+\.(?:pdf|jpe?g|png|gif|webp))$#i';
+
+    /**
+     * Hosts whose links may be kept as document references (the old WordPress
+     * registration site). Anything else is treated as not recorded.
+     */
+    public static function allowedDocumentHosts(): array
+    {
+        return array_filter(array_map('trim', explode(',', (string) config('services.legacy_documents.hosts', 'slss.edu.tt,www.slss.edu.tt'))));
+    }
+
+    /**
+     * Absolute filesystem path of a stored file reference, or null.
+     */
+    public static function documentPath(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if (!preg_match(self::STORED_FILE_PATTERN, $value, $m)) {
+            return null;
+        }
+
+        return strtolower($m['prefix']) === 'private'
+            ? storage_path('app/' . $value)
+            : storage_path('app/public/' . substr($value, strlen('storage/')));
+    }
+
+    /**
+     * Remove a stored file from disk (no-op for links and blanks).
+     */
+    public static function deleteStoredFile(?string $value): void
+    {
+        $path = self::documentPath($value);
+
+        if ($path !== null && is_file($path)) {
+            @unlink($path);
+        }
     }
 
     public static function documentUrl(?string $value): ?string
@@ -474,8 +568,14 @@ class Student extends Model
             return null;
         }
 
+        if (preg_match(self::STORED_FILE_PATTERN, $value)) {
+            return route('documents.show', ['path' => $value]);
+        }
+
         if (preg_match('#^https?://#i', $value)) {
-            return $value;
+            $host = strtolower((string) parse_url($value, PHP_URL_HOST));
+
+            return in_array($host, self::allowedDocumentHosts(), true) ? $value : null;
         }
 
         if (str_starts_with($value, 'storage/') && preg_match('/\.(pdf|jpe?g|png|gif|webp)$/i', $value)) {
@@ -621,9 +721,12 @@ class Student extends Model
     // Get all available registration years (portable across MySQL and SQLite)
     public static function getRegistrationYears(): array
     {
-        return self::whereNotNull('registration_date')
+        return self::query()
+            ->whereNotNull('registration_date')
+            ->toBase()
+            ->distinct()
             ->pluck('registration_date')
-            ->map(fn ($date) => (int) $date->format('Y'))
+            ->map(fn ($date) => (int) substr((string) $date, 0, 4))
             ->unique()
             ->sortDesc()
             ->values()

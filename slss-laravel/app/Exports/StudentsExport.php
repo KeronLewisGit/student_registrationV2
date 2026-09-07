@@ -129,6 +129,19 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     }
 
     /**
+     * Neutralise spreadsheet formula injection: a value beginning with =, +, -,
+     * @ or a tab/CR would otherwise be executed by Excel when the file opens.
+     */
+    public static function safeCell($value)
+    {
+        if (is_string($value) && $value !== '' && preg_match('/^[=+\-@\t\r]/', $value)) {
+            return "'" . $value;
+        }
+
+        return $value;
+    }
+
+    /**
      * Build the query for the export, honouring the same filters the
      * student listing uses so an exported report matches what the user sees.
      */
@@ -165,7 +178,7 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $row[] = $value;
         }
 
-        return $row;
+        return array_map([self::class, 'safeCell'], $row);
     }
 
     public function title(): string

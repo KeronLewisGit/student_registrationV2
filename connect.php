@@ -14,12 +14,12 @@ if (is_file($credentialsFile)) {
     $password   = $creds['password'];
     $dbname     = $creds['database'];
 } else {
-    // Legacy fallback — these credentials were committed to a public repository
-    // and MUST be rotated; once rotated, move the new values to db_credentials.php.
-    $servername = "localhost";
-    $username = "gkblvzmy_student-portal";
-    $password = "N3tsniper!23";
-    $dbname = "gkblvzmy_student-portal";
+    // No credentials file: refuse to start rather than fall back to values that
+    // were once committed to a public repository. Create db_credentials.php on
+    // the server (see comment above); it is git-ignored.
+    error_log('connect.php: db_credentials.php is missing; database credentials are not configured.');
+    http_response_code(503);
+    exit('The site is temporarily unavailable (database configuration missing).');
 }
 
 try {

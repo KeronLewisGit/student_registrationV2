@@ -208,6 +208,22 @@ After running the seeders, you can login with:
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Security Notes for Deployment
+
+- **Uploaded photos and documents are private.** New uploads go to `storage/app/private/...` and are served only through the authenticated `/documents/...` route (photos need a login; certificates and slips also need the admin or staff role). Move files uploaded before this change out of the public folder once, on the server:
+
+```bash
+php artisan students:secure-documents --dry-run
+php artisan students:secure-documents
+```
+
+- **Viewer role** sees basic and contact information only. Medical, special-needs, welfare details, identity numbers, the printed/PDF record and uploaded documents require admin or staff.
+- **Deploy page** (`/deploy`) now requires an admin login as well as `DEPLOY_TOKEN`.
+- **Login** allows 5 attempts a minute per account and 30 per address. "Remember me" has been removed; passwords must be at least 12 characters with mixed case and a number.
+- **Housekeeping** runs through the scheduler: audit entries older than 24 months and students left in Recently Deleted for over a year are purged by `model:prune`. Add a cron entry on the server: `* * * * * cd /path/to/slss-laravel && php artisan schedule:run >> /dev/null 2>&1`.
+- **Legacy links**: only file links on the hosts in `LEGACY_DOCUMENT_HOSTS` (default `slss.edu.tt,www.slss.edu.tt`) are treated as documents; anything else is ignored.
+- **Legacy cPanel site**: `connect.php` no longer contains credentials. Create `db_credentials.php` next to it on the server (git-ignored) returning `['host' => ..., 'username' => ..., 'password' => ..., 'database' => ...]`, and rotate the database password.
+
 ### Record Completeness
 
 Every student has a completeness score (the share of tracked fields that hold real data) and a list of **essential items** still missing: passport photo, date of birth, gender, birth certificate PIN and copy, current address, current class, SEA number, a parent/guardian phone number, an emergency contact and medical information. The score appears on the student list (Complete column) and profile page, the list can be filtered to **Incomplete records only**, and the **Outstanding Items** printable turns the gaps into a per-class checklist for the office.

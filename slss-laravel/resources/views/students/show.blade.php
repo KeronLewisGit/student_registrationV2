@@ -315,7 +315,7 @@
     <div class="row align-items-center">
         <div class="col-auto">
             @if($student->student_passport_photo)
-                <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset($student->student_passport_photo) }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="{{ $student->student_name }}" class="profile-photo-large">
+                <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="{{ $student->student_name }}" class="profile-photo-large">
             @else
                 <img src="{{ asset('images/noimage.jpg') }}" alt="No Photo" class="profile-photo-large">
             @endif
@@ -361,12 +361,14 @@
         </div>
         <div class="col-12 col-md-auto">
             <div class="action-buttons">
+                @can('view-sensitive')
                 <a href="{{ route('students.print', $student) }}" target="_blank" class="btn btn-light btn-action">
                     <i class="fas fa-print"></i><span class="d-none d-sm-inline"> Print Profile</span><span class="d-inline d-sm-none"> Print</span>
                 </a>
                 <a href="{{ route('students.pdf', $student) }}" class="btn btn-light btn-action">
                     <i class="fas fa-file-pdf"></i><span class="d-none d-sm-inline"> Download PDF</span><span class="d-inline d-sm-none"> PDF</span>
                 </a>
+                @endcan
                 @can('edit-students')
                 <a href="{{ route('students.edit', $student) }}" class="btn btn-warning btn-action">
                     <i class="fas fa-edit"></i><span class="d-none d-sm-inline"> Edit Student</span><span class="d-inline d-sm-none"> Edit</span>
@@ -539,11 +541,16 @@
                     <div class="info-label">SEA Slip</div>
                     <div class="info-value">@include('students.partials.document-value', ['value' => $student->student_sea_slip])</div>
                 </div>
+                <div class="info-item">
+                    <div class="info-label">Birth Certificate</div>
+                    <div class="info-value">@include('students.partials.document-value', ['value' => $student->student_birth_certificate])</div>
+                </div>
             </div>
         </div>
 
         <!-- Medical Information -->
-        <div class="info-card">
+        @can('view-sensitive')
+<div class="info-card">
             <div class="info-card-header">
                 <i class="fas fa-heartbeat"></i>
                 <h5>Medical Information</h5>
@@ -567,9 +574,11 @@
                 <div class="info-value">{{ $student->student_medical_condition ?? 'No record provided' }}</div>
             </div>
         </div>
+@endcan
 
         <!-- Personal Preferences -->
-        <div class="info-card">
+        @can('view-sensitive')
+<div class="info-card">
             <div class="info-card-header">
                 <i class="fas fa-cog"></i>
                 <h5>Personal Preferences</h5>
@@ -615,6 +624,7 @@
             </div>
             @endif
         </div>
+@endcan
     </div>
 
     <div class="col-md-6">
@@ -652,7 +662,11 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Identification Number</div>
-                <div class="info-value">{{ $student->mother_identification_number ?? 'No record provided' }}</div>
+                <div class="info-value">@can('view-sensitive'){{ $student->mother_identification_number ?? 'No record provided' }}@else<span class="text-muted">Hidden</span>@endcan</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Death Certificate</div>
+                <div class="info-value">@include('students.partials.document-value', ['value' => $student->mother_death_certificate])</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Home Address</div>
@@ -698,7 +712,11 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Identification Number</div>
-                <div class="info-value">{{ $student->father_identification_number ?? 'No record provided' }}</div>
+                <div class="info-value">@can('view-sensitive'){{ $student->father_identification_number ?? 'No record provided' }}@else<span class="text-muted">Hidden</span>@endcan</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Death Certificate</div>
+                <div class="info-value">@include('students.partials.document-value', ['value' => $student->father_death_certificate])</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Home Address</div>
@@ -761,7 +779,7 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Identification Number</div>
-                    <div class="info-value">{{ $student->registrant_identification_number ?? 'N/A' }}</div>
+                    <div class="info-value">@can('view-sensitive'){{ $student->registrant_identification_number ?? 'N/A' }}@else<span class="text-muted">Hidden</span>@endcan</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nationality</div>
@@ -824,6 +842,7 @@
 
 <!-- Special Needs & Intervention (Conditional) -->
 @if($student->student_family_crisis || $student->student_receiving_counselling || $student->student_physical_disabilities || $student->student_learning_disabilities || $student->student_educational_aid || $student->student_special_sea_concessions || $student->student_emotional_factors || $student->student_other_intervention_information)
+@can('view-sensitive')
 <div class="row">
     <div class="col-12">
         <div class="info-card">
@@ -870,6 +889,7 @@
         </div>
     </div>
 </div>
+@endcan
 @endif
 
 @endsection

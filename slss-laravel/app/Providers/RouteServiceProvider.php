@@ -18,6 +18,17 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Login: 5 attempts a minute per account+address, and a looser per-address
+        // ceiling so one office behind a shared IP is not locked out by a single user.
+        RateLimiter::for('login', function (Request $request) {
+            $email = strtolower(trim((string) $request->input('email')));
+
+            return [
+                Limit::perMinute(5)->by($email . '|' . $request->ip()),
+                Limit::perMinute(30)->by($request->ip()),
+            ];
+        });
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

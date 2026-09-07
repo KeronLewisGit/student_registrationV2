@@ -114,7 +114,9 @@ class ImportController extends Controller
                 ->with('import_errors', $result['errors']);
 
         } catch (\Throwable $e) {
-            return back()->with('error', 'Import failed: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('CSV import failed', ['error' => $e->getMessage(), 'user_id' => auth()->id()]);
+
+            return back()->with('error', 'The import could not be completed. No rows were saved. Check the file format against the template and try again.');
         }
     }
 }
