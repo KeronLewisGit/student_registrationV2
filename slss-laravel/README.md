@@ -208,6 +208,15 @@ After running the seeders, you can login with:
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Automated Tests
+
+The `tests/Feature` suite covers login and roles, student create/update (including blank Special Needs fields and unchanged re-saves), the audit trail, search, progression and year-end promotion, the registration webhook, private document serving, exports, printing and CSV import. Run it before deploying:
+
+```bash
+composer install            # dev dependencies (PHPUnit) are needed once
+php artisan test
+```
+
 ### Security Notes for Deployment
 
 - **Uploaded photos and documents are private.** New uploads go to `storage/app/private/...` and are served only through the authenticated `/documents/...` route (photos need a login; certificates and slips also need the admin or staff role). Move files uploaded before this change out of the public folder once, on the server:

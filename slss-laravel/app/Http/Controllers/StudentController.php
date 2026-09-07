@@ -69,6 +69,9 @@ class StudentController extends Controller
         $completeness = $student->completeness();
         $activities = $student->activities()->limit(15)->get();
 
+        // Same placeholder cleaning as the printed record, so "Select Blood Type" / "NA" never show as data
+        $student = $student->forPrint();
+
         return view('students.show', compact('student', 'completeness', 'activities'));
     }
 

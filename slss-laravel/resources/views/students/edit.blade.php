@@ -179,7 +179,7 @@
 
                 <div class="col-md-3">
                     <label class="form-label" for="field_student_birth_certificate_pin">Birth Certificate PIN</label>
-                    <input type="text" id="field_student_birth_certificate_pin" name="student_birth_certificate_pin" class="form-control @error(\'student_birth_certificate_pin\') is-invalid @enderror" maxlength="20" value="{{ old('student_birth_certificate_pin', $student->student_birth_certificate_pin) }}" placeholder="Birth Cert PIN">
+                    <input type="text" id="field_student_birth_certificate_pin" name="student_birth_certificate_pin" class="form-control @error('student_birth_certificate_pin') is-invalid @enderror" maxlength="20" value="{{ old('student_birth_certificate_pin', $student->student_birth_certificate_pin) }}" placeholder="Birth Cert PIN">
                 </div>
 
                 <div class="col-md-4">

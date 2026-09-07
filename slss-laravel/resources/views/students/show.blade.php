@@ -457,11 +457,11 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Student Name</div>
-                    <div class="info-value">{{ $student->student_name ? ucwords(strtolower($student->student_name)) : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_name ? ucwords(strtolower($student->student_name)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Gender</div>
-                    <div class="info-value">{{ $student->student_gender ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_gender ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Date of Birth</div>
@@ -469,11 +469,11 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Current Class</div>
-                    <div class="info-value">{{ $student->current_class ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->current_class ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Form 1 Class / Intake</div>
-                    <div class="info-value">{{ $student->form_1_class ?? 'N/A' }}@if($student->intake_year) &middot; {{ $student->intake_year }}@endif</div>
+                    <div class="info-value">{{ $student->form_1_class ?? 'Not recorded' }}@if($student->intake_year) &middot; {{ $student->intake_year }}@endif</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Enrolment Status</div>
@@ -481,40 +481,40 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Citizenship Type</div>
-                    <div class="info-value">{{ $student->citizen_type ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->citizen_type ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Birth Certificate Pin</div>
-                    <div class="info-value">{{ $student->student_birth_certificate_pin ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_birth_certificate_pin ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Religion</div>
-                    <div class="info-value">{{ $student->student_religion ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_religion ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Country of Birth</div>
-                    <div class="info-value">{{ $student->student_country_of_birth ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_country_of_birth ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nationality</div>
-                    <div class="info-value">{{ $student->student_nationality ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_nationality ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Ethnicity</div>
-                    <div class="info-value">{{ $student->student_ethnicity ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_ethnicity ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Contact Number</div>
-                    <div class="info-value">{{ $student->student_contact ?? 'None Provided' }}</div>
+                    <div class="info-value">{{ $student->student_contact ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Email Address</div>
-                    <div class="info-value">{{ $student->student_email ?? 'None Provided' }}</div>
+                    <div class="info-value">{{ $student->student_email ?? 'Not recorded' }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Current Address</div>
-                <div class="info-value">{{ $student->student_current_address ? ucwords(strtolower($student->student_current_address)) : 'N/A' }}</div>
+                <div class="info-value">{{ $student->student_current_address ? ucwords(strtolower($student->student_current_address)) : 'Not recorded' }}</div>
             </div>
         </div>
 
@@ -531,11 +531,11 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">SEA Number</div>
-                    <div class="info-value">{{ $student->student_sea_number ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_sea_number ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Primary School</div>
-                    <div class="info-value">{{ $student->student_primary_school ? ucwords(strtolower($student->student_primary_school)) : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_primary_school ? ucwords(strtolower($student->student_primary_school)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">SEA Slip</div>
@@ -558,20 +558,20 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Blood Type</div>
-                    <div class="info-value">{{ $student->student_bloodtype ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_bloodtype ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Immunization Status</div>
-                    <div class="info-value">{{ $student->student_immunization_status ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_immunization_status ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Allergies</div>
-                    <div class="info-value">{{ $student->student_allergies ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->student_allergies ?? 'Not recorded' }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Medical Conditions</div>
-                <div class="info-value">{{ $student->student_medical_condition ?? 'No record provided' }}</div>
+                <div class="info-value">{{ $student->student_medical_condition ?? 'Not recorded' }}</div>
             </div>
         </div>
 @endcan
@@ -586,35 +586,35 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">School Feeding Option</div>
-                    <div class="info-value">{{ $student->student_school_feeding_option ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_school_feeding_option ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Social Welfare Status</div>
-                    <div class="info-value">{{ $student->student_social_welfare_status ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_social_welfare_status ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Mode of Transport</div>
-                    <div class="info-value">{{ $student->student_mode_of_transport ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_mode_of_transport ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Access to Device</div>
-                    <div class="info-value">{{ $student->student_access_to_device ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_access_to_device ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Device Shared</div>
-                    <div class="info-value">{{ $student->student_device_shared ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_device_shared ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Reliable Internet</div>
-                    <div class="info-value">{{ $student->student_reliable_internet ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_reliable_internet ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Internet Provider</div>
-                    <div class="info-value">{{ $student->student_internet_provider ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_internet_provider ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Online Tools</div>
-                    <div class="info-value">{{ $student->student_online_tools ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_online_tools ?? 'Not recorded' }}</div>
                 </div>
             </div>
             @if($student->student_social_welfare_detail)
@@ -637,32 +637,32 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Mother's Name</div>
-                    <div class="info-value">{{ $student->mother_name ? ucwords(strtolower($student->mother_name)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->mother_name ? ucwords(strtolower($student->mother_name)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Status</div>
-                    <div class="info-value">{{ $student->is_mother_active_or_deceased ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->is_mother_active_or_deceased ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Contact Number</div>
-                    <div class="info-value">{{ $student->mother_contact ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->mother_contact ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Email Address</div>
-                    <div class="info-value">{{ $student->mother_email ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->mother_email ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Profession</div>
-                    <div class="info-value">{{ $student->mother_profession ? ucwords(strtolower($student->mother_profession)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->mother_profession ? ucwords(strtolower($student->mother_profession)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Identification Type</div>
-                    <div class="info-value">{{ $student->mother_identification_type ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->mother_identification_type ?? 'Not recorded' }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Identification Number</div>
-                <div class="info-value">@can('view-sensitive'){{ $student->mother_identification_number ?? 'No record provided' }}@else<span class="text-muted">Hidden</span>@endcan</div>
+                <div class="info-value">@can('view-sensitive'){{ $student->mother_identification_number ?? 'Not recorded' }}@else<span class="text-muted">Hidden</span>@endcan</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Death Certificate</div>
@@ -670,11 +670,11 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Home Address</div>
-                <div class="info-value">{{ $student->mother_home_address ? ucwords(strtolower($student->mother_home_address)) : 'No record provided' }}</div>
+                <div class="info-value">{{ $student->mother_home_address ? ucwords(strtolower($student->mother_home_address)) : 'Not recorded' }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Work Address</div>
-                <div class="info-value">{{ $student->mother_work_address ? ucwords(strtolower($student->mother_work_address)) : 'No record provided' }}</div>
+                <div class="info-value">{{ $student->mother_work_address ? ucwords(strtolower($student->mother_work_address)) : 'Not recorded' }}</div>
             </div>
         </div>
 
@@ -687,32 +687,32 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Father's Name</div>
-                    <div class="info-value">{{ $student->father_name ? ucwords(strtolower($student->father_name)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->father_name ? ucwords(strtolower($student->father_name)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Status</div>
-                    <div class="info-value">{{ $student->is_father_active_or_deceased ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->is_father_active_or_deceased ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Contact Number</div>
-                    <div class="info-value">{{ $student->father_contact ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->father_contact ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Email Address</div>
-                    <div class="info-value">{{ $student->father_email_address ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->father_email_address ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Profession</div>
-                    <div class="info-value">{{ $student->father_profession ? ucwords(strtolower($student->father_profession)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->father_profession ? ucwords(strtolower($student->father_profession)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Identification Type</div>
-                    <div class="info-value">{{ $student->father_identification_type ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->father_identification_type ?? 'Not recorded' }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Identification Number</div>
-                <div class="info-value">@can('view-sensitive'){{ $student->father_identification_number ?? 'No record provided' }}@else<span class="text-muted">Hidden</span>@endcan</div>
+                <div class="info-value">@can('view-sensitive'){{ $student->father_identification_number ?? 'Not recorded' }}@else<span class="text-muted">Hidden</span>@endcan</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Death Certificate</div>
@@ -720,11 +720,11 @@
             </div>
             <div class="info-item">
                 <div class="info-label">Home Address</div>
-                <div class="info-value">{{ $student->father_home_address ? ucwords(strtolower($student->father_home_address)) : 'No record provided' }}</div>
+                <div class="info-value">{{ $student->father_home_address ? ucwords(strtolower($student->father_home_address)) : 'Not recorded' }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Work Address</div>
-                <div class="info-value">{{ $student->father_work_address ? ucwords(strtolower($student->father_work_address)) : 'No record provided' }}</div>
+                <div class="info-value">{{ $student->father_work_address ? ucwords(strtolower($student->father_work_address)) : 'Not recorded' }}</div>
             </div>
         </div>
 
@@ -737,20 +737,20 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Contact Name</div>
-                    <div class="info-value">{{ $student->emergency_contact_name ? ucwords(strtolower($student->emergency_contact_name)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->emergency_contact_name ? ucwords(strtolower($student->emergency_contact_name)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Relation to Student</div>
-                    <div class="info-value">{{ $student->emergency_contact_relation_to_student ? ucwords(strtolower($student->emergency_contact_relation_to_student)) : 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->emergency_contact_relation_to_student ? ucwords(strtolower($student->emergency_contact_relation_to_student)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Contact Number</div>
-                    <div class="info-value">{{ $student->emergency_contact_number ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->emergency_contact_number ?? 'Not recorded' }}</div>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">Address</div>
-                <div class="info-value">{{ $student->emergency_contact_address ? ucwords(strtolower($student->emergency_contact_address)) : 'No record provided' }}</div>
+                <div class="info-value">{{ $student->emergency_contact_address ? ucwords(strtolower($student->emergency_contact_address)) : 'Not recorded' }}</div>
             </div>
         </div>
 
@@ -767,27 +767,27 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Relationship to Student</div>
-                    <div class="info-value">{{ $student->registrant_relationship_to_student ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->registrant_relationship_to_student ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Registrant Name</div>
-                    <div class="info-value">{{ $student->registrant_name ? ucwords(strtolower($student->registrant_name)) : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->registrant_name ? ucwords(strtolower($student->registrant_name)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Identification Type</div>
-                    <div class="info-value">{{ $student->registrant_identification_type ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->registrant_identification_type ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Identification Number</div>
-                    <div class="info-value">@can('view-sensitive'){{ $student->registrant_identification_number ?? 'N/A' }}@else<span class="text-muted">Hidden</span>@endcan</div>
+                    <div class="info-value">@can('view-sensitive'){{ $student->registrant_identification_number ?? 'Not recorded' }}@else<span class="text-muted">Hidden</span>@endcan</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Nationality</div>
-                    <div class="info-value">{{ $student->registrant_nationality ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->registrant_nationality ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Email Address</div>
-                    <div class="info-value">{{ $student->registrant_email ?? 'No record provided' }}</div>
+                    <div class="info-value">{{ $student->registrant_email ?? 'Not recorded' }}</div>
                 </div>
             </div>
         </div>
@@ -806,7 +806,7 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Transfer Status</div>
-                    <div class="info-value">{{ $student->student_transfer_status ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_transfer_status ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Transfer Slip</div>
@@ -814,19 +814,19 @@
                 </div>
                 <div class="info-item">
                     <div class="info-label">Transfer Date</div>
-                    <div class="info-value">{{ $student->student_transfer_date ? $student->student_transfer_date->format('d/m/Y') : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_transfer_date ? $student->student_transfer_date->format('d/m/Y') : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Previous Form Class</div>
-                    <div class="info-value">{{ $student->student_previous_form_class ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_previous_form_class ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Previous Secondary School</div>
-                    <div class="info-value">{{ $student->student_previous_secondary_school ? ucwords(strtolower($student->student_previous_secondary_school)) : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_previous_secondary_school ? ucwords(strtolower($student->student_previous_secondary_school)) : 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Previous School Location</div>
-                    <div class="info-value">{{ $student->student_previous_school_location ? ucwords(strtolower($student->student_previous_school_location)) : 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_previous_school_location ? ucwords(strtolower($student->student_previous_school_location)) : 'Not recorded' }}</div>
                 </div>
             </div>
             @if($student->student_transfer_reason)
@@ -853,31 +853,31 @@
             <div class="info-row">
                 <div class="info-item">
                     <div class="info-label">Family Crisis</div>
-                    <div class="info-value">{{ $student->student_family_crisis ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_family_crisis ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Receiving Counselling</div>
-                    <div class="info-value">{{ $student->student_receiving_counselling ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_receiving_counselling ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Educational Aid</div>
-                    <div class="info-value">{{ $student->student_educational_aid ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_educational_aid ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Physical Disabilities</div>
-                    <div class="info-value">{{ $student->student_physical_disabilities ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_physical_disabilities ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Learning Disabilities</div>
-                    <div class="info-value">{{ $student->student_learning_disabilities ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_learning_disabilities ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Special SEA Concessions</div>
-                    <div class="info-value">{{ $student->student_special_sea_concessions ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_special_sea_concessions ?? 'Not recorded' }}</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Emotional Factors</div>
-                    <div class="info-value">{{ $student->student_emotional_factors ?? 'N/A' }}</div>
+                    <div class="info-value">{{ $student->student_emotional_factors ?? 'Not recorded' }}</div>
                 </div>
             </div>
             @if($student->student_other_intervention_information)

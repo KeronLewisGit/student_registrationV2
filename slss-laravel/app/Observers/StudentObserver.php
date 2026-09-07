@@ -134,6 +134,9 @@ class StudentObserver
         foreach (self::FILE_FIELDS as $field) {
             Student::deleteStoredFile($student->{$field});
         }
+
+        // The audit trail of a permanently deleted record goes with it
+        StudentActivity::where('student_id', $student->id)->delete();
     }
 
     /**

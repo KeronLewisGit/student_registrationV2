@@ -30,6 +30,7 @@ class PromotionController extends Controller
             'newIntake' => Student::where('enrolment_status', 'active')->where('intake_year', '>=', $target)->count(),
             'lastRun' => $this->lastRun(),
             'alreadyRan' => $this->alreadyRan($target),
+            'alignment' => $this->alignment($target),
         ]);
     }
 
@@ -136,10 +137,60 @@ class PromotionController extends Controller
             ->first();
     }
 
+    /**
+     * The promotion has effectively happened when either an audit marker
+     * exists for the target year, or the classes already match it (the
+     * progression backfill assigns classes for the year that is running).
+     */
     private function alreadyRan(int $target): bool
     {
-        return StudentActivity::where('action', 'promoted')
+        if (StudentActivity::where('action', 'promoted')
             ->where('summary', 'like', 'Year-end promotion to ' . Student::academicYearLabel($target) . '%')
-            ->exists();
+            ->exists()) {
+            return true;
+        }
+
+        $alignment = $this->alignment($target);
+
+        return $alignment['aligned'] > 0 && $alignment['aligned'] > $alignment['behind'];
+    }
+
+    /**
+     * How many active students already sit in the form their intake year
+     * implies for the target year ("aligned") versus one form behind it
+     * ("behind", i.e. still in last year's class).
+     *
+     * @return array{aligned:int, behind:int}
+     */
+    private function alignment(int $target): array
+    {
+        $aligned = 0;
+        $behind = 0;
+
+        Student::query()
+            ->where('enrolment_status', 'active')
+            ->whereNotNull('current_class')
+            ->whereNotNull('intake_year')
+            ->where('intake_year', '<', $target)
+            ->select('id', 'current_class', 'intake_year')
+            ->chunkById(500, function ($students) use (&$aligned, &$behind, $target) {
+                foreach ($students as $student) {
+                    $form = $student->currentForm();
+                    if (!$form) {
+                        continue;
+                    }
+                    $expected = $target - $student->intake_year + 1;
+                    if ($expected > Student::MAX_FORM) {
+                        continue; // past the top form: graduating, tells us nothing about alignment
+                    }
+                    if ($form === $expected) {
+                        $aligned++;
+                    } elseif ($form === $expected - 1) {
+                        $behind++;
+                    }
+                }
+            });
+
+        return ['aligned' => $aligned, 'behind' => $behind];
     }
 }

@@ -543,9 +543,10 @@ class Student extends Model
             return null;
         }
 
+        // Resolve through the disks so tests (Storage::fake) and custom roots both work
         return strtolower($m['prefix']) === 'private'
-            ? storage_path('app/' . $value)
-            : storage_path('app/public/' . substr($value, strlen('storage/')));
+            ? \Illuminate\Support\Facades\Storage::disk('local')->path($value)
+            : \Illuminate\Support\Facades\Storage::disk('public')->path(substr($value, strlen('storage/')));
     }
 
     /**

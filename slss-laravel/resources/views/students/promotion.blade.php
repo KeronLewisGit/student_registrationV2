@@ -25,6 +25,15 @@
         </div>
     @endif
 
+    @if($alreadyRan && !$lastRun)
+        <div class="alert alert-danger">
+            <i class="fas fa-check-circle me-1"></i>
+            <strong>Classes already match {{ $academicYear }}.</strong>
+            {{ $alignment['aligned'] }} students are in the form their intake year implies for this year, so there is nothing to promote yet.
+            Come back at the end of the academic year.
+        </div>
+    @endif
+
     @if($lastRun)
         <div class="alert {{ $alreadyRan ? 'alert-danger' : 'alert-secondary' }}">
             <i class="fas fa-info-circle me-1"></i>

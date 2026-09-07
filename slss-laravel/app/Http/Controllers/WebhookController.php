@@ -306,7 +306,7 @@ class WebhookController extends Controller
             return null;
         }
 
-        foreach (['d/m/Y', 'd-m-Y', 'd.m.Y', 'Y-m-d', 'Y/m/d', 'j/n/Y', 'j-n-Y', 'd/m/y', 'F j, Y', 'j F Y', 'Y-m-d H:i:s'] as $format) {
+        foreach (['d/m/Y', 'd-m-Y', 'd.m.Y', 'Y-m-d', 'Y/m/d', 'j/n/Y', 'j-n-Y', 'd/m/y', 'F j, Y', 'F j Y', 'M j, Y', 'M j Y', 'j F Y', 'j M Y', 'Y-m-d H:i:s'] as $format) {
             $date = \DateTime::createFromFormat('!' . $format, $value);
             if ($date && (int) $date->format('Y') >= 1950 && (int) $date->format('Y') <= 2100) {
                 return $date->format('Y-m-d');
