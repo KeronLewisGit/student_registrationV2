@@ -167,4 +167,26 @@ class StudentController extends Controller
     {
         return view('students.print', compact('student'));
     }
+
+    /**
+     * Printable page containing every student matching the current list filters,
+     * one profile per page.
+     */
+    public function printAll(Request $request)
+    {
+        // Same data exposure as the bulk PDF export, so the same gate applies.
+        $this->authorize('view-reports');
+
+        $filters = $request->all();
+        $students = $this->studentService->getFilteredStudents($filters);
+
+        $parts = array_filter([
+            !empty($filters['year']) ? 'Registered ' . $filters['year'] : null,
+            !empty($filters['student_class']) && $filters['student_class'] !== '0' ? 'Class ' . $filters['student_class'] : null,
+            !empty($filters['search']) ? 'Search "' . $filters['search'] . '"' : null,
+        ]);
+        $filterSummary = $parts ? implode(' · ', $parts) : 'All students';
+
+        return view('students.print-all', compact('students', 'filterSummary'));
+    }
 }

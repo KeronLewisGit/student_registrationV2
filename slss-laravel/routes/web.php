@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     // PDF Generation Routes
     Route::get('/students/{student}/pdf', [StudentController::class, 'generatePdf'])->name('students.pdf');
     Route::get('/students/{student}/print', [StudentController::class, 'print'])->name('students.print');
+    Route::get('/students-print', [StudentController::class, 'printAll'])->name('students.print-all');
     Route::get('/students-bulk-pdf', [StudentController::class, 'generateBulkPdf'])->name('students.bulk-pdf');
     Route::get('/students-bulk-pdf-progress', [StudentController::class, 'getBulkPdfProgress'])->name('students.bulk-pdf-progress');
     Route::get('/students-bulk-pdf-download', [StudentController::class, 'downloadBulkPdf'])->name('students.bulk-pdf-download');

@@ -249,6 +249,13 @@
             <button type="button" id="exportToPdfBtn" class="btn btn-info btn-sm" data-filters="{{ json_encode(request()->all()) }}">
                 <i class="fas fa-file-pdf me-1"></i><span class="d-none d-sm-inline"> Export to PDF</span><span class="d-inline d-sm-none">PDF</span>
             </button>
+            @can('view-reports')
+            <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener"
+               class="btn btn-outline-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
+               title="Open a printable page with every student in the current selection">
+                <i class="fas fa-print me-1"></i><span class="d-none d-sm-inline"> Print All ({{ $students->count() }})</span><span class="d-inline d-sm-none">Print</span>
+            </a>
+            @endcan
         </div>
     </div>
 </div>
