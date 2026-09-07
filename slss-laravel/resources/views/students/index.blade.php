@@ -11,6 +11,33 @@
 
 @push('styles')
 <style>
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.2rem 0.6rem;
+        border-radius: 999px;
+        background: var(--primary-light, #eef2ff);
+        color: var(--primary-color, #4f46e5);
+        font-size: 0.8rem;
+        text-decoration: none;
+        border: 1px solid transparent;
+    }
+    .filter-chip:hover { border-color: currentColor; }
+
+    .completeness { min-width: 90px; }
+    .completeness-bar {
+        height: 6px;
+        background: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 2px;
+    }
+    .completeness-bar span { display: block; height: 100%; border-radius: 3px; }
+    .completeness-bar .is-ok { background: #16a34a; }
+    .completeness-bar .is-mid { background: #f59e0b; }
+    .completeness-bar .is-low { background: #dc2626; }
+    .completeness small { color: #6b7280; white-space: nowrap; }
+
     .student-photo-thumbnail {
         width: 40px;
         height: 40px;
@@ -46,20 +73,6 @@
         }
 
         /* Keep icon buttons at a comfortable touch size */
-        .completeness { min-width: 90px; }
-        .completeness-bar {
-            height: 6px;
-            background: #e5e7eb;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-bottom: 2px;
-        }
-        .completeness-bar span { display: block; height: 100%; border-radius: 3px; }
-        .completeness-bar .is-ok { background: #16a34a; }
-        .completeness-bar .is-mid { background: #f59e0b; }
-        .completeness-bar .is-low { background: #dc2626; }
-        .completeness small { color: #6b7280; white-space: nowrap; }
-
         .table-actions .btn-sm {
             padding: 0.375rem 0.5rem;
             min-width: 44px;
@@ -202,9 +215,21 @@
 </div>
 
 <!-- Filters & Actions Card -->
+@php
+    $activeFilters = array_filter([
+        'search' => request('search') ? 'Search: "' . request('search') . '"' : null,
+        'current_class' => request('current_class') && request('current_class') !== '0' ? 'Class ' . request('current_class') : null,
+        'status' => request('status') && request('status') !== 'active' ? 'Status: ' . (request('status') === 'all' ? 'All statuses' : ($statuses[request('status')] ?? request('status'))) : null,
+        'year' => request('year') ? 'Registered ' . request('year') : null,
+        'student_class' => request('student_class') && request('student_class') !== '0' ? 'Form 1 class ' . request('student_class') : null,
+        'incomplete' => request('incomplete') ? 'Incomplete records only' : null,
+    ]);
+    $exportQuery = request()->only(['year', 'student_class', 'current_class', 'status', 'search']);
+    $moreOpen = request()->filled('student_class') && request('student_class') !== '0';
+@endphp
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-        <span><i class="fas fa-filter me-2"></i>Filter Students</span>
+        <span><i class="fas fa-filter me-2"></i>Find Students</span>
         @can('edit-students')
         <a href="{{ route('students.create') }}" class="btn btn-success btn-sm">
             <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline"> Add Student</span><span class="d-inline d-sm-none">Add</span>
@@ -212,97 +237,122 @@
         @endcan
     </div>
     <div class="card-body">
-        <form method="GET" action="{{ route('students.index') }}" class="row g-3">
-            <div class="col-md-2 col-sm-6">
-                <label for="year" class="form-label">Registration Year</label>
-                <select name="year" id="year" class="form-select">
-                    <option value="">All Years</option>
-                    @foreach($years as $year)
-                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                            {{ $year }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+        <form method="GET" action="{{ route('students.index') }}" id="filterForm">
+            <div class="row g-2 align-items-end">
+                <div class="col-lg-5 col-md-12">
+                    <label for="search" class="form-label">Search</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="search" name="search" id="search" class="form-control"
+                               placeholder="Name, PIN, SEA number, parent, phone, email..."
+                               value="{{ request('search') }}" autocomplete="off">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </div>
 
-            <div class="col-md-2 col-sm-6">
-                <label for="current_class" class="form-label">Current Class</label>
-                <select name="current_class" id="current_class" class="form-select">
-                    <option value="0">All Classes</option>
-                    @foreach($currentClasses as $class)
-                        <option value="{{ $class }}" {{ request('current_class') === $class ? 'selected' : '' }}>{{ $class }}</option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <label for="current_class" class="form-label">Class</label>
+                    <select name="current_class" id="current_class" class="form-select auto-submit">
+                        <option value="0">All classes</option>
+                        @foreach($currentClasses as $class)
+                            <option value="{{ $class }}" {{ request('current_class') === $class ? 'selected' : '' }}>{{ $class }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="col-md-2 col-sm-6">
-                <label for="student_class" class="form-label">Form 1 Class</label>
-                <select name="student_class" id="student_class" class="form-select">
-                    <option value="0">Any</option>
-                    @php
-                        // The stored value may be "A" or "1A"; normalize both sides so the
-                        // dropdown highlights the right option whichever format came back.
-                        $selectedClass = \App\Models\Student::classVariants(request('student_class'));
-                    @endphp
-                    @foreach($classes as $class)
-                        <option value="{{ $class }}" {{ in_array($class, $selectedClass, true) ? 'selected' : '' }}>
-                            {{ $class }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <label for="status" class="form-label">Status</label>
+                    <select name="status" id="status" class="form-select auto-submit">
+                        @foreach($statuses as $code => $label)
+                            <option value="{{ $code }}" {{ request('status', 'active') === $code ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                        <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All statuses</option>
+                    </select>
+                </div>
 
-            <div class="col-md-2 col-sm-6">
-                <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select">
-                    @foreach($statuses as $code => $label)
-                        <option value="{{ $code }}" {{ request('status', 'active') === $code ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                    <option value="all" {{ request('status') === 'all' ? 'selected' : '' }}>All statuses</option>
-                </select>
-            </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <label for="year" class="form-label">Registered</label>
+                    <select name="year" id="year" class="form-select auto-submit">
+                        <option value="">Any year</option>
+                        @foreach($years as $year)
+                            <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div class="col-md-3 col-sm-12">
-                <label for="search" class="form-label">Search</label>
-                <input type="text" name="search" id="search" class="form-control"
-                       placeholder="Name, PIN, SEA #, parent, phone, email..."
-                       value="{{ request('search') }}">
-            </div>
-
-            <div class="col-md-2 col-sm-6 d-flex align-items-end">
-                <div class="form-check mb-2">
-                    <input class="form-check-input" type="checkbox" name="incomplete" id="incomplete" value="1" {{ request('incomplete') ? 'checked' : '' }}>
-                    <label class="form-check-label" for="incomplete">Incomplete records only</label>
+                <div class="col-lg-1 col-md-12 col-sm-6">
+                    <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none {{ $moreOpen ? '' : 'collapsed' }}"
+                            data-bs-toggle="collapse" data-bs-target="#moreFilters" aria-expanded="{{ $moreOpen ? 'true' : 'false' }}" aria-controls="moreFilters">
+                        More <i class="fas fa-chevron-down ms-1 small"></i>
+                    </button>
                 </div>
             </div>
 
-            <div class="col-md-1 col-sm-6 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary w-100" title="Apply filters">
-                    <i class="fas fa-search"></i><span class="d-md-none"> Filter</span>
-                </button>
+            <div class="collapse {{ $moreOpen ? 'show' : '' }} mt-2" id="moreFilters">
+                <div class="row g-2 align-items-end">
+                    <div class="col-lg-2 col-md-4 col-sm-6">
+                        <label for="student_class" class="form-label">Form 1 class (intake)</label>
+                        <select name="student_class" id="student_class" class="form-select auto-submit">
+                            <option value="0">Any</option>
+                            @php
+                                // The stored value may be "A" or "1A"; normalize both sides so the
+                                // dropdown highlights the right option whichever format came back.
+                                $selectedClass = \App\Models\Student::classVariants(request('student_class'));
+                            @endphp
+                            @foreach($classes as $class)
+                                <option value="{{ $class }}" {{ in_array($class, $selectedClass, true) ? 'selected' : '' }}>{{ $class }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center flex-wrap gap-3 mt-3">
+                <div class="form-check form-switch mb-0">
+                    <input class="form-check-input auto-submit" type="checkbox" role="switch" name="incomplete" id="incomplete" value="1" {{ request('incomplete') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="incomplete">Incomplete records only</label>
+                </div>
+
+                @if($activeFilters)
+                    <div class="d-flex align-items-center flex-wrap gap-2 active-filters">
+                        @foreach($activeFilters as $key => $label)
+                            <a href="{{ route('students.index', array_diff_key(request()->query(), [$key => 1])) }}"
+                               class="filter-chip" title="Remove this filter">
+                                {{ $label }} <i class="fas fa-times ms-1"></i>
+                            </a>
+                        @endforeach
+                        <a href="{{ route('students.index') }}" class="small text-decoration-none">Clear all</a>
+                    </div>
+                @endif
             </div>
         </form>
+    </div>
 
-        <div class="mt-3 d-flex gap-2 flex-wrap">
-            <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-redo me-1"></i><span class="d-none d-sm-inline"> Reset Filters</span><span class="d-inline d-sm-none">Reset</span>
-            </a>
-            <button type="button" id="exportToPdfBtn" class="btn btn-info btn-sm" data-filters="{{ json_encode(request()->all()) }}">
-                <i class="fas fa-file-pdf me-1"></i><span class="d-none d-sm-inline"> Export to PDF</span><span class="d-inline d-sm-none">PDF</span>
-            </button>
-            @can('view-reports')
-            <a href="{{ route('reports.all-students.export', array_merge(request()->only(['year', 'student_class', 'current_class', 'status', 'search']), ['format' => 'xlsx'])) }}"
-               class="btn btn-outline-success btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
-               title="Download the students in the current selection as a spreadsheet">
-                <i class="fas fa-file-excel me-1"></i><span class="d-none d-sm-inline"> Export This View</span><span class="d-inline d-sm-none">Export</span>
-            </a>
+    <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <span class="text-muted">
+            <strong>{{ $students->count() }}</strong> {{ $students->count() === 1 ? 'student' : 'students' }}
+            {{ $activeFilters ? 'match these filters' : 'currently active' }}
+        </span>
+        @can('view-reports')
+        <div class="d-flex gap-2 flex-wrap">
+            <div class="dropdown">
+                <button type="button" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" {{ $students->isEmpty() ? 'disabled' : '' }}>
+                    <i class="fas fa-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}"><i class="fas fa-file-excel me-2 text-success"></i>Spreadsheet (Excel)</a></li>
+                    <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'csv'])) }}"><i class="fas fa-file-csv me-2 text-secondary"></i>CSV file</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><button type="button" class="dropdown-item" id="exportToPdfBtn" data-filters="{{ json_encode(request()->all()) }}"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF profiles (zip)</button></li>
+                </ul>
+            </div>
             <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener"
-               class="btn btn-outline-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
+               class="btn btn-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
                title="Open a printable page with every student in the current selection">
-                <i class="fas fa-print me-1"></i><span class="d-none d-sm-inline"> Print All ({{ $students->count() }})</span><span class="d-inline d-sm-none">Print</span>
+                <i class="fas fa-print me-1"></i> Print {{ $students->count() }}
             </a>
-            @endcan
         </div>
+        @endcan
     </div>
 </div>
 
@@ -531,6 +581,13 @@ $(document).ready(function() {
             }
         });
     }
+
+    // Filters apply themselves: no separate "Filter" button to remember
+    document.querySelectorAll('#filterForm .auto-submit').forEach(function (control) {
+        control.addEventListener('change', function () {
+            document.getElementById('filterForm').submit();
+        });
+    });
 
     // PDF Export with Real-Time Progress Tracking
     $('#exportToPdfBtn').on('click', function() {
