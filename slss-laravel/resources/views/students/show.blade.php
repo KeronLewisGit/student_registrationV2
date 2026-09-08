@@ -388,7 +388,8 @@
             </div>
             <div class="d-flex align-items-center gap-3 mb-3">
                 <div class="flex-grow-1" style="height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden;">
-                    <div style="width: {{ $completeness['percent'] }}%; height: 100%; background: {{ $completeness['missing'] ? (count($completeness['missing']) > 3 ? '#dc2626' : '#f59e0b') : '#16a34a' }};"></div>
+                    @php($level = \App\Models\Student::completenessLevel($completeness['percent']))
+                    <div style="width: {{ $completeness['percent'] }}%; height: 100%; background: {{ ['ok' => '#16a34a', 'mid' => '#f59e0b', 'low' => '#dc2626'][$level] }};" title="Green 85%+, amber 60%+, red below 60%"></div>
                 </div>
                 <strong>{{ $completeness['percent'] }}%</strong>
             </div>

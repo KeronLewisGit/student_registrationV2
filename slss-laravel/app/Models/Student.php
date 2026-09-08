@@ -289,6 +289,16 @@ class Student extends Model
         ];
     }
 
+    /**
+     * Traffic-light level for a completeness percentage, so the bar colour
+     * always follows the number shown beside it:
+     * 85% and above green, 60% to 84% amber, below 60% red.
+     */
+    public static function completenessLevel(int $percent): string
+    {
+        return $percent >= 85 ? 'ok' : ($percent >= 60 ? 'mid' : 'low');
+    }
+
     public function isComplete(): bool
     {
         return $this->completeness()['missing'] === [];

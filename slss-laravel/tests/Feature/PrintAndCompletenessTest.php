@@ -43,6 +43,14 @@ class PrintAndCompletenessTest extends TestCase
         $this->actingAs($this->admin())->get('/students?incomplete=1')->assertOk()->assertSee($s->student_name);
     }
 
+    public function test_completeness_colour_follows_the_percentage(): void
+    {
+        $this->assertSame('low', \App\Models\Student::completenessLevel(58));
+        $this->assertSame('mid', \App\Models\Student::completenessLevel(60));
+        $this->assertSame('mid', \App\Models\Student::completenessLevel(84));
+        $this->assertSame('ok', \App\Models\Student::completenessLevel(85));
+    }
+
     public function test_printables_render_for_a_class(): void
     {
         $s = $this->student(['registration_date' => '2024-07-01', 'student_allergies' => 'Peanuts']); // 3C in 2026
