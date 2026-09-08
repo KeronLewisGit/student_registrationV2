@@ -216,6 +216,10 @@ The browser print view, the single and bulk PDF downloads, and the Printables sh
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Navigation
+
+The sidebar is a flat list in three labelled sections — Students (All Students, Add Student, Bulk Photos, Recently Deleted), Reports (Printables, Export Data) and Administration (Import CSV, Year-End Promotion, Users, Activity Log) — with entries shown according to the signed-in role. The **Collapse menu** button at the bottom shrinks it to an icon rail with tooltips; the choice is remembered per browser. On phones the sidebar is an off-canvas drawer opened from the header.
+
 ### Design System
 
 `public/css/slss.css` carries the shared design tokens: the brand purple is the only primary colour (Bootstrap's blue is overridden everywhere, including pagination, pills and checkboxes), buttons use one scale (`btn` / `btn-sm`) with a fixed vocabulary — solid primary for the main action on a page, outlined neutral for secondary actions such as Back and Cancel, red only for destructive actions — and row actions in tables are square icon buttons. On the purple profile banner the primary action is a white button and secondary actions are outlined white. Dark mode has explicit overrides for alerts, summary boxes and table pagination.

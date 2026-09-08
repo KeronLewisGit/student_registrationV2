@@ -3,7 +3,7 @@
 <head>
     <script>
         // Apply the saved theme before first paint so dark mode doesn't flash light
-        (function () { try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t); document.documentElement.setAttribute('data-bs-theme', t); } catch (e) {} })();
+        (function () { try { var t = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', t); document.documentElement.setAttribute('data-bs-theme', t); if (localStorage.getItem('sidebar') === 'collapsed') { document.documentElement.setAttribute('data-sidebar', 'collapsed'); } } catch (e) {} })();
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -93,6 +93,9 @@
             z-index: 1020;
             box-shadow: 2px 0 12px rgba(0,0,0,0.1);
             transition: transform 0.3s ease;
+            /* brand / scrolling menu / pinned user block */
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-brand {
@@ -124,12 +127,62 @@
             /* Scroll the menu on short viewports instead of sliding under
                the pinned user block at the bottom */
             overflow-y: auto;
-            max-height: calc(100vh - 90px - 72px); /* brand block + user block */
+            flex: 1 1 auto;
+            min-height: 0; /* lets the menu shrink and scroll instead of sliding under the user block */
+            scrollbar-width: thin;
         }
 
         .sidebar-menu-item {
-            margin: 0.25rem 0.75rem;
+            margin: 0.15rem 0.75rem;
         }
+
+        .nav-section { padding: 0.35rem 0 0.6rem; }
+        .nav-section + .nav-section { border-top: 1px solid rgba(255,255,255,0.08); margin-top: 0.25rem; padding-top: 0.75rem; }
+        .nav-section-label {
+            padding: 0 1.25rem 0.4rem;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.45);
+        }
+
+        .sidebar-collapse {
+            width: 100%;
+            margin-top: 0.6rem;
+            padding: 0.45rem 0.75rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+        }
+        .sidebar-collapse:hover { background: rgba(255,255,255,0.08); color: #fff; }
+
+        /* ---- Collapsed rail: icons only, tooltips from the title attribute ---- */
+        html[data-sidebar="collapsed"] { --sidebar-width: 76px; }
+        @media (min-width: 993px) {
+            html[data-sidebar="collapsed"] .sidebar-brand { padding: 1rem 0; justify-content: center; }
+            html[data-sidebar="collapsed"] .sidebar-brand-text,
+            html[data-sidebar="collapsed"] .nav-section-label,
+            html[data-sidebar="collapsed"] .sidebar-menu-link span,
+            html[data-sidebar="collapsed"] .sidebar-user-details,
+            html[data-sidebar="collapsed"] .sidebar-collapse span { display: none; }
+            html[data-sidebar="collapsed"] .sidebar-menu-item { margin: 0.15rem 0.6rem; }
+            html[data-sidebar="collapsed"] .sidebar-menu-link { justify-content: center; padding: 0.7rem 0; }
+            html[data-sidebar="collapsed"] .sidebar-menu-link i { margin: 0; width: auto; font-size: 1.1rem; }
+            html[data-sidebar="collapsed"] .nav-section { padding: 0.3rem 0; }
+            html[data-sidebar="collapsed"] .sidebar-user { padding: 0.75rem 0.5rem; }
+            html[data-sidebar="collapsed"] .sidebar-user-info { flex-direction: column; gap: 0.5rem; padding: 0.5rem 0; background: transparent; }
+            html[data-sidebar="collapsed"] .sidebar-collapse { margin-top: 0.4rem; padding: 0.45rem 0; }
+            html[data-sidebar="collapsed"] .sidebar-collapse i { transform: rotate(180deg); }
+        }
+        .sidebar, .top-header, .main-content, .app-footer { transition: margin-left 0.2s ease, left 0.2s ease, width 0.2s ease; }
 
         .sidebar-menu-link {
             display: flex;
@@ -208,10 +261,7 @@
         }
 
         .sidebar-user {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
+            flex: 0 0 auto;
             padding: 1rem;
             background: rgba(0,0,0,0.2);
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -1138,108 +1188,45 @@
 
     <!-- Sidebar -->
     <aside class="sidebar no-print" id="sidebar">
-        <div class="sidebar-brand">
+        <a href="{{ route('students.index') }}" class="sidebar-brand text-decoration-none" title="Success Laventille Secondary School">
             <img src="{{ asset('images/successlogo.png') }}" alt="SLSS">
             <div class="sidebar-brand-text">
                 Success<br>Student Management
             </div>
-        </div>
+        </a>
 
-        <nav class="sidebar-menu">
-            <div class="sidebar-menu-item">
-                <a href="{{ route('students.index') }}" class="sidebar-menu-link {{ request()->routeIs('students.index') && !request()->routeIs('students.create') ? 'active' : '' }}">
-                    <i class="fas fa-users"></i>
-                    <span>Students</span>
-                </a>
+        <nav class="sidebar-menu" aria-label="Main navigation">
+            @php($item = fn (string $route, string $icon, string $label, bool $active) => view('layouts.partials.nav-item', compact('route', 'icon', 'label', 'active'))->render())
+
+            <div class="nav-section">
+                <div class="nav-section-label">Students</div>
+                {!! $item(route('students.index'), 'fa-users', 'All Students', request()->routeIs('students.index')) !!}
+                @can('edit-students')
+                    {!! $item(route('students.create'), 'fa-user-plus', 'Add Student', request()->routeIs('students.create')) !!}
+                    {!! $item(route('students.photos'), 'fa-images', 'Bulk Photos', request()->routeIs('students.photos')) !!}
+                @endcan
+                @can('delete-students')
+                    {!! $item(route('students.trash'), 'fa-trash-restore', 'Recently Deleted', request()->routeIs('students.trash')) !!}
+                @endcan
             </div>
 
-            @can('edit-students')
-            <!-- Students Menu with Submenu (hidden for viewers — its only entry is Add Student) -->
-            <div class="sidebar-menu-item">
-                <a href="#studentsSubmenu" class="sidebar-menu-link {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'active' : '' }} {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'true' : 'false' }}">
-                    <i class="fas fa-toolbox"></i>
-                    <span>Student Tools</span>
-                    <i class="fas fa-chevron-down menu-arrow"></i>
-                </a>
-                <div class="sidebar-submenu collapse {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'show' : '' }}" id="studentsSubmenu">
-                    <a href="{{ route('students.create') }}" class="sidebar-submenu-link {{ request()->routeIs('students.create') ? 'active' : '' }}">
-                        <i class="fas fa-plus-circle"></i>
-                        <span>Add Student</span>
-                    </a>
-                    <a href="{{ route('students.photos') }}" class="sidebar-submenu-link {{ request()->routeIs('students.photos') ? 'active' : '' }}">
-                        <i class="fas fa-images"></i>
-                        <span>Bulk Photo Upload</span>
-                    </a>
-                    @can('admin')
-                    <a href="{{ route('students.promotion') }}" class="sidebar-submenu-link {{ request()->routeIs('students.promotion') ? 'active' : '' }}">
-                        <i class="fas fa-level-up-alt"></i>
-                        <span>Year-End Promotion</span>
-                    </a>
-                    @endcan
-                    @can('delete-students')
-                    <a href="{{ route('students.trash') }}" class="sidebar-submenu-link {{ request()->routeIs('students.trash') ? 'active' : '' }}">
-                        <i class="fas fa-trash-restore"></i>
-                        <span>Recently Deleted</span>
-                    </a>
-                    @endcan
-                </div>
+            @can('view-reports')
+            <div class="nav-section">
+                <div class="nav-section-label">Reports</div>
+                {!! $item(route('printables.index'), 'fa-print', 'Printables', request()->routeIs('printables.*')) !!}
+                {!! $item(route('reports.show', 'all-students'), 'fa-file-export', 'Export Data', request()->routeIs('reports.*')) !!}
             </div>
             @endcan
 
             @can('import-students')
-            <!-- Data Management Menu with Submenu -->
-            <div class="sidebar-menu-item">
-                <a href="#dataSubmenu" class="sidebar-menu-link {{ request()->routeIs('import.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('import.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-database"></i>
-                    <span>Data Management</span>
-                    <i class="fas fa-chevron-down menu-arrow"></i>
-                </a>
-                <div class="sidebar-submenu collapse {{ request()->routeIs('import.*') ? 'show' : '' }}" id="dataSubmenu">
-                    <a href="{{ route('import.index') }}" class="sidebar-submenu-link {{ request()->routeIs('import.*') ? 'active' : '' }}">
-                        <i class="fas fa-file-import"></i>
-                        <span>Import Data</span>
-                    </a>
-                </div>
-            </div>
-            @endcan
-
-            @if(auth()->user()->role === 'admin')
-            <div class="sidebar-menu-item">
-                <a href="{{ route('users.index') }}" class="sidebar-menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <i class="fas fa-users-cog"></i>
-                    <span>User Management</span>
-                </a>
-            </div>
-            <div class="sidebar-menu-item">
-                <a href="{{ route('activity.index') }}" class="sidebar-menu-link {{ request()->routeIs('activity.*') ? 'active' : '' }}">
-                    <i class="fas fa-history"></i>
-                    <span>Activity Log</span>
-                </a>
-            </div>
-            @endif
-
-            @can('view-reports')
-            <!-- Reports Menu with Submenu -->
-            <div class="sidebar-menu-item">
-                <a href="#reportsSubmenu" class="sidebar-menu-link {{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? 'true' : 'false' }}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Reports</span>
-                    <i class="fas fa-chevron-down menu-arrow"></i>
-                </a>
-                <div class="sidebar-submenu collapse {{ request()->routeIs('reports.*') || request()->routeIs('printables.*') ? 'show' : '' }}" id="reportsSubmenu">
-                    <a href="{{ route('reports.index') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.index') ? 'active' : '' }}">
-                        <i class="fas fa-folder-open"></i>
-                        <span>All Reports</span>
-                    </a>
-                    <a href="{{ route('reports.show', 'all-students') }}" class="sidebar-submenu-link {{ request()->routeIs('reports.show') ? 'active' : '' }}">
-                        <i class="fas fa-users"></i>
-                        <span>All Students</span>
-                    </a>
-                    <a href="{{ route('printables.index') }}" class="sidebar-submenu-link {{ request()->routeIs('printables.*') ? 'active' : '' }}">
-                        <i class="fas fa-print"></i>
-                        <span>Printables</span>
-                    </a>
-                </div>
+            <div class="nav-section">
+                <div class="nav-section-label">Administration</div>
+                {!! $item(route('import.index'), 'fa-file-import', 'Import CSV', request()->routeIs('import.*')) !!}
+                @can('admin')
+                    {!! $item(route('students.promotion'), 'fa-level-up-alt', 'Year-End Promotion', request()->routeIs('students.promotion')) !!}
+                    {!! $item(route('users.index'), 'fa-users-cog', 'Users', request()->routeIs('users.*')) !!}
+                    {!! $item(route('activity.index'), 'fa-history', 'Activity Log', request()->routeIs('activity.*')) !!}
+                @endcan
             </div>
             @endcan
         </nav>
@@ -1255,11 +1242,15 @@
                 </a>
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf
-                    <button type="submit" class="sidebar-logout" title="Logout" aria-label="Log out">
+                    <button type="submit" class="sidebar-logout" title="Sign out" aria-label="Sign out">
                         <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                     </button>
                 </form>
             </div>
+            <button type="button" class="sidebar-collapse" id="sidebarCollapse" title="Collapse menu" aria-label="Collapse the navigation menu" aria-expanded="true">
+                <i class="fas fa-angles-left" aria-hidden="true"></i>
+                <span>Collapse menu</span>
+            </button>
         </div>
     </aside>
 
@@ -1356,6 +1347,24 @@
         // Sidebar toggle for mobile
         const sidebarToggle = document.getElementById('sidebarToggle');
         const sidebar = document.getElementById('sidebar');
+
+        // Desktop: collapse the sidebar to an icon rail and remember the choice
+        (function () {
+            const button = document.getElementById('sidebarCollapse');
+            if (!button) { return; }
+            function render() {
+                const collapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+                button.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                button.title = collapsed ? 'Expand menu' : 'Collapse menu';
+            }
+            button.addEventListener('click', function () {
+                const collapsed = document.documentElement.getAttribute('data-sidebar') === 'collapsed';
+                if (collapsed) { document.documentElement.removeAttribute('data-sidebar'); } else { document.documentElement.setAttribute('data-sidebar', 'collapsed'); }
+                try { localStorage.setItem('sidebar', collapsed ? 'expanded' : 'collapsed'); } catch (e) {}
+                render();
+            });
+            render();
+        })();
         const mobileOverlay = document.getElementById('mobileOverlay');
 
         function toggleSidebar() {
