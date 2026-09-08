@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Student;
 use Illuminate\Http\Request;
 
@@ -32,6 +33,15 @@ class DocumentController extends Controller
 
         if ($absolute === null || !is_file($absolute)) {
             abort(404);
+        }
+
+        // Which student owns this file (photos are viewed constantly; only log the documents)
+        if ($m['dir'] !== 'passports') {
+            $owner = Student::withTrashed()
+                ->where(fn ($q) => $q->where('student_birth_certificate', $path)->orWhere('student_sea_slip', $path)
+                    ->orWhere('student_transfer_slip', $path)->orWhere('mother_death_certificate', $path)->orWhere('father_death_certificate', $path))
+                ->first();
+            ActivityLog::log('document', 'viewed', 'Viewed ' . str_replace('_', ' ', $m['dir']) . ' file ' . $m['file'], ['subject' => $owner]);
         }
 
         $mime = mime_content_type($absolute) ?: 'application/octet-stream';

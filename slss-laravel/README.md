@@ -258,7 +258,17 @@ Reports → Printables offers per-class (or whole-school) sheets that open in a 
 
 ### Audit Trail
 
-Every create, update, delete, restore, promotion, status change, photo and document change is recorded in `student_activities` with the user, time, IP and the before/after value of each field. The last entries show on the student profile; admins can browse and filter the full **Activity Log** from the sidebar.
+The **Activity Log** (admin only, in the sidebar) records who did what, when, and from which address, across the whole app:
+
+- **Sign-ins**: successful sign-ins, failed attempts (tied to the account when the email exists) and sign-outs.
+- **Student records**: every create, update, delete, restore, promotion, status change, photo and document change, with before/after values (medical, welfare and identity numbers are redacted to "changed").
+- **Exports and printing**: spreadsheet exports (with the filters and column count), PDF batches and downloads, single PDFs, printed records, print batches and every Printables sheet.
+- **Document views**: each time a birth certificate, slip or death certificate is opened, linked to the student.
+- **Imports and uploads**: CSV imports and bulk photo uploads with their counts, including failures.
+- **User management**: accounts created, edited (with the fields that changed), deleted and password resets.
+- **System**: year-end promotion runs and deployments.
+
+Quick presets (Sign-ins, Failed sign-ins, Student changes, Exports & prints, …) sit above filters for category, action, user, student, IP address, free text and date range. The last entries about a student also show on that student's profile. Entries are pruned after 24 months by the scheduler.
 
 ### Advanced Filters
 

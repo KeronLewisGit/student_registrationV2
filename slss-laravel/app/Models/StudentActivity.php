@@ -2,86 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Prunable;
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
- * One entry in a student's audit trail.
+ * The student-record slice of the activity log. Kept as its own model so
+ * Student::activities() and the profile page's History panel only see
+ * entries about student records.
  */
-class StudentActivity extends Model
+class StudentActivity extends ActivityLog
 {
-    use Prunable;
-
-    public const UPDATED_AT = null;
-
-    /** How long audit entries are kept (see model:prune in routes/console.php). */
-    public const RETENTION_MONTHS = 24;
-
-    public function prunable()
+    protected static function booted(): void
     {
-        return static::where('created_at', '<', now()->subMonths(self::RETENTION_MONTHS));
-    }
-
-    protected $fillable = [
-        'student_id', 'user_id', 'user_name', 'action', 'summary', 'changes', 'ip', 'created_at',
-    ];
-
-    protected $casts = [
-        'changes' => 'array',
-        'created_at' => 'datetime',
-    ];
-
-    /**
-     * Human labels for the action codes.
-     */
-    public const ACTIONS = [
-        'created'  => 'Created',
-        'updated'  => 'Updated',
-        'deleted'  => 'Deleted',
-        'restored' => 'Restored',
-        'promoted' => 'Promoted',
-        'status'   => 'Status changed',
-        'photo'    => 'Photo uploaded',
-        'document' => 'Document stored',
-    ];
-
-    public function student(): BelongsTo
-    {
-        return $this->belongsTo(Student::class)->withTrashed();
-    }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function getActionLabelAttribute(): string
-    {
-        return self::ACTIONS[$this->action] ?? ucfirst($this->action);
+        static::addGlobalScope('student', fn (Builder $q) => $q->where('category', 'student'));
     }
 
     /**
-     * Record an activity against a student, attributing it to the signed-in
-     * user, or to the console / registration form when there is none.
+     * Record an activity against a student.
      */
-    public static function record(Student $student, string $action, ?string $summary = null, ?array $changes = null): self
+    public static function record(Student $student, string $action, ?string $summary = null, ?array $changes = null): ActivityLog
     {
-        $user = auth()->user();
-
-        $userName = $user?->name
-            ?? (app()->runningInConsole() ? 'System (console)' : 'Registration form');
-
-        return self::create([
-            'student_id' => $student->id,
-            'user_id' => $user?->id,
-            'user_name' => $userName,
-            'action' => $action,
-            'summary' => $summary !== null ? Str::limit($summary, 250) : null,
-            'changes' => $changes ?: null,
-            'ip' => app()->runningInConsole() ? null : request()?->ip(),
-            'created_at' => now(),
+        return ActivityLog::log('student', $action, $summary, [
+            'subject' => $student,
+            'changes' => $changes,
         ]);
     }
 }

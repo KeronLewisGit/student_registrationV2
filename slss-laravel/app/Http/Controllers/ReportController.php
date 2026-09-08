@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\StudentsExport;
+use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
@@ -106,6 +107,11 @@ class ReportController extends Controller
         $writerType = $format === 'csv'
             ? \Maatwebsite\Excel\Excel::CSV
             : \Maatwebsite\Excel\Excel::XLSX;
+
+        $count = $this->studentService->buildFilteredQuery($filters)->count();
+        ActivityLog::log('export', 'spreadsheet', "Exported {$count} students to " . strtoupper($format)
+            . ' (' . (isset($validated['columns']) ? count($validated['columns']) : count(StudentsExport::COLUMNS)) . ' columns)'
+            . ($filters ? ' with filters ' . http_build_query($filters, '', ', ') : ''));
 
         return Excel::download(
             new StudentsExport($filters, $this->studentService, $validated['columns'] ?? null),

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Models\StudentActivity;
 use Illuminate\Http\Request;
@@ -95,6 +96,8 @@ class PromotionController extends Controller
         } finally {
             $lock->release();
         }
+
+        ActivityLog::log('promotion', 'run', "{$label}: {$promoted} students moved up a form, {$graduated} graduated");
 
         return redirect()
             ->route('students.promotion')

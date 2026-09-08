@@ -312,7 +312,7 @@ class Student extends Model
 
     public function activities()
     {
-        return $this->hasMany(StudentActivity::class)->orderByDesc('created_at')->orderByDesc('id');
+        return $this->hasMany(StudentActivity::class, 'student_id')->orderByDesc('created_at')->orderByDesc('id');
     }
 
     /**

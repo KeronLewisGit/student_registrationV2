@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
@@ -65,6 +66,7 @@ class PhotoController extends Controller
 
         $summary = sprintf('%d photo(s) attached, %d skipped, %d not matched.',
             count($results['matched']), count($results['skipped']), count($results['unmatched']));
+        ActivityLog::log('import', 'photos', 'Bulk photo upload: ' . $summary);
 
         return redirect()
             ->route('students.photos')

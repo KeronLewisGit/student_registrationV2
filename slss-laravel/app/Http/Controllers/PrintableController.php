@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -108,6 +109,8 @@ class PrintableController extends Controller
                 ->values();
             $data['items'] = Student::ESSENTIAL_ITEMS;
         }
+
+        ActivityLog::log('print', 'printable', self::PRINTABLES[$printable]['name'] . " for {$data['scope']} ({$students->count()} students)");
 
         return view('printables.' . $printable, $data);
     }

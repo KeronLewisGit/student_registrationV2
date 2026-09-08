@@ -11,4 +11,4 @@ Artisan::command('inspire', function () {
 // Housekeeping: purge audit entries past retention and permanently delete
 // students left in Recently Deleted for over a year. Hostinger cron must call
 // `php artisan schedule:run` every minute for this to fire.
-Schedule::command('model:prune', ['--model' => [\App\Models\StudentActivity::class, \App\Models\Student::class]])->daily();
+Schedule::command('model:prune', ['--model' => [\App\Models\ActivityLog::class, \App\Models\Student::class]])->daily();

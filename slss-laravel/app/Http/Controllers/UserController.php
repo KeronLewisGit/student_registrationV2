@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
@@ -47,6 +48,8 @@ class UserController extends Controller
             'role' => $validated['role'],
         ]);
 
+        ActivityLog::log('user', 'user-created', "Created user account for {$user->name} ({$user->role})", ['subject' => $user, 'changes' => ['role' => $user->role, 'email' => $user->email]]);
+
         return redirect()
             ->route('users.index')
             ->with('success', "User '{$user->name}' created successfully.");
@@ -78,6 +81,13 @@ class UserController extends Controller
                 ->with('error', 'Cannot change the role of the last admin user.');
         }
 
+        $changes = [];
+        foreach (['name', 'email', 'role'] as $field) {
+            if ($user->{$field} !== $validated[$field]) {
+                $changes[$field] = ['from' => $user->{$field}, 'to' => $validated[$field]];
+            }
+        }
+
         $user->name = $validated['name'];
         $user->email = $validated['email'];
         $user->role = $validated['role'];
@@ -85,9 +95,14 @@ class UserController extends Controller
         // Only update password if provided
         if (!empty($validated['password'])) {
             $user->password = Hash::make($validated['password']);
+            $changes['password'] = 'changed';
         }
 
         $user->save();
+
+        if ($changes) {
+            ActivityLog::log('user', 'user-updated', "Updated user account for {$user->name}", ['subject' => $user, 'changes' => $changes]);
+        }
 
         return redirect()
             ->route('users.index')
@@ -107,6 +122,7 @@ class UserController extends Controller
         }
 
         $name = $user->name;
+        ActivityLog::log('user', 'user-deleted', "Deleted user account {$name} ({$user->email})", ['subject_type' => 'user', 'subject_id' => $user->id, 'subject_label' => $name]);
         $user->delete();
 
         return redirect()
@@ -122,6 +138,8 @@ class UserController extends Controller
 
         $user->password = Hash::make($validated['new_password']);
         $user->save();
+
+        ActivityLog::log('user', 'password-reset', "Reset the password for {$user->name}", ['subject' => $user]);
 
         return back()->with('success', "Password reset successfully for '{$user->name}'.");
     }

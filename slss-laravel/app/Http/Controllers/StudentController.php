@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Student;
 use App\Http\Requests\StoreStudentRequest;
 use App\Http\Requests\UpdateStudentRequest;
@@ -130,6 +131,8 @@ class StudentController extends Controller
 
     public function generatePdf(Student $student)
     {
+        ActivityLog::log('print', 'pdf', 'Downloaded the PDF record', ['subject' => $student]);
+
         return $this->pdfService->generateStudentPdf($student);
     }
 
@@ -150,6 +153,9 @@ class StudentController extends Controller
             ], 422);
         }
 
+        ActivityLog::log('export', 'pdf-batch', "Exported PDF records for {$students->count()} students"
+            . ($request->except(['progress_id']) ? ' with filters ' . http_build_query($request->except(['progress_id']), '', ', ') : ''));
+
         return $this->pdfService->generateBulkPdf($students, $progressId);
     }
 
@@ -168,6 +174,8 @@ class StudentController extends Controller
         if (!is_file($path)) {
             abort(404, 'Export not found or already expired.');
         }
+
+        ActivityLog::log('export', 'download', "Downloaded PDF batch {$filename}");
 
         return response()->download($path, $filename);
     }
@@ -192,6 +200,8 @@ class StudentController extends Controller
 
     public function print(Student $student)
     {
+        ActivityLog::log('print', 'print', 'Opened the printable record', ['subject' => $student]);
+
         return view('students.print', compact('student'));
     }
 
@@ -223,6 +233,8 @@ class StudentController extends Controller
             }
         }
         $filterSummary = $parts ? implode(' · ', $parts) : 'All students';
+
+        ActivityLog::log('print', 'print-batch', "Opened printable records for {$students->count()} students ({$filterSummary})");
 
         return view('students.print-all', compact('students', 'filterSummary'));
     }

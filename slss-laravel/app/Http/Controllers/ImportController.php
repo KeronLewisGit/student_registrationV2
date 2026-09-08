@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\CsvImportService;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class ImportController extends Controller
@@ -108,6 +109,7 @@ class ImportController extends Controller
             $result = $this->importService->import($request->file('csv_file'));
 
             $message = "Import completed. Imported: {$result['imported']}, Skipped: {$result['skipped']}.";
+            ActivityLog::log('import', 'csv', "CSV import of {$request->file('csv_file')->getClientOriginalName()}: {$result['imported']} imported, {$result['skipped']} skipped");
 
             return back()
                 ->with($result['skipped'] > 0 ? 'warning' : 'success', $message)
@@ -115,6 +117,7 @@ class ImportController extends Controller
 
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('CSV import failed', ['error' => $e->getMessage(), 'user_id' => auth()->id()]);
+            ActivityLog::log('import', 'failed', 'CSV import failed; no rows were saved');
 
             return back()->with('error', 'The import could not be completed. No rows were saved. Check the file format against the template and try again.');
         }

@@ -112,6 +112,8 @@ class DeployController extends Controller
             $message = 'Deployment failed: ' . $e->getMessage();
         }
 
+        \App\Models\ActivityLog::log('system', 'deploy', 'Deployment ' . ($status === 'success' ? 'completed' : 'failed') . ' from the deploy page');
+
         // Return formatted HTML output
         return $this->formatOutput($output, $status, $message);
     }
