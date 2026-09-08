@@ -8,7 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
     @include('students.partials.print-styles')
 </head>
-<body class="preview">
+<body>
     @include('students.partials.print-profile', ['student' => $student])
 
     <div class="no-print" style="position: fixed; bottom: 1.5rem; right: 1.5rem;">

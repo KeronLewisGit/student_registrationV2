@@ -1,106 +1,259 @@
-{{-- The ONE stylesheet for the printed student record. It is rendered by the
-     browser (print view, bulk print) and by dompdf (PDF download), so it uses
-     only what both understand: tables, floats, px units, @page, position:fixed.
-     No flexbox, no CSS variables, no Bootstrap classes.
-
-     body.preview  = on-screen preview chrome (grey background, paper sheet)
-     body.pdf      = dompdf output (no preview chrome) --}}
+{{-- Shared stylesheet for the single-student and bulk print pages.
+     Deliberately plain: a faint watermark but no gradients, shadows or icons, so the
+     printed record reads as a clean official document. --}}
 <style>
-    @page { size: legal; margin: 15mm 12mm 13mm; }
+    @page {
+        size: Legal;
+        margin: 15mm 12mm 13mm;
+    }
 
     body {
-        margin: 0;
-        padding: 0;
-        font-family: "DejaVu Sans", "Segoe UI", Tahoma, Arial, sans-serif;
-        font-size: 10.5px;
-        line-height: 1.3;
+        background: #e9ecef;
+        padding: 2rem 1rem;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         color: #111;
+    }
+
+    /* One sheet per student */
+    .profile-card {
+        position: relative;
+        max-width: 8.5in;
+        margin: 0 auto 1.5rem;
+        padding: 0.6in 0.5in;
+        background: #fff;
+        border: 1px solid #d1d5db;
+    }
+
+    .profile-inner {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Faint diagonal watermark centred on each sheet, well below the
+       contrast of any text so it never competes with the record itself. */
+    .profile-card::before {
+        content: "OFFICIAL DOCUMENT";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-40deg);
+        font-size: 4.5rem;
+        font-weight: 800;
+        letter-spacing: 0.4rem;
+        white-space: nowrap;
+        color: rgba(0, 0, 0, 0.035);
+        pointer-events: none;
+        user-select: none;
+        z-index: 0;
+    }
+
+    /* Letterhead */
+    .print-header {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.5rem !important;
+        border-bottom: 1.5px solid #111;
+    }
+
+    .print-header .col-md-3 { flex: 0 0 22%; max-width: 22%; }
+    .print-header .col-md-6 { flex: 0 0 56%; max-width: 56%; padding: 0 0.5rem; }
+    .print-header .col-md-3.text-end { display: flex; justify-content: flex-end; }
+
+    .print-header h6 {
+        font-size: 0.66rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #555;
+        margin-bottom: 0.3rem;
+    }
+
+    .print-header h2 {
+        font-size: 1.4rem !important;
+        line-height: 1.2;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .print-header .record-title {
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #555;
+        margin: 0;
+    }
+
+    .print-header .record-subject {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111;
+        margin: 0.35rem 0 0;
+    }
+
+    .passport-photo {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border: 1px solid #999;
         background: #fff;
     }
-    * { box-sizing: border-box; }
-    table { border-collapse: collapse; width: 100%; }
-    td { vertical-align: top; }
-    img { max-width: 100%; }
 
-    /* ---- one sheet per student ---- */
-    .profile-card { position: relative; padding: 1mm 4mm 0; }
-
-    /* Faint diagonal watermark, well below the contrast of any text */
-    .watermark {
-        position: fixed;
-        top: 46%;
-        left: 0;
-        width: 100%;
-        text-align: center;
-        font-size: 58px;
-        font-weight: bold;
-        letter-spacing: 6px;
-        color: #f0f0f0;
-        z-index: -1;
-        transform: rotate(-32deg);
+    .school-logo {
+        width: 100px;
+        height: auto;
     }
 
-    /* ---- letterhead ---- */
-    .letterhead { border-bottom: 1.5px solid #111; margin-bottom: 4px; }
-    .letterhead td { padding: 0 0 6px; vertical-align: middle; }
-    .letterhead .photo-cell { width: 22%; }
-    .letterhead .title-cell { width: 56%; text-align: center; padding: 0 8px 6px; }
-    .letterhead .crest-cell { width: 22%; text-align: right; }
-    .letterhead .label {
-        font-size: 7px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px;
-        color: #555; margin: 0 0 3px;
+    /* Sections: a titled block with a hairline under the title */
+    .section-card {
+        padding: 0;
+        margin-top: 0.9rem;
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
-    .passport-photo { width: 88px; height: 88px; border: 1px solid #999; background: #fff; object-fit: cover; }
-    .school-logo { width: 96px; height: auto; }
-    .letterhead h2 { font-size: 15px; line-height: 1.2; margin: 0 0 2px; font-weight: bold; }
-    .record-title { font-size: 8px; text-transform: uppercase; letter-spacing: 1px; color: #555; margin: 0; }
-    .record-subject { font-size: 10.5px; font-weight: bold; color: #111; margin: 4px 0 0; }
 
-    /* ---- sections ---- */
-    .section-card { margin-top: 6px; page-break-inside: avoid; }
-    .section-title {
-        font-size: 9.2px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #111;
-        border-bottom: 1px solid #999; padding-bottom: 2.5px; margin-bottom: 3.5px;
+    .section-card .fw-bold.border-bottom {
+        font-size: 0.88rem !important;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #111;
+        border-color: #999 !important;
+        border-width: 1px !important;
+        padding-bottom: 0.25rem !important;
+        margin-bottom: 0.45rem !important;
     }
-    .section-title .compact-value {
-        font-weight: normal; text-transform: none; letter-spacing: 0; margin-left: 8px; font-size: 8.4px;
-    }
-    .grid td { padding: 1px 4px 3px 0; width: 25%; }
-    .grid td.span-2 { width: 50%; }
-    .grid td.span-3 { width: 75%; }
-    .grid td.span-4 { width: 100%; }
-    .grid h5 {
-        font-size: 6.5px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.4px;
-        color: #555; margin: 0 0 1px;
-    }
-    .grid p { font-size: 8.4px; color: #111; margin: 0; padding: 0 0 2.5px; line-height: 1.3; word-wrap: break-word; }
-    .not-recorded { color: #777; font-style: italic; }
-    a { color: inherit; text-decoration: none; }
 
-    /* ---- footer ---- */
-    .print-footer { border-top: 1px solid #999; margin-top: 8px; padding-top: 3px; font-size: 7px; color: #555; }
-    .print-footer td { padding: 0; }
-    .print-footer .mid { text-align: center; }
-    .print-footer .end { text-align: right; }
-
-    /* dompdf: Helvetica has the same metrics as the browser's Arial, so the page breaks match */
-    body.pdf { font-family: Helvetica, Arial, sans-serif; }
-
-    /* ---- on-screen preview only (never in the PDF) ---- */
-    body.preview { background: #e9ecef; padding: 32px 16px; }
-    body.preview .profile-card {
-        max-width: 8.5in; margin: 0 auto 24px; padding: 0.6in 0.5in;
-        background: #fff; border: 1px solid #d1d5db;
+    .section-card .fw-bold i {
+        display: none; /* no icons on an official record */
     }
-    body.preview .watermark { position: absolute; top: 50%; left: 0; }
+
+    .section-card-compact .fw-bold {
+        font-size: 0.88rem !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #999;
+        padding-bottom: 0.25rem;
+    }
+
+    .section-card-compact .compact-value {
+        font-size: 0.8rem;
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+        color: #111;
+        margin-left: 0.75rem;
+    }
+
+    .section-card h5 {
+        font-size: 0.62rem;
+        font-weight: 600;
+        color: #555;
+        margin-bottom: 0.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+
+    .section-card p {
+        font-size: 0.8rem;
+        font-weight: 400;
+        color: #111;
+        margin: 0;
+        padding: 0 0 0.3rem;
+        line-height: 1.3;
+    }
+
+    .section-card a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    /* Uniform marker for fields with nothing recorded */
+    .not-recorded {
+        color: #777;
+        font-style: italic;
+    }
+
+    /* Grid: pinned to the intended columns (the sheet is narrower than
+       Bootstrap's "md" breakpoint, so its responsive classes would stack). */
+    .row {
+        display: flex;
+        flex-wrap: wrap;
+        --bs-gutter-x: 0.9rem;
+        --bs-gutter-y: 0;
+        margin-left: calc(-0.5 * var(--bs-gutter-x));
+        margin-right: calc(-0.5 * var(--bs-gutter-x));
+        margin-top: 0;
+    }
+    .row > [class*="col-"] {
+        padding-left: calc(0.5 * var(--bs-gutter-x));
+        padding-right: calc(0.5 * var(--bs-gutter-x));
+        margin-top: 0;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+    .col-md-3  { flex: 0 0 25%;      max-width: 25%; }
+    .col-md-4  { flex: 0 0 33.3333%; max-width: 33.3333%; }
+    .col-md-6  { flex: 0 0 50%;      max-width: 50%; }
+    .col-md-8  { flex: 0 0 66.6667%; max-width: 66.6667%; }
+    .col-md-12 { flex: 0 0 100%;     max-width: 100%; }
+    .row.mt-2  { margin-top: 0.3rem !important; }
+
+    /* Footer line under each profile */
+    .print-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-top: 0.8rem;
+        padding-top: 0.3rem;
+        border-top: 1px solid #999;
+        font-size: 0.66rem;
+        color: #555;
+        break-inside: avoid;
+    }
+
     .print-only { display: none; }
 
     @media print {
-        body.preview { background: #fff; padding: 0; }
-        body.preview .profile-card { max-width: none; margin: 0; padding: 1mm 4mm 0; border: 0; }
-        body.preview .watermark { position: fixed; top: 46%; }
+        html, body {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #fff !important;
+            font-size: 10.5px;
+            line-height: 1.3;
+        }
+
         .no-print { display: none !important; }
         .print-only { display: inline; }
-        .watermark { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+        .profile-card::before {
+            color: rgba(0, 0, 0, 0.07);
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .profile-card {
+            max-width: none;
+            margin: 0;
+            padding: 1mm 4mm 0 !important;
+            border: 0;
+        }
+
+        .print-header {
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.3rem !important;
+        }
+        .print-header h2 { font-size: 1.35rem !important; }
+        .passport-photo { width: 88px; height: 88px; }
+        .school-logo { width: 96px; }
+
+        .section-card { margin-top: 0.55rem; }
+        .section-card .fw-bold.border-bottom { margin-bottom: 0.35rem !important; }
+        .section-card p { padding-bottom: 0.22rem; }
+
+        .print-footer {
+            margin-top: 0.5rem;
+            padding-top: 0.25rem;
+        }
     }
 </style>
