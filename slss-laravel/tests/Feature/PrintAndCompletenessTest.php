@@ -74,6 +74,30 @@ class PrintAndCompletenessTest extends TestCase
         $this->assertSame('ok', \App\Models\Student::completenessLevel(85));
     }
 
+    public function test_print_batch_and_export_follow_the_list_sort(): void
+    {
+        $this->student(['student_name' => 'Anna Zephyr', 'current_class' => '2A', 'student_dob' => '2012-01-01']);
+        $this->student(['student_name' => 'Ben Adams', 'current_class' => '1B', 'student_dob' => '2014-01-01']);
+        $this->student(['student_name' => 'Cara Miller', 'current_class' => '3C', 'student_dob' => '2013-01-01']);
+        $admin = $this->admin();
+
+        $order = function (string $html): array {
+            preg_match_all('/record-subject">\s*([A-Za-z ]+?)\s*(?:&middot;|<)/', $html, $m);
+            return array_map('trim', $m[1]);
+        };
+
+        $this->assertSame(['Anna Zephyr', 'Ben Adams', 'Cara Miller'], $order($this->actingAs($admin)->get('/students-print')->getContent()));
+        $this->assertSame(['Ben Adams', 'Cara Miller', 'Anna Zephyr'], $order($this->actingAs($admin)->get('/students-print?names=last')->getContent()));
+        $this->assertSame(['Cara Miller', 'Ben Adams', 'Anna Zephyr'], $order($this->actingAs($admin)->get('/students-print?sort=name&dir=desc')->getContent()));
+        $this->assertSame(['Ben Adams', 'Anna Zephyr', 'Cara Miller'], $order($this->actingAs($admin)->get('/students-print?sort=class&dir=asc')->getContent()));
+        $this->assertSame(['Ben Adams', 'Cara Miller', 'Anna Zephyr'], $order($this->actingAs($admin)->get('/students-print?sort=dob&dir=desc')->getContent()));
+        $this->actingAs($admin)->get('/students-print?sort=dob&dir=desc')->assertSee('sorted by date of birth, youngest first');
+
+        $response = $this->actingAs($admin)->get('/reports/all-students/export?format=csv&columns[]=student_name&sort=class&dir=desc');
+        $csv = file_get_contents($response->baseResponse->getFile()->getPathname());
+        $this->assertMatchesRegularExpression('/Cara Miller.*Anna Zephyr.*Ben Adams/s', $csv);
+    }
+
     public function test_printables_render_for_a_class(): void
     {
         $s = $this->student(['registration_date' => '2024-07-01', 'student_allergies' => 'Peanuts']); // 3C in 2026

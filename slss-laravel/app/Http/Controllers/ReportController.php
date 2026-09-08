@@ -81,6 +81,9 @@ class ReportController extends Controller
             'status' => ['nullable', 'string', Rule::in(array_merge(['all'], array_keys(Student::ENROLMENT_STATUSES)))],
             'search' => 'nullable|string|max:255',
             'format' => 'nullable|string|in:xlsx,csv',
+            'sort' => ['nullable', Rule::in(\App\Services\StudentService::SORTS)],
+            'dir' => 'nullable|in:asc,desc',
+            'names' => 'nullable|in:first,last',
             'f' => 'nullable|array',
             'f.*' => 'nullable|string|max:100',
             'columns' => 'nullable|array|min:1',
@@ -94,6 +97,9 @@ class ReportController extends Controller
             'current_class' => $validated['current_class'] ?? null,
             'status' => $validated['status'] ?? null,
             'search' => $validated['search'] ?? null,
+            'sort' => $validated['sort'] ?? null,
+            'dir' => $validated['dir'] ?? null,
+            'names' => $validated['names'] ?? null,
             'f' => array_filter(array_intersect_key($validated['f'] ?? [], Student::ADVANCED_FILTERS), fn ($v) => trim((string) $v) !== '') ?: null,
         ], fn ($value) => $value !== null && $value !== '');
 

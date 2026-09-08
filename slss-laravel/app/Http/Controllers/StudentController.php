@@ -233,6 +233,9 @@ class StudentController extends Controller
             }
         }
         $filterSummary = $parts ? implode(' · ', $parts) : 'All students';
+        if ($sortText = \App\Services\StudentService::describeSort($filters)) {
+            $filterSummary .= ' · ' . $sortText;
+        }
 
         ActivityLog::log('print', 'print-batch', "Opened printable records for {$students->count()} students ({$filterSummary})");
 

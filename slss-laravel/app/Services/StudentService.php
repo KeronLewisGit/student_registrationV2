@@ -196,6 +196,12 @@ class StudentService
      * @param  array  $filters
      * @return \Illuminate\Database\Eloquent\Collection
      */
+    /**
+     * Sort keys the list, print batch and export all understand. They mirror
+     * the sortable columns of the student table.
+     */
+    public const SORTS = ['name', 'class', 'complete', 'gender', 'dob', 'registered'];
+
     public function getFilteredStudents(array $filters): \Illuminate\Database\Eloquent\Collection
     {
         $students = $this->buildFilteredQuery($filters)->orderBy('student_name')->get();
@@ -206,7 +212,60 @@ class StudentService
             $students = $students->filter(fn (Student $s) => !$s->isComplete())->values();
         }
 
-        return $students;
+        return $this->sortStudents($students, $filters);
+    }
+
+    /**
+     * Order a set of students the way the on-screen list is ordered:
+     * sort = name|class|complete|gender|dob|registered, dir = asc|desc,
+     * names = first|last (which part of the name to sort by).
+     */
+    public function sortStudents(\Illuminate\Database\Eloquent\Collection $students, array $filters): \Illuminate\Database\Eloquent\Collection
+    {
+        $sort = in_array($filters['sort'] ?? null, self::SORTS, true) ? $filters['sort'] : 'name';
+        $desc = ($filters['dir'] ?? 'asc') === 'desc';
+        $names = ($filters['names'] ?? 'first') === 'last' ? 'last' : 'first';
+
+        $nameKey = fn (Student $s) => $s->nameSortKeys()[$names];
+
+        $key = match ($sort) {
+            'class' => fn (Student $s) => [$s->current_class ?? 'zz', $nameKey($s)],
+            'complete' => fn (Student $s) => [$s->completeness()['percent'], $nameKey($s)],
+            'gender' => fn (Student $s) => [strtolower((string) $s->student_gender) ?: 'zz', $nameKey($s)],
+            'dob' => fn (Student $s) => [$s->student_dob?->format('Y-m-d') ?? '9999', $nameKey($s)],
+            'registered' => fn (Student $s) => [$s->registration_date?->format('Y-m-d') ?? '0000', $nameKey($s)],
+            default => fn (Student $s) => [$nameKey($s)],
+        };
+
+        $sorted = $students->sortBy($key, SORT_REGULAR, $desc);
+
+        return new \Illuminate\Database\Eloquent\Collection($sorted->values()->all());
+    }
+
+    /**
+     * Human description of a sort, for print headers ("by last name, Z to A").
+     */
+    public static function describeSort(array $filters): ?string
+    {
+        $sort = in_array($filters['sort'] ?? null, self::SORTS, true) ? $filters['sort'] : 'name';
+        $desc = ($filters['dir'] ?? 'asc') === 'desc';
+        $names = ($filters['names'] ?? 'first') === 'last' ? 'last name' : 'first name';
+
+        if ($sort === 'name' && !$desc && $names === 'first name') {
+            return null; // the default
+        }
+
+        $label = match ($sort) {
+            'class' => 'class', 'complete' => 'completeness', 'gender' => 'gender',
+            'dob' => 'date of birth', 'registered' => 'registration date', default => $names,
+        };
+        $direction = in_array($sort, ['dob', 'registered', 'complete'], true)
+            ? ($desc ? 'highest first' : 'lowest first')
+            : ($desc ? 'Z to A' : 'A to Z');
+        if ($sort === 'dob') { $direction = $desc ? 'youngest first' : 'oldest first'; }
+        if ($sort === 'registered') { $direction = $desc ? 'newest first' : 'oldest first'; }
+
+        return "sorted by {$label}, {$direction}";
     }
 
     /**

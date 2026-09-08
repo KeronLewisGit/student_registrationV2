@@ -53,6 +53,12 @@
     </div>
 
     <form method="GET" action="{{ route('reports.all-students.export') }}" id="reportForm">
+        @foreach(['sort', 'dir', 'names'] as $sortParam)
+            @if(request()->filled($sortParam))<input type="hidden" name="{{ $sortParam }}" value="{{ request($sortParam) }}">@endif
+        @endforeach
+        @if(request()->filled('sort') || request()->filled('names'))
+            <p class="text-muted small mb-2"><i class="fas fa-sort me-1"></i>Rows will be {{ \App\Services\StudentService::describeSort(request()->only(['sort', 'dir', 'names'])) ?? 'sorted by first name, A to Z' }}, as on the student list.</p>
+        @endif
         <div class="row g-3">
             <div class="col-md-3 col-sm-6">
                 <label for="current_class" class="form-label">Class</label>

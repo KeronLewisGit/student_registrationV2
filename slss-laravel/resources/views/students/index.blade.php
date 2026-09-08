@@ -385,14 +385,14 @@
                     <i class="fas fa-download me-1"></i> Export
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}"><i class="fas fa-file-excel me-2 text-success"></i>Spreadsheet (Excel)</a></li>
-                    <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'csv'])) }}"><i class="fas fa-file-csv me-2 text-secondary"></i>CSV file</a></li>
-                    <li><a class="dropdown-item" href="{{ route('reports.show', array_merge(['report' => 'all-students'], $exportQuery)) }}"><i class="fas fa-columns me-2 text-primary"></i>Choose columns&hellip;</a></li>
+                    <li><a class="dropdown-item" data-carry-sort href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}"><i class="fas fa-file-excel me-2 text-success"></i>Spreadsheet (Excel)</a></li>
+                    <li><a class="dropdown-item" data-carry-sort href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'csv'])) }}"><i class="fas fa-file-csv me-2 text-secondary"></i>CSV file</a></li>
+                    <li><a class="dropdown-item" data-carry-sort href="{{ route('reports.show', array_merge(['report' => 'all-students'], $exportQuery)) }}"><i class="fas fa-columns me-2 text-primary"></i>Choose columns&hellip;</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><button type="button" class="dropdown-item" id="exportToPdfBtn" data-filters="{{ json_encode(request()->all()) }}"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF profiles (zip)</button></li>
                 </ul>
             </div>
-            <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener"
+            <a href="{{ route('students.print-all', request()->query()) }}" target="_blank" rel="noopener" data-carry-sort
                class="btn btn-primary btn-sm {{ $students->isEmpty() ? 'disabled' : '' }}"
                @if($students->isEmpty()) aria-disabled="true" tabindex="-1" @endif
                title="Open a printable page with every student in the current selection">
@@ -673,8 +673,28 @@ $(document).ready(function() {
                 table.rows().invalidate().order([1, nameSortDir]).draw();
             });
 
+            // Print and export links follow whatever order the table is in right now
+            var sortKeys = { 1: 'name', 2: 'class', 3: 'complete', 4: 'gender', 5: 'dob', 6: 'registered' };
+            function carrySort() {
+                var order = table.order()[0] || [];
+                var key = sortKeys[order[0]];
+                document.querySelectorAll('[data-carry-sort]').forEach(function (link) {
+                    var url = new URL(link.href, window.location.origin);
+                    url.searchParams.delete('sort'); url.searchParams.delete('dir'); url.searchParams.delete('names');
+                    if (key) {
+                        url.searchParams.set('sort', key);
+                        url.searchParams.set('dir', order[1] === 'desc' ? 'desc' : 'asc');
+                    }
+                    if (nameSortMode === 'last') { url.searchParams.set('names', 'last'); }
+                    link.href = url.toString();
+                });
+            }
+            carrySort();
+            select.addEventListener('change', carrySort);
+
             // Clicking the column header flips direction; reflect that in the select and the hint
             table.on('order.dt', function () {
+                carrySort();
                 var order = table.order()[0] || [];
                 if (order[0] === 1) {
                     nameSortDir = order[1] === 'desc' ? 'desc' : 'asc';

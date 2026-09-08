@@ -4,7 +4,7 @@ namespace App\Exports;
 
 use App\Models\Student;
 use App\Services\StudentService;
-use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithTitle, ShouldAutoSize
+class StudentsExport implements FromCollection, WithHeadings, WithMapping, WithStyles, WithTitle, ShouldAutoSize
 {
     /**
      * Columns included in the export, mapped to their spreadsheet heading.
@@ -198,11 +198,12 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
      * Build the query for the export, honouring the same filters the
      * student listing uses so an exported report matches what the user sees.
      */
-    public function query()
+    /**
+     * The rows, filtered and sorted exactly like the student list.
+     */
+    public function collection()
     {
-        return $this->studentService->buildFilteredQuery($this->filters)
-            ->select(array_values(array_unique(array_merge(['id'], array_keys($this->columns)))))
-            ->orderBy('student_name');
+        return $this->studentService->getFilteredStudents($this->filters);
     }
 
     /**
