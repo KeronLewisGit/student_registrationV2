@@ -475,7 +475,7 @@
                                 @endif
                             </td>
                             @php($completeness = $student->completeness())
-                            <td data-order="{{ $completeness['percent'] }}" title="{{ $completeness['percent'] }}% of fields recorded (green 85%+, amber 60%+, red below 60%). {{ $completeness['missing'] ? 'Missing: ' . implode(', ', $completeness['missing']) : 'All essential items recorded.' }}">
+                            <td data-order="{{ $completeness['percent'] }}" title="{{ $completeness['essentials_recorded'] }} of {{ $completeness['essentials_total'] }} essential items recorded ({{ $completeness['percent'] }}%); {{ $completeness['recorded'] }} of {{ $completeness['total'] }} fields overall. {{ $completeness['missing'] ? 'Missing: ' . implode(', ', $completeness['missing']) : 'All essential items recorded.' }}">
                                 <div class="completeness">
                                     <div class="completeness-bar"><span style="width: {{ $completeness['percent'] }}%" class="is-{{ \App\Models\Student::completenessLevel($completeness['percent']) }}"></span></div>
                                     <small>{{ $completeness['percent'] }}%@if($completeness['missing']) · {{ count($completeness['missing']) }} missing @endif</small>

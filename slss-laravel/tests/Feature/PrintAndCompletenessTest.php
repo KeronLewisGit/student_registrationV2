@@ -37,8 +37,10 @@ class PrintAndCompletenessTest extends TestCase
         $this->assertArrayHasKey('photo', $c['missing']);
         $this->assertArrayHasKey('emergency', $c['missing']);
         $this->assertArrayNotHasKey('dob', $c['missing']);
-        $this->assertGreaterThan(0, $c['percent']);
-        $this->assertLessThan(100, $c['percent']);
+        $this->assertSame(100 - (int) round(count($c['missing']) / $c['essentials_total'] * 100), $c['percent'],
+            'The percentage is the share of essential items, so it always agrees with the missing count');
+        $this->assertGreaterThan(0, $c['fields_percent']);
+        $this->assertLessThan(100, $c['fields_percent']);
 
         $this->actingAs($this->admin())->get('/students?incomplete=1')->assertOk()->assertSee($s->student_name);
     }

@@ -27,7 +27,7 @@
             @php($student = $row['student'])
             <tr>
                 <td class="num">{{ $i + 1 }}</td>
-                <td><strong>{{ $v($student->student_name, 'name') ?? 'Unnamed' }}</strong><br><span class="muted">{{ $row['completeness']['percent'] }}% complete</span></td>
+                <td><strong>{{ $v($student->student_name, 'name') ?? 'Unnamed' }}</strong><br><span class="muted">{{ $row['completeness']['essentials_recorded'] }} of {{ $row['completeness']['essentials_total'] }} essentials</span></td>
                 @if($class === 'all')<td>{{ $student->current_class ?? '—' }}</td>@endif
                 @foreach($items as $key => $item)
                     <td style="text-align: center;">{!! isset($row['completeness']['missing'][$key]) ? '&#9679;' : '' !!}</td>

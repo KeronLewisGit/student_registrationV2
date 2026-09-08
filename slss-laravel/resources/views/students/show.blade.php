@@ -393,7 +393,10 @@
                 </div>
                 <strong>{{ $completeness['percent'] }}%</strong>
             </div>
-            <p class="text-muted mb-2" style="font-size: 0.875rem;">{{ $completeness['recorded'] }} of {{ $completeness['total'] }} fields recorded.</p>
+            <p class="text-muted mb-2" style="font-size: 0.875rem;">
+                {{ $completeness['essentials_recorded'] }} of {{ $completeness['essentials_total'] }} essential items recorded
+                &middot; {{ $completeness['recorded'] }} of {{ $completeness['total'] }} fields overall ({{ $completeness['fields_percent'] }}%).
+            </p>
             @if($completeness['missing'])
                 <p class="mb-1"><strong>Essential items still missing:</strong></p>
                 <ul class="mb-2" style="padding-left: 1.25rem;">

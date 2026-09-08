@@ -243,7 +243,7 @@ php artisan students:secure-documents
 
 ### Record Completeness
 
-Every student has a completeness score (the share of tracked fields that hold real data) and a list of **essential items** still missing: passport photo, date of birth, gender, birth certificate PIN and copy, current address, current class, SEA number, a parent/guardian phone number, an emergency contact and medical information. The score appears on the student list (Complete column) and profile page, the list can be filtered to **Incomplete records only**, and the **Outstanding Items** printable turns the gaps into a per-class checklist for the office.
+Every student has a completeness score, the share of the eleven **essential items** that are recorded (so "2 missing" is always 82%), coloured green at 85%+, amber at 60%+ and red below, plus the list of essential items still missing: passport photo, date of birth, gender, birth certificate PIN and copy, current address, current class, SEA number, a parent/guardian phone number, an emergency contact and medical information. The score appears on the student list (Complete column) and profile page, the list can be filtered to **Incomplete records only**, and the **Outstanding Items** printable turns the gaps into a per-class checklist for the office.
 
 ### Academic Year and Class Progression
 

@@ -258,8 +258,11 @@ class Student extends Model
     /**
      * How complete this record is.
      *
-     * @return array{percent:int, recorded:int, total:int, missing:array<string,string>}
-     *         missing is keyed by ESSENTIAL_ITEMS key => label
+     * The headline percentage is the share of ESSENTIAL items recorded, so it
+     * always agrees with the "N missing" count (2 missing of 11 is 82% for
+     * every student). The share of all tracked fields is returned separately.
+     *
+     * @return array{percent:int, essentials_total:int, essentials_recorded:int, fields_percent:int, recorded:int, total:int, missing:array<string,string>}
      */
     public function completeness(): array
     {
@@ -279,10 +282,15 @@ class Student extends Model
             }
         }
 
+        $essentialsTotal = count(self::ESSENTIAL_ITEMS);
+        $essentialsRecorded = $essentialsTotal - count($missing);
         $total = count(self::TRACKED_FIELDS);
 
         return [
-            'percent' => (int) round($recorded / $total * 100),
+            'percent' => (int) round($essentialsRecorded / $essentialsTotal * 100),
+            'essentials_total' => $essentialsTotal,
+            'essentials_recorded' => $essentialsRecorded,
+            'fields_percent' => (int) round($recorded / $total * 100),
             'recorded' => $recorded,
             'total' => $total,
             'missing' => $missing,
