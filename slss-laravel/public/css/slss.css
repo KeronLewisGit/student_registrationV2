@@ -318,3 +318,7 @@ html {
 @media (max-width: 575.98px) {
     .stat-card { padding: 1rem; }
 }
+
+/* DataTables sets an inline pixel width at init; keep tables filling their card after the sidebar collapses/expands */
+table.dataTable { width: 100% !important; }
+.dataTables_wrapper { width: 100%; }

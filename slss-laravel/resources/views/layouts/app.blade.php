@@ -1362,6 +1362,14 @@
                 if (collapsed) { document.documentElement.removeAttribute('data-sidebar'); } else { document.documentElement.setAttribute('data-sidebar', 'collapsed'); }
                 try { localStorage.setItem('sidebar', collapsed ? 'expanded' : 'collapsed'); } catch (e) {}
                 render();
+                // Tables (DataTables) size their columns to the container once; tell them the
+                // content area changed width once the sidebar transition has finished.
+                setTimeout(function () {
+                    window.dispatchEvent(new Event('resize'));
+                    if (window.jQuery && jQuery.fn.dataTable) {
+                        jQuery.fn.dataTable.tables({ visible: true, api: true }).columns.adjust().responsive?.recalc();
+                    }
+                }, 260);
             });
             render();
         })();
