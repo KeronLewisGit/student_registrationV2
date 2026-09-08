@@ -260,6 +260,10 @@ Reports → Printables offers per-class (or whole-school) sheets that open in a 
 
 Every create, update, delete, restore, promotion, status change, photo and document change is recorded in `student_activities` with the user, time, IP and the before/after value of each field. The last entries show on the student profile; admins can browse and filter the full **Activity Log** from the sidebar.
 
+### Advanced Filters
+
+The **More** link on the student list (and *More filters* on the All Students report) opens compact dropdowns for gender, religion, ethnicity, citizenship, nationality, blood type, transport, school feeding, social welfare and transfer status. Options come from the values actually recorded, filters apply as soon as they are changed, active ones appear as removable chips and the More link shows how many are set. Exports, printing and the class printables respect them.
+
 ### Search
 
 The list search matches every word you type against the student's name, PIN, SEA number, class, contact details and address, parents' names, phone numbers, emails and ID numbers, the emergency contact and the registrant. Phone numbers match with or without dashes and spaces. The **Export This View** button downloads exactly the filtered list as a spreadsheet.

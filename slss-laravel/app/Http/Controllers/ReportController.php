@@ -60,6 +60,8 @@ class ReportController extends Controller
             'totalStudents' => Student::count(),
             'activeStudents' => Student::where('enrolment_status', 'active')->count(),
             'columnGroups' => StudentsExport::COLUMN_GROUPS,
+            'advancedFilters' => Student::ADVANCED_FILTERS,
+            'advancedOptions' => Student::advancedFilterOptions(),
             'columnLabels' => StudentsExport::COLUMNS,
         ]);
     }
@@ -78,6 +80,8 @@ class ReportController extends Controller
             'status' => ['nullable', 'string', Rule::in(array_merge(['all'], array_keys(Student::ENROLMENT_STATUSES)))],
             'search' => 'nullable|string|max:255',
             'format' => 'nullable|string|in:xlsx,csv',
+            'f' => 'nullable|array',
+            'f.*' => 'nullable|string|max:100',
             'columns' => 'nullable|array|min:1',
             'columns.*' => ['string', Rule::in(array_keys(StudentsExport::COLUMNS))],
         ], ['columns.min' => 'Choose at least one column to include.']);
@@ -89,6 +93,7 @@ class ReportController extends Controller
             'current_class' => $validated['current_class'] ?? null,
             'status' => $validated['status'] ?? null,
             'search' => $validated['search'] ?? null,
+            'f' => array_filter(array_intersect_key($validated['f'] ?? [], Student::ADVANCED_FILTERS), fn ($v) => trim((string) $v) !== '') ?: null,
         ], fn ($value) => $value !== null && $value !== '');
 
         if ($this->studentService->buildFilteredQuery($filters)->doesntExist()) {

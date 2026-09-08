@@ -102,4 +102,29 @@ class StudentCrudTest extends TestCase
         $this->actingAs($admin)->get('/students?search=jevanni')->assertSee('Alpha One')->assertDontSee('Beta Two');
         $this->actingAs($admin)->get('/students?search=alpha%20868')->assertSee('Alpha One')->assertDontSee('Beta Two');
     }
+
+    public function test_advanced_filters_narrow_the_list_and_the_export(): void
+    {
+        $this->student(['student_name' => 'Girl Hindu', 'student_gender' => 'Female', 'student_religion' => 'Hindu']);
+        $this->student(['student_name' => 'Girl Catholic', 'student_gender' => 'Female', 'student_religion' => 'Roman Catholic']);
+        $this->student(['student_name' => 'Boy Hindu', 'student_gender' => 'Male', 'student_religion' => 'hindu']);
+        $admin = $this->admin();
+
+        $this->actingAs($admin)->get('/students?f[student_gender]=Female')
+            ->assertOk()->assertSee('Girl Hindu')->assertSee('Girl Catholic')->assertDontSee('Boy Hindu')
+            ->assertSee('Gender: Female');
+
+        $this->actingAs($admin)->get('/students?f[student_gender]=Female&f[student_religion]=Hindu')
+            ->assertOk()->assertSee('Girl Hindu')->assertDontSee('Girl Catholic')->assertDontSee('Boy Hindu');
+
+        // Case-insensitive match and unknown columns ignored
+        $this->actingAs($admin)->get('/students?f[student_religion]=HINDU&f[password]=x')
+            ->assertOk()->assertSee('Girl Hindu')->assertSee('Boy Hindu')->assertDontSee('Girl Catholic');
+
+        $response = $this->actingAs($admin)->get('/reports/all-students/export?format=csv&f[student_gender]=Male&columns[]=student_name');
+        $response->assertOk();
+        $csv = file_get_contents($response->baseResponse->getFile()->getPathname());
+        $this->assertStringContainsString('Boy Hindu', $csv);
+        $this->assertStringNotContainsString('Girl Hindu', $csv);
+    }
 }

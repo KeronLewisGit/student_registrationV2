@@ -717,6 +717,68 @@ class Student extends Model
     }
 
     /**
+     * Columns available as advanced filters on the student list and reports:
+     * column => label. Options are built from the values in the data.
+     */
+    public const ADVANCED_FILTERS = [
+        'student_gender' => 'Gender',
+        'student_religion' => 'Religion',
+        'student_ethnicity' => 'Ethnicity',
+        'citizen_type' => 'Citizenship',
+        'student_nationality' => 'Nationality',
+        'student_bloodtype' => 'Blood type',
+        'student_mode_of_transport' => 'Transport',
+        'student_school_feeding_option' => 'School feeding',
+        'student_social_welfare_status' => 'Social welfare',
+        'student_transfer_status' => 'Transfer student',
+    ];
+
+    /**
+     * Distinct real values for each advanced-filter column (placeholders and
+     * blanks excluded), for building the dropdowns.
+     *
+     * @return array<string, array<int, string>>
+     */
+    public static function advancedFilterOptions(): array
+    {
+        $options = [];
+
+        foreach (array_keys(self::ADVANCED_FILTERS) as $column) {
+            $options[$column] = self::query()
+                ->whereNotNull($column)
+                ->where($column, '!=', '')
+                ->toBase()
+                ->distinct()
+                ->orderBy($column)
+                ->pluck($column)
+                ->map(fn ($v) => trim((string) $v))
+                ->filter(fn ($v) => $v !== '' && !self::isPlaceholder($v))
+                ->unique(fn ($v) => strtolower($v))
+                ->values()
+                ->all();
+        }
+
+        return $options;
+    }
+
+    /**
+     * Apply advanced filters: ['student_gender' => 'Female', ...]. Unknown
+     * columns are ignored; matching is case-insensitive.
+     */
+    public function scopeAdvanced($query, ?array $filters)
+    {
+        foreach ((array) $filters as $column => $value) {
+            $value = trim((string) $value);
+            if ($value === '' || !array_key_exists($column, self::ADVANCED_FILTERS)) {
+                continue;
+            }
+            $query->where(DB::raw("LOWER({$column})"), strtolower($value));
+        }
+
+        return $query;
+    }
+
+    /**
      * Columns covered by the search box.
      */
     public const SEARCH_COLUMNS = [

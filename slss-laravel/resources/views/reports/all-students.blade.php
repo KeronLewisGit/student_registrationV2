@@ -102,6 +102,31 @@
                 </select>
             </div>
 
+            @php($activeAdvanced = array_filter(array_intersect_key((array) request('f', []), $advancedFilters), fn ($v) => trim((string) $v) !== ''))
+            <div class="col-md-12">
+                <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none {{ $activeAdvanced ? '' : 'collapsed' }}"
+                        data-bs-toggle="collapse" data-bs-target="#reportMoreFilters" aria-expanded="{{ $activeAdvanced ? 'true' : 'false' }}">
+                    More filters @if($activeAdvanced)<span class="badge rounded-pill bg-primary">{{ count($activeAdvanced) }}</span>@endif <i class="fas fa-chevron-down ms-1 small"></i>
+                </button>
+                <div class="collapse {{ $activeAdvanced ? 'show' : '' }}" id="reportMoreFilters">
+                    <div class="row g-2 mt-0">
+                        @foreach($advancedFilters as $column => $label)
+                            @if(!empty($advancedOptions[$column]))
+                                <div class="col-lg-2 col-md-3 col-sm-6">
+                                    <label for="f_{{ $column }}" class="form-label small mb-1">{{ $label }}</label>
+                                    <select name="f[{{ $column }}]" id="f_{{ $column }}" class="form-select form-select-sm">
+                                        <option value="">Any</option>
+                                        @foreach($advancedOptions[$column] as $option)
+                                            <option value="{{ $option }}" {{ strcasecmp((string) ($activeAdvanced[$column] ?? ''), $option) === 0 ? 'selected' : '' }}>{{ $option }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
             <div class="col-md-12">
                 <label for="search" class="form-label">Search</label>
                 <input type="text" name="search" id="search" class="form-control"

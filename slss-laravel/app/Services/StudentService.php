@@ -237,6 +237,11 @@ class StudentService
         // Active students are shown unless another status (or "all") is asked for.
         $query->byStatus($filters['status'] ?? 'active');
 
+        // Advanced filters (gender, religion, ...): f[column]=value
+        if (!empty($filters['f']) && is_array($filters['f'])) {
+            $query->advanced($filters['f']);
+        }
+
         if (!empty($filters['student_name']) && $filters['student_name'] !== '0') {
             $query->byName($filters['student_name']);
         }

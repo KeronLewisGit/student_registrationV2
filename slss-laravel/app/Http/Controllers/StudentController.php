@@ -33,6 +33,8 @@ class StudentController extends Controller
             ->pluck('current_class')
             ->all();
         $statuses = Student::ENROLMENT_STATUSES;
+        $advancedFilters = Student::ADVANCED_FILTERS;
+        $advancedOptions = Student::advancedFilterOptions();
 
         // Stat-card counts (school-wide, independent of the active filters)
         $stats = [
@@ -42,7 +44,7 @@ class StudentController extends Controller
             'registered_this_year' => Student::whereYear('registration_date', now()->year)->count(),
         ];
 
-        return view('students.index', compact('students', 'years', 'classes', 'currentClasses', 'statuses', 'stats'));
+        return view('students.index', compact('students', 'years', 'classes', 'currentClasses', 'statuses', 'stats', 'advancedFilters', 'advancedOptions'));
     }
 
     public function create()
@@ -215,6 +217,11 @@ class StudentController extends Controller
             !empty($filters['search']) ? 'Search "' . $filters['search'] . '"' : null,
             !empty($filters['incomplete']) ? 'Incomplete records' : null,
         ]);
+        foreach ((array) ($filters['f'] ?? []) as $column => $value) {
+            if (trim((string) $value) !== '' && isset(Student::ADVANCED_FILTERS[$column])) {
+                $parts[] = Student::ADVANCED_FILTERS[$column] . ': ' . $value;
+            }
+        }
         $filterSummary = $parts ? implode(' · ', $parts) : 'All students';
 
         return view('students.print-all', compact('students', 'filterSummary'));

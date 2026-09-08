@@ -224,12 +224,23 @@
         'student_class' => request('student_class') && request('student_class') !== '0' ? 'Form 1 class ' . request('student_class') : null,
         'incomplete' => request('incomplete') ? 'Incomplete records only' : null,
     ]);
+    $activeAdvanced = array_filter(
+        array_intersect_key((array) request('f', []), $advancedFilters),
+        fn ($v) => trim((string) $v) !== ''
+    );
+    foreach ($activeAdvanced as $column => $value) {
+        $activeFilters['f.' . $column] = $advancedFilters[$column] . ': ' . $value;
+    }
+
     // "All" options submit "0"/"" — drop those so the export validation doesn't reject them
     $exportQuery = array_filter(
         request()->only(['year', 'student_class', 'current_class', 'status', 'search']),
         fn ($v) => $v !== null && $v !== '' && $v !== '0'
     );
-    $moreOpen = request()->filled('student_class') && request('student_class') !== '0';
+    if ($activeAdvanced) {
+        $exportQuery['f'] = $activeAdvanced;
+    }
+    $moreOpen = (request()->filled('student_class') && request('student_class') !== '0') || count($activeAdvanced) > 0;
 @endphp
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -284,10 +295,10 @@
                     </select>
                 </div>
 
-                <div class="col-lg-1 col-md-12 col-sm-6">
-                    <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none {{ $moreOpen ? '' : 'collapsed' }}"
+                <div class="col-lg-auto col-md-12 col-sm-6">
+                    <button type="button" class="btn btn-link btn-sm px-0 text-decoration-none text-nowrap {{ $moreOpen ? '' : 'collapsed' }}"
                             data-bs-toggle="collapse" data-bs-target="#moreFilters" aria-expanded="{{ $moreOpen ? 'true' : 'false' }}" aria-controls="moreFilters">
-                        More <i class="fas fa-chevron-down ms-1 small"></i>
+                        More @if(count($activeAdvanced))<span class="badge rounded-pill bg-primary">{{ count($activeAdvanced) }}</span>@endif <i class="fas fa-chevron-down ms-1 small"></i>
                     </button>
                 </div>
             </div>
@@ -308,6 +319,20 @@
                             @endforeach
                         </select>
                     </div>
+
+                    @foreach($advancedFilters as $column => $label)
+                        @if(!empty($advancedOptions[$column]))
+                            <div class="col-lg-2 col-md-4 col-sm-6">
+                                <label for="f_{{ $column }}" class="form-label">{{ $label }}</label>
+                                <select name="f[{{ $column }}]" id="f_{{ $column }}" class="form-select form-select-sm auto-submit">
+                                    <option value="">Any</option>
+                                    @foreach($advancedOptions[$column] as $option)
+                                        <option value="{{ $option }}" {{ strcasecmp((string) ($activeAdvanced[$column] ?? ''), $option) === 0 ? 'selected' : '' }}>{{ $option }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                    @endforeach
                 </div>
             </div>
 
@@ -320,7 +345,15 @@
                 @if($activeFilters)
                     <div class="d-flex align-items-center flex-wrap gap-2 active-filters">
                         @foreach($activeFilters as $key => $label)
-                            <a href="{{ route('students.index', array_diff_key(request()->query(), [$key => 1])) }}"
+                            @php
+                                $without = request()->query();
+                                if (str_starts_with($key, 'f.')) {
+                                    unset($without['f'][substr($key, 2)]);
+                                } else {
+                                    unset($without[$key]);
+                                }
+                            @endphp
+                            <a href="{{ route('students.index', $without) }}"
                                class="filter-chip" title="Remove this filter">
                                 {{ $label }} <i class="fas fa-times ms-1"></i>
                             </a>
