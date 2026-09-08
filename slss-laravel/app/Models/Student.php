@@ -275,8 +275,12 @@ class Student extends Model
 
         $missing = [];
         foreach (self::ESSENTIAL_ITEMS as $key => $item) {
-            $present = array_map(fn ($f) => self::hasValue($this->{$f}), $item['fields']);
-            $ok = ($item['any'] ?? false) ? in_array(true, $present, true) : !in_array(false, $present, true);
+            if ($key === 'photo') {
+                $ok = $this->hasUsablePhoto(); // must be a displayable image, not just any value
+            } else {
+                $present = array_map(fn ($f) => self::hasValue($this->{$f}), $item['fields']);
+                $ok = ($item['any'] ?? false) ? in_array(true, $present, true) : !in_array(false, $present, true);
+            }
             if (!$ok) {
                 $missing[$key] = $item['label'];
             }
@@ -310,6 +314,37 @@ class Student extends Model
     public function isComplete(): bool
     {
         return $this->completeness()['missing'] === [];
+    }
+
+    /**
+     * True when the passport photo is an image that can actually be shown:
+     * a stored image file that exists on disk, or an image link on the
+     * school's own site. A PDF or a dead path does not count.
+     */
+    public function hasUsablePhoto(): bool
+    {
+        $value = trim((string) $this->student_passport_photo);
+
+        if ($value === '' || !preg_match('/\.(jpe?g|png|gif|webp)$/i', parse_url($value, PHP_URL_PATH) ?: $value)) {
+            return false;
+        }
+
+        if (preg_match('#^https?://#i', $value)) {
+            return self::documentUrl($value) !== null;
+        }
+
+        $path = self::documentPath($value);
+
+        return $path !== null && is_file($path);
+    }
+
+    /**
+     * The uploaded "photo" is a document (e.g. a PDF) that cannot be shown as
+     * an image, but can still be opened.
+     */
+    public function photoIsDocument(): bool
+    {
+        return !$this->hasUsablePhoto() && self::documentUrl($this->student_passport_photo) !== null;
     }
 
     /**

@@ -45,6 +45,27 @@ class PrintAndCompletenessTest extends TestCase
         $this->actingAs($this->admin())->get('/students?incomplete=1')->assertOk()->assertSee($s->student_name);
     }
 
+    public function test_photo_counts_only_when_it_is_a_displayable_image(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Storage::disk('local')->put('private/passports/real.png', 'png');
+
+        $cases = [
+            'https://slss.edu.tt/wp-content/uploads/forms/scan.pdf' => false, // PDF is not a photo
+            'https://slss.edu.tt/wp-content/uploads/forms/face.jpg' => true,
+            'https://evil.example/face.jpg' => false,                        // unknown host
+            'private/passports/real.png' => true,
+            'private/passports/gone.png' => false,                           // file missing on disk
+            'Yes' => false,
+            null => false,
+        ];
+        foreach ($cases as $value => $expected) {
+            $s = $this->student(['student_passport_photo' => $value === '' ? null : $value]);
+            $this->assertSame($expected, $s->hasUsablePhoto(), "photo value: " . var_export($value, true));
+            $this->assertSame(!$expected, array_key_exists('photo', $s->completeness()['missing']));
+        }
+    }
+
     public function test_completeness_colour_follows_the_percentage(): void
     {
         $this->assertSame('low', \App\Models\Student::completenessLevel(58));

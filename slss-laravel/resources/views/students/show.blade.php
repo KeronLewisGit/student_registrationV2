@@ -315,9 +315,16 @@
     <div class="row align-items-center">
         <div class="col-auto">
             @if($student->student_passport_photo)
-                <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="{{ $student->student_name }}" class="profile-photo-large">
+                <img src="{{ $student->hasUsablePhoto() ? \App\Models\Student::documentUrl($student->student_passport_photo) : asset('images/noimage.jpg') }}" onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';" alt="{{ $student->student_name }}" class="profile-photo-large">
             @else
                 <img src="{{ asset('images/noimage.jpg') }}" alt="No Photo" class="profile-photo-large">
+            @endif
+            @if($student->photoIsDocument())
+                @can('view-sensitive')
+                    <a href="{{ \App\Models\Student::documentUrl($student->student_passport_photo) }}" target="_blank" rel="noopener" class="d-block small mt-1" style="color: #fff; opacity: 0.9;">
+                        <i class="fas fa-file-pdf me-1"></i>Uploaded as a file, not an image &middot; open
+                    </a>
+                @endcan
             @endif
         </div>
         <div class="col">

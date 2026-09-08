@@ -444,8 +444,8 @@
                         @foreach($students as $student)
                         <tr>
                             <td>
-                                @if($student->student_passport_photo)
-                                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}"
+                                @if($student->hasUsablePhoto())
+                                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) }}"
                                          alt="{{ $student->student_name }}"
                                          class="student-photo-thumbnail"
                                          onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">

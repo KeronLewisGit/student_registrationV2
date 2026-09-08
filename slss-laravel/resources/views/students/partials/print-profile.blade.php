@@ -5,8 +5,8 @@
         <div class="row align-items-start mb-4 print-header">
             <div class="col-md-3">
                 <h6 class="fw-bold mb-2">Passport Size Photo</h6>
-                @if($student->student_passport_photo)
-                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) ?? asset('images/noimage.jpg') }}"
+                @if($student->hasUsablePhoto())
+                    <img src="{{ \App\Models\Student::documentUrl($student->student_passport_photo) }}"
                          alt=""
                          class="passport-photo"
                          onerror="this.onerror=null; this.src='{{ asset('images/noimage.jpg') }}';">
