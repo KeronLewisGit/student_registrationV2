@@ -110,6 +110,34 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     ];
 
     /**
+     * Column groups for the report page's column chooser.
+     *
+     * @var array<string, array<int, string>>
+     */
+    public const COLUMN_GROUPS = [
+        'Enrolment' => ['id', 'student_name', 'form_1_class', 'intake_year', 'current_class', 'enrolment_status'],
+        'Student' => ['student_gender', 'student_dob', 'citizen_type', 'student_birth_certificate_pin', 'student_religion',
+            'student_country_of_birth', 'student_nationality', 'student_ethnicity', 'student_contact', 'student_email', 'student_current_address'],
+        'SEA' => ['student_sea_date', 'student_primary_school', 'student_sea_number'],
+        'Transfer' => ['student_transfer_status', 'student_transfer_date', 'student_previous_form_class',
+            'student_previous_secondary_school', 'student_previous_school_location', 'student_transfer_reason'],
+        'Medical' => ['student_medical_condition', 'student_bloodtype', 'student_allergies', 'student_immunization_status'],
+        'Special Needs & Intervention' => ['student_family_crisis', 'student_receiving_counselling', 'student_physical_disabilities',
+            'student_learning_disabilities', 'student_educational_aid', 'student_special_sea_concessions',
+            'student_emotional_factors', 'student_other_intervention_information'],
+        'Personal Preferences' => ['student_school_feeding_option', 'student_social_welfare_status', 'student_social_welfare_detail',
+            'student_mode_of_transport', 'student_access_to_device', 'student_device_shared', 'student_reliable_internet',
+            'student_internet_provider', 'student_online_tools'],
+        'Mother' => ['mother_name', 'is_mother_active_or_deceased', 'mother_identification_type', 'mother_identification_number',
+            'mother_contact', 'mother_email', 'mother_home_address', 'mother_profession', 'mother_work_address'],
+        'Father' => ['father_name', 'is_father_active_or_deceased', 'father_identification_type', 'father_identification_number',
+            'father_contact', 'father_email_address', 'father_home_address', 'father_profession', 'father_work_address'],
+        'Emergency Contact' => ['emergency_contact_name', 'emergency_contact_relation_to_student', 'emergency_contact_number', 'emergency_contact_address'],
+        'Registrant' => ['registration_date', 'registrant_name', 'registrant_relationship_to_student', 'registrant_identification_type',
+            'registrant_identification_number', 'registrant_nationality', 'registrant_email'],
+    ];
+
+    /**
      * Attributes cast to dates that need formatting for display.
      *
      * @var array<int, string>
@@ -121,11 +149,36 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         'registration_date',
     ];
 
+    /**
+     * Columns included in this export, in COLUMNS order.
+     *
+     * @var array<string, string>
+     */
+    protected array $columns;
+
+    /**
+     * @param  array<int, string>|null  $columns  attribute names to include (null = all)
+     */
     public function __construct(
         protected array $filters = [],
-        protected ?StudentService $studentService = null
+        protected ?StudentService $studentService = null,
+        ?array $columns = null
     ) {
         $this->studentService = $studentService ?? new StudentService();
+
+        $wanted = $columns === null ? array_keys(self::COLUMNS) : array_values(array_intersect(array_keys(self::COLUMNS), $columns));
+        if (!$wanted) {
+            $wanted = array_keys(self::COLUMNS);
+        }
+        $this->columns = array_intersect_key(self::COLUMNS, array_flip($wanted));
+    }
+
+    /**
+     * Human label for an export column.
+     */
+    public static function label(string $column): string
+    {
+        return self::COLUMNS[$column] ?? $column;
     }
 
     /**
@@ -148,7 +201,7 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function query()
     {
         return $this->studentService->buildFilteredQuery($this->filters)
-            ->select(array_values(array_unique(array_merge(['id'], array_keys(self::COLUMNS)))))
+            ->select(array_values(array_unique(array_merge(['id'], array_keys($this->columns)))))
             ->orderBy('student_name');
     }
 
@@ -157,7 +210,7 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
      */
     public function headings(): array
     {
-        return array_values(self::COLUMNS);
+        return array_values($this->columns);
     }
 
     /**
@@ -168,11 +221,15 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         $row = [];
 
-        foreach (array_keys(self::COLUMNS) as $attribute) {
+        foreach (array_keys($this->columns) as $attribute) {
             $value = $student->{$attribute};
 
             if (in_array($attribute, self::DATE_COLUMNS, true) && $value) {
                 $value = $value->format('d/m/Y');
+            } elseif ($attribute === 'enrolment_status') {
+                $value = Student::ENROLMENT_STATUSES[$value] ?? $value;
+            } elseif (is_string($value) && (trim($value) === '' || Student::isPlaceholder(trim($value)))) {
+                $value = null; // legacy "Select ..." / "N/A" placeholders never reach the spreadsheet
             }
 
             $row[] = $value;

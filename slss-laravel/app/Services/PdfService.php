@@ -20,7 +20,7 @@ class PdfService
     {
         $student = $student->forPrint();
         $pdf = PDF::loadView('students.pdf', compact('student'));
-        $pdf->setPaper('letter', 'portrait');
+        $pdf->setPaper('legal', 'portrait');
 
         return $pdf->download($this->profileFilename($student));
     }
@@ -166,7 +166,7 @@ class PdfService
                     }
 
                     $pdf = PDF::loadView('students.pdf', ['student' => $student->forPrint()]);
-                    $pdf->setPaper('letter', 'portrait');
+                    $pdf->setPaper('legal', 'portrait');
 
                     $pdfPath = $tempDir . '/' . $this->profileFilename($student);
 
@@ -439,7 +439,7 @@ class PdfService
     {
         $student = $student->forPrint();
         $pdf = PDF::loadView('students.pdf', compact('student'));
-        $pdf->setPaper('letter', 'portrait');
+        $pdf->setPaper('legal', 'portrait');
 
         return $pdf->stream();
     }

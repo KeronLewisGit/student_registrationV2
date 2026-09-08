@@ -20,7 +20,7 @@ class ReportController extends Controller
         [
             'key' => 'all-students',
             'name' => 'All Students',
-            'description' => 'A complete spreadsheet of every student in the system, with optional filtering by registration year, form class, or search term.',
+            'description' => 'A spreadsheet of students, filtered the same way as the student list, with your choice of columns.',
             'icon' => 'fa-users',
         ],
     ];
@@ -50,10 +50,17 @@ class ReportController extends Controller
 
         abort_unless($report === 'all-students', 404);
 
+        $currentClasses = Student::query()->whereNotNull('current_class')->distinct()->orderBy('current_class')->pluck('current_class')->all();
+
         return view('reports.all-students', [
             'years' => Student::getRegistrationYears(),
             'classes' => Student::FORM_CLASSES,
+            'currentClasses' => $currentClasses,
+            'statuses' => Student::ENROLMENT_STATUSES,
             'totalStudents' => Student::count(),
+            'activeStudents' => Student::where('enrolment_status', 'active')->count(),
+            'columnGroups' => StudentsExport::COLUMN_GROUPS,
+            'columnLabels' => StudentsExport::COLUMNS,
         ]);
     }
 
@@ -71,7 +78,9 @@ class ReportController extends Controller
             'status' => ['nullable', 'string', Rule::in(array_merge(['all'], array_keys(Student::ENROLMENT_STATUSES)))],
             'search' => 'nullable|string|max:255',
             'format' => 'nullable|string|in:xlsx,csv',
-        ]);
+            'columns' => 'nullable|array|min:1',
+            'columns.*' => ['string', Rule::in(array_keys(StudentsExport::COLUMNS))],
+        ], ['columns.min' => 'Choose at least one column to include.']);
 
         $format = $validated['format'] ?? 'xlsx';
         $filters = array_filter([
@@ -94,7 +103,7 @@ class ReportController extends Controller
             : \Maatwebsite\Excel\Excel::XLSX;
 
         return Excel::download(
-            new StudentsExport($filters, $this->studentService),
+            new StudentsExport($filters, $this->studentService, $validated['columns'] ?? null),
             $this->buildFilename($filters, $format),
             $writerType
         );

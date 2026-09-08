@@ -54,6 +54,27 @@ class DocumentsAndExportTest extends TestCase
             ->assertHeader('content-type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
 
+    public function test_export_respects_chosen_columns(): void
+    {
+        $this->student(['student_name' => 'Column Kid', 'mother_contact' => '868-555-0123', 'student_bloodtype' => 'Select Blood Type']);
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin)->get('/reports/all-students/export?format=csv&columns[]=student_name&columns[]=mother_contact&columns[]=student_bloodtype&columns[]=enrolment_status');
+        $response->assertOk();
+        $csv = file_get_contents($response->baseResponse->getFile()->getPathname()); // Excel::download returns a file response
+        $lines = array_values(array_filter(explode("\n", trim($csv))));
+
+        $this->assertStringContainsString('Student Name', $lines[0]);
+        $this->assertStringContainsString("Mother's Contact", $lines[0]);
+        $this->assertStringNotContainsString('Date of Birth', $lines[0]);
+        $this->assertStringContainsString('Column Kid', $lines[1]);
+        $this->assertStringContainsString('Active', $lines[1], 'Status is exported as its label');
+        $this->assertStringNotContainsString('Select Blood Type', $lines[1], 'Placeholders are cleaned in exports');
+
+        $this->actingAs($admin)->get('/reports/all-students/export?format=csv&columns[]=not_a_column')->assertSessionHasErrors('columns.0');
+        $this->actingAs($admin)->get('/reports/all-students')->assertOk()->assertSee('Columns to include');
+    }
+
     public function test_spreadsheet_formulas_are_neutralised(): void
     {
         $this->assertSame("'=HYPERLINK(\"x\")", StudentsExport::safeCell('=HYPERLINK("x")'));

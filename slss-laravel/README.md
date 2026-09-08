@@ -189,6 +189,14 @@ After running the seeders, you can login with:
 2. Click "Print All" button
 3. Use browser print dialog to print or save as PDF
 
+### All Students Report and Column Selection
+
+Reports → All Students exports a spreadsheet using the same filters as the student list (class, status, registration year, Form 1 class and the full search). Tick or untick the **Columns to include** boxes to choose exactly which fields appear, per group, or use *Essentials only* for a name-and-contacts sheet. The student list's Export menu has a *Choose columns…* entry that opens this page with the current filters already applied. Legacy placeholder values such as "Select Blood Type" are exported as blank cells and statuses as their labels.
+
+### Printed Documents
+
+The browser print view, the single and bulk PDF downloads, and the Printables sheets share one design: school letterhead, uppercase section titles over a hairline, a four-column field grid, "Not recorded" in grey italics for missing data, and a footer line. The student record's sections and fields are defined once in `app/Support/ProfileLayout.php`, which both the HTML print view and the PDF render from, so the two documents always contain the same data.
+
 ### Importing Students from CSV
 
 1. Login as Admin or Staff

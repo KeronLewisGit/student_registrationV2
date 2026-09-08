@@ -346,6 +346,7 @@
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}"><i class="fas fa-file-excel me-2 text-success"></i>Spreadsheet (Excel)</a></li>
                     <li><a class="dropdown-item" href="{{ route('reports.all-students.export', array_merge($exportQuery, ['format' => 'csv'])) }}"><i class="fas fa-file-csv me-2 text-secondary"></i>CSV file</a></li>
+                    <li><a class="dropdown-item" href="{{ route('reports.show', array_merge(['report' => 'all-students'], $exportQuery)) }}"><i class="fas fa-columns me-2 text-primary"></i>Choose columns&hellip;</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><button type="button" class="dropdown-item" id="exportToPdfBtn" data-filters="{{ json_encode(request()->all()) }}"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF profiles (zip)</button></li>
                 </ul>
