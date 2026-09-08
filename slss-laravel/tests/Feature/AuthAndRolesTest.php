@@ -37,7 +37,11 @@ class AuthAndRolesTest extends TestCase
         $student = $this->student(['student_bloodtype' => 'Blood Group O', 'mother_identification_number' => '19800101001']);
         $viewer = $this->viewer();
 
-        $this->actingAs($viewer)->get('/students')->assertOk();
+        $this->actingAs($viewer)->get('/students')->assertOk()->assertDontSee('title="Print record"', false);
+        $this->flushSession();
+        $this->actingAs($this->staff())->get('/students')->assertOk()->assertSee('title="Print record"', false)->assertSee('/students/' . $student->id . '/print');
+        $this->flushSession();
+        $this->actingAs($viewer);
         $page = $this->actingAs($viewer)->get('/students/' . $student->id)->assertOk();
         $page->assertDontSee('Blood Group O');
         $page->assertDontSee('19800101001');

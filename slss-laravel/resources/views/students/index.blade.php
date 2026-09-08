@@ -509,6 +509,12 @@
                                         <i class="fas fa-eye" aria-hidden="true"></i>
                                     </a>
                                     @can('view-sensitive')
+                                    <a href="{{ route('students.print', $student) }}" target="_blank" rel="noopener"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Print record"
+                                       aria-label="Print the record for {{ $student->student_name }}">
+                                        <i class="fas fa-print" aria-hidden="true"></i>
+                                    </a>
                                     <a href="{{ route('students.pdf', $student) }}"
                                        class="btn btn-sm btn-outline-secondary"
                                        title="Download PDF"
@@ -518,7 +524,7 @@
                                     @endcan
                                     @can('edit-students')
                                     <a href="{{ route('students.edit', $student) }}"
-                                       class="btn btn-sm btn-outline-primary"
+                                       class="btn btn-sm btn-outline-secondary"
                                        title="Edit"
                                        aria-label="Edit {{ $student->student_name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
