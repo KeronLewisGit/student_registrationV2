@@ -24,6 +24,14 @@
     }
     .filter-chip:hover { border-color: currentColor; }
 
+    /* Compact select in the card header: keep clear of the chevron and the bold header text */
+    .name-sort-select {
+        width: auto;
+        min-width: 8.5rem;
+        padding-right: 2.25rem;
+        font-weight: 400;
+    }
+
     .completeness { min-width: 90px; }
     .completeness-bar {
         height: 6px;
@@ -402,9 +410,9 @@
             <i class="fas fa-table me-2"></i>Student Records
             <span class="badge bg-primary ms-2">{{ $students->count() }} {{ $students->count() === 1 ? 'student' : 'students' }}</span>
         </span>
-        <label class="d-flex align-items-center gap-2 mb-0 small text-muted" for="nameSortMode">
+        <label class="d-flex align-items-center gap-2 mb-0 small text-muted fw-normal" for="nameSortMode">
             Sort names by
-            <select id="nameSortMode" class="form-select form-select-sm w-auto" title="Choose whether the Student Name column sorts by first name or by last name">
+            <select id="nameSortMode" class="form-select form-select-sm name-sort-select" title="Choose whether the Student Name column sorts by first name or by last name">
                 <option value="first">First name</option>
                 <option value="last">Last name</option>
             </select>
