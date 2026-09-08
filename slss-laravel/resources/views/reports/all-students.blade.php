@@ -26,10 +26,10 @@
 <div class="form-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">All Students</h2>
+            <h2 class="h4 mb-1">All Students</h2>
             <p class="text-muted mb-0">Export student records to a spreadsheet, filtered the same way as the student list.</p>
         </div>
-        <a href="{{ route('reports.index') }}" class="btn btn-secondary">
+        <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Reports
         </a>
     </div>
@@ -171,10 +171,10 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ route('reports.index') }}" class="btn btn-secondary">
+            <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-times me-1"></i> Cancel
             </a>
-            <button type="submit" class="btn btn-success" id="generateBtn">
+            <button type="submit" class="btn btn-primary" id="generateBtn">
                 <i class="fas fa-file-excel me-1"></i> Generate &amp; Download
             </button>
         </div>

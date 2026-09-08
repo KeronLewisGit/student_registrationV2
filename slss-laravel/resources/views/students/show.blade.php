@@ -369,15 +369,15 @@
         <div class="col-12 col-md-auto">
             <div class="action-buttons">
                 @can('view-sensitive')
-                <a href="{{ route('students.print', $student) }}" target="_blank" class="btn btn-light btn-action">
+                <a href="{{ route('students.print', $student) }}" target="_blank" class="btn btn-outline-light btn-action">
                     <i class="fas fa-print"></i><span class="d-none d-sm-inline"> Print Profile</span><span class="d-inline d-sm-none"> Print</span>
                 </a>
-                <a href="{{ route('students.pdf', $student) }}" class="btn btn-light btn-action">
+                <a href="{{ route('students.pdf', $student) }}" class="btn btn-outline-light btn-action">
                     <i class="fas fa-file-pdf"></i><span class="d-none d-sm-inline"> Download PDF</span><span class="d-inline d-sm-none"> PDF</span>
                 </a>
                 @endcan
                 @can('edit-students')
-                <a href="{{ route('students.edit', $student) }}" class="btn btn-warning btn-action">
+                <a href="{{ route('students.edit', $student) }}" class="btn btn-light btn-action">
                     <i class="fas fa-edit"></i><span class="d-none d-sm-inline"> Edit Student</span><span class="d-inline d-sm-none"> Edit</span>
                 </a>
                 @endcan

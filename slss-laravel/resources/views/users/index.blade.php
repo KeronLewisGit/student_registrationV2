@@ -133,7 +133,7 @@
 @section('content')
 <!-- Statistics Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
@@ -142,7 +142,7 @@
             <p class="stat-label">Total Users</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="fas fa-user-shield"></i>
@@ -151,7 +151,7 @@
             <p class="stat-label">Administrators</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon info">
                 <i class="fas fa-user-tie"></i>
@@ -160,7 +160,7 @@
             <p class="stat-label">Staff Members</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon success">
                 <i class="fas fa-user"></i>
@@ -175,7 +175,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-users-cog me-2"></i>System Users</span>
-        <a href="{{ route('users.create') }}" class="btn btn-success btn-sm">
+        <a href="{{ route('users.create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline"> Add User</span><span class="d-inline d-sm-none">Add</span>
         </a>
     </div>
@@ -231,13 +231,13 @@
                             <td>
                                 <div class="table-actions">
                                     <a href="{{ route('users.edit', $user) }}"
-                                       class="btn btn-sm btn-outline-primary"
+                                       class="btn btn-sm btn-outline-secondary"
                                        title="Edit User"
                                        aria-label="Edit user {{ $user->name }}">
                                         <i class="fas fa-edit" aria-hidden="true"></i>
                                     </a>
                                     <button type="button"
-                                            class="btn btn-sm btn-outline-warning"
+                                            class="btn btn-sm btn-outline-secondary"
                                             data-bs-toggle="modal"
                                             data-bs-target="#resetPasswordModal{{ $user->id }}"
                                             title="Reset Password"
@@ -309,7 +309,7 @@
                                            name="new_password"
                                            required
                                            minlength="8"
-                                           placeholder="Enter new password (minimum 8 characters)">
+                                           placeholder="At least 12 characters, mixed case and a number">
                                 </div>
 
                                 <div class="mb-3">
@@ -329,10 +329,10 @@
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i>Cancel
                                 </button>
-                                <button type="submit" class="btn btn-warning">
+                                <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-key me-1"></i>Reset Password
                                 </button>
                             </div>

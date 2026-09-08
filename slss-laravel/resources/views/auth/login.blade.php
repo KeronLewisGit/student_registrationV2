@@ -298,11 +298,6 @@
                     <i class="fas fa-sign-in-alt me-2"></i>
                     Sign In
                 </button>
-
-                <div class="security-notice">
-                    <i class="fas fa-shield-alt"></i>
-                    Your connection is secured with enterprise-grade encryption
-                </div>
             </form>
         </div>
     </div>
@@ -310,19 +305,8 @@
     <!-- Footer -->
     <div class="login-footer">
         <div class="login-footer-content">
-            <p>&copy; {{ date('Y') }} Success Laventille Secondary School. All rights reserved.</p>
-            <p>
-                Version 1.1 |
-                <a href="#" class="login-footer-link" data-bs-toggle="modal" data-bs-target="#versionHistoryModal">
-                    Version History
-                </a>
-            </p>
-            <p>Designed &amp; Developed by <strong>Code Canvas Consultants LTD</strong></p>
-            <p>
-                <a href="https://keronlewis.com" target="_blank" rel="noopener noreferrer" class="login-footer-link">
-                    <i class="fas fa-user-tie me-1"></i>Developer Portfolio
-                </a>
-            </p>
+            <p>&copy; {{ date('Y') }} Success Laventille Secondary School &middot; Student Management System</p>
+            <p class="small">Developed by Code Canvas Consultants Ltd &middot; Version 1.1</p>
         </div>
     </div>
 

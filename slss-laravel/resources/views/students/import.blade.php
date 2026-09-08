@@ -173,7 +173,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-upload me-1"></i> Upload and Import
                 </button>
-                <a href="{{ route('students.index') }}" class="btn btn-secondary">Cancel</a>
+                <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>

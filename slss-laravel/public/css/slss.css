@@ -238,3 +238,83 @@ html {
         width: 100%;
     }
 }
+
+/* =====================================================================
+   Design system: one primary colour, one button scale, consistent chrome
+   ===================================================================== */
+:root {
+    --bs-primary: #4f46e5;
+    --bs-primary-rgb: 79, 70, 229;
+    --bs-link-color: #4f46e5;
+    --bs-link-color-rgb: 79, 70, 229;
+    --bs-link-hover-color: #4338ca;
+    --bs-link-hover-color-rgb: 67, 56, 202;
+}
+
+/* Bootstrap's blue never appears: every "primary" element uses the brand purple */
+.btn-primary {
+    --bs-btn-bg: #4f46e5;
+    --bs-btn-border-color: #4f46e5;
+    --bs-btn-hover-bg: #4338ca;
+    --bs-btn-hover-border-color: #4338ca;
+    --bs-btn-active-bg: #3730a3;
+    --bs-btn-active-border-color: #3730a3;
+    --bs-btn-disabled-bg: #a5b4fc;
+    --bs-btn-disabled-border-color: #a5b4fc;
+    --bs-btn-focus-shadow-rgb: 79, 70, 229;
+}
+.btn-outline-primary {
+    --bs-btn-color: #4f46e5;
+    --bs-btn-border-color: #4f46e5;
+    --bs-btn-hover-bg: #4f46e5;
+    --bs-btn-hover-border-color: #4f46e5;
+    --bs-btn-active-bg: #4338ca;
+    --bs-btn-active-border-color: #4338ca;
+    --bs-btn-focus-shadow-rgb: 79, 70, 229;
+}
+.bg-primary, .badge.bg-primary { background-color: #4f46e5 !important; }
+.text-primary { color: #4f46e5 !important; }
+.nav-pills { --bs-nav-pills-link-active-bg: #4f46e5; }
+.pagination { --bs-pagination-active-bg: #4f46e5; --bs-pagination-active-border-color: #4f46e5; --bs-pagination-color: #4f46e5; }
+.form-check-input:checked { background-color: #4f46e5; border-color: #4f46e5; }
+.form-control:focus, .form-select:focus { border-color: #a5b4fc; box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.2); }
+.dataTables_wrapper .dataTables_paginate .paginate_button.current,
+.dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: #4f46e5 !important; border-color: #4f46e5 !important; color: #fff !important;
+}
+
+/* One button scale everywhere */
+.btn { border-radius: 8px; font-weight: 600; padding: 0.5rem 1rem; line-height: 1.35; }
+.btn-sm { padding: 0.35rem 0.75rem; font-size: 0.85rem; border-radius: 7px; }
+.btn-lg { padding: 0.7rem 1.4rem; font-size: 1.05rem; }
+
+/* Icon-only row actions: a fixed square hit area, neutral by default, red only for delete */
+.table-actions { display: inline-flex; gap: 0.35rem; flex-wrap: nowrap; }
+.table-actions .btn {
+    width: 2.25rem; height: 2.25rem; padding: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 7px;
+}
+
+/* Header action buttons on the gradient profile banner: outlined for secondary, solid white for the primary action */
+.btn-light { --bs-btn-bg: #fff; --bs-btn-border-color: #fff; --bs-btn-color: #4f46e5; --bs-btn-hover-bg: #eef2ff; --bs-btn-hover-border-color: #eef2ff; --bs-btn-hover-color: #3730a3; }
+.btn-outline-light { --bs-btn-color: #fff; --bs-btn-border-color: rgba(255,255,255,0.55); --bs-btn-hover-bg: rgba(255,255,255,0.15); --bs-btn-hover-border-color: #fff; --bs-btn-hover-color: #fff; }
+
+/* Cards, alerts and pills share one radius */
+.card, .alert, .form-card, .info-card, .stat-card { border-radius: 12px; }
+.alert { border-width: 1px; }
+
+/* Dark mode: informational boxes and DataTables chrome */
+[data-theme="dark"] .summary-box { background: rgba(79, 70, 229, 0.18); color: var(--text-normal, #e5e7eb); }
+[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button { background: var(--bg-card, #1e293b) !important; color: var(--text-normal, #e5e7eb) !important; border-color: var(--border-color, #334155) !important; }
+[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.disabled { opacity: 0.5; }
+[data-theme="dark"] .alert-info { background: rgba(14, 165, 233, 0.15); color: #bae6fd; border-color: rgba(14, 165, 233, 0.35); }
+[data-theme="dark"] .alert-success { background: rgba(22, 163, 74, 0.15); color: #bbf7d0; border-color: rgba(22, 163, 74, 0.35); }
+[data-theme="dark"] .alert-warning { background: rgba(245, 158, 11, 0.15); color: #fde68a; border-color: rgba(245, 158, 11, 0.35); }
+[data-theme="dark"] .alert-danger { background: rgba(220, 38, 38, 0.15); color: #fecaca; border-color: rgba(220, 38, 38, 0.35); }
+[data-theme="dark"] .table-actions .btn-outline-secondary { --bs-btn-color: #cbd5e1; --bs-btn-border-color: #475569; }
+
+/* Statistic cards: two per row on phones instead of a full-screen stack */
+@media (max-width: 575.98px) {
+    .stat-card { padding: 1rem; }
+}

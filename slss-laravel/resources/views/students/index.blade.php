@@ -184,7 +184,7 @@
 @section('content')
 <!-- Statistics Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon primary">
                 <i class="fas fa-users"></i>
@@ -193,7 +193,7 @@
             <p class="stat-label">Total Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon success">
                 <i class="fas fa-user-graduate"></i>
@@ -202,7 +202,7 @@
             <p class="stat-label">Male Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon warning">
                 <i class="fas fa-user-graduate"></i>
@@ -211,7 +211,7 @@
             <p class="stat-label">Female Students</p>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6 col-sm-6">
+    <div class="col-xl-3 col-md-6 col-6">
         <div class="stat-card">
             <div class="stat-icon info">
                 <i class="fas fa-calendar-plus"></i>
@@ -254,7 +254,7 @@
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-filter me-2"></i>Find Students</span>
         @can('edit-students')
-        <a href="{{ route('students.create') }}" class="btn btn-success btn-sm">
+        <a href="{{ route('students.create') }}" class="btn btn-primary btn-sm">
             <i class="fas fa-plus-circle me-1"></i><span class="d-none d-sm-inline"> Add Student</span><span class="d-inline d-sm-none">Add</span>
         </a>
         @endcan
@@ -510,7 +510,7 @@
                                     </a>
                                     @can('view-sensitive')
                                     <a href="{{ route('students.pdf', $student) }}"
-                                       class="btn btn-sm btn-outline-success"
+                                       class="btn btn-sm btn-outline-secondary"
                                        title="Download PDF"
                                        aria-label="Download PDF for {{ $student->student_name }}">
                                         <i class="fas fa-file-pdf" aria-hidden="true"></i>
@@ -585,10 +585,10 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="exportCloseBtn" data-bs-dismiss="modal" disabled>
+                <button type="button" class="btn btn-outline-secondary" id="exportCloseBtn" data-bs-dismiss="modal" disabled>
                     <i class="fas fa-times me-1"></i>Close
                 </button>
-                <a href="#" class="btn btn-success d-none" id="exportDownloadBtn" target="_blank">
+                <a href="#" class="btn btn-primary d-none" id="exportDownloadBtn" target="_blank">
                     <i class="fas fa-download me-1"></i>Download ZIP
                 </a>
             </div>

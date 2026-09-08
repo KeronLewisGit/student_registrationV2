@@ -216,6 +216,10 @@ The browser print view, the single and bulk PDF downloads, and the Printables sh
 student_name,form_1_class,student_gender,student_dob,student_birth_certficate_pin,mother_name,father_name,...
 ```
 
+### Design System
+
+`public/css/slss.css` carries the shared design tokens: the brand purple is the only primary colour (Bootstrap's blue is overridden everywhere, including pagination, pills and checkboxes), buttons use one scale (`btn` / `btn-sm`) with a fixed vocabulary — solid primary for the main action on a page, outlined neutral for secondary actions such as Back and Cancel, red only for destructive actions — and row actions in tables are square icon buttons. On the purple profile banner the primary action is a white button and secondary actions are outlined white. Dark mode has explicit overrides for alerts, summary boxes and table pagination.
+
 ### Automated Tests
 
 The `tests/Feature` suite covers login and roles, student create/update (including blank Special Needs fields and unchanged re-saves), the audit trail, search, progression and year-end promotion, the registration webhook, private document serving, exports, printing and CSV import. Run it before deploying:

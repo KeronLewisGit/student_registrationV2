@@ -1148,8 +1148,8 @@
         <nav class="sidebar-menu">
             <div class="sidebar-menu-item">
                 <a href="{{ route('students.index') }}" class="sidebar-menu-link {{ request()->routeIs('students.index') && !request()->routeIs('students.create') ? 'active' : '' }}">
-                    <i class="fas fa-th-large"></i>
-                    <span>Dashboard</span>
+                    <i class="fas fa-users"></i>
+                    <span>Students</span>
                 </a>
             </div>
 
@@ -1157,8 +1157,8 @@
             <!-- Students Menu with Submenu (hidden for viewers — its only entry is Add Student) -->
             <div class="sidebar-menu-item">
                 <a href="#studentsSubmenu" class="sidebar-menu-link {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'active' : '' }} {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? '' : 'collapsed' }}" data-bs-toggle="collapse" role="button" aria-expanded="{{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'true' : 'false' }}">
-                    <i class="fas fa-users"></i>
-                    <span>Students</span>
+                    <i class="fas fa-toolbox"></i>
+                    <span>Student Tools</span>
                     <i class="fas fa-chevron-down menu-arrow"></i>
                 </a>
                 <div class="sidebar-submenu collapse {{ request()->routeIs('students.*') && !request()->routeIs('students.index') ? 'show' : '' }}" id="studentsSubmenu">

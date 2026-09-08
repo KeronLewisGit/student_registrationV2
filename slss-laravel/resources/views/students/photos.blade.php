@@ -10,7 +10,7 @@
 
 @section('content')
 <div class="form-card">
-    <h2 class="mb-1">Upload passport photos in bulk</h2>
+    <h2 class="h4 mb-1">Upload passport photos in bulk</h2>
     <p class="text-muted">
         <strong>{{ $withoutPhoto }}</strong> active students currently have no usable photo.
         Select many image files at once; each one is matched to a student by its file name.

@@ -14,7 +14,7 @@
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-trash-restore me-2" aria-hidden="true"></i>Recently Deleted Students</span>
-        <a href="{{ route('students.index') }}" class="btn btn-secondary btn-sm">
+        <a href="{{ route('students.index') }}" class="btn btn-outline-secondary btn-sm">
             <i class="fas fa-arrow-left me-1" aria-hidden="true"></i> Back to Students
         </a>
     </div>
@@ -54,7 +54,7 @@
                             <td>
                                 <form action="{{ route('students.restore', $student->id) }}" method="POST" class="d-inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-success">
+                                    <button type="submit" class="btn btn-sm btn-primary">
                                         <i class="fas fa-trash-restore me-1" aria-hidden="true"></i>Restore
                                     </button>
                                 </form>

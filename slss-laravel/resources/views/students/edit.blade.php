@@ -31,10 +31,10 @@
 <div class="form-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Edit Student Record</h2>
+            <h2 class="h4 mb-1">Edit Student Record</h2>
             <p class="text-muted mb-0">Student ID: {{ $student->id }} | {{ $student->student_name }}</p>
         </div>
-        <a href="{{ route('students.index') }}" class="btn btn-secondary">
+        <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to List
         </a>
     </div>
@@ -757,10 +757,10 @@
 
         <!-- Action Buttons -->
         <div class="d-flex justify-content-end gap-2 mt-4 sticky-bottom-actions">
-            <a href="{{ route('students.index') }}" class="btn btn-secondary">
+            <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-times me-1"></i> Cancel
             </a>
-            <button type="submit" class="btn btn-success">
+            <button type="submit" class="btn btn-primary">
                 <i class="fas fa-save me-1"></i> Update Student
             </button>
         </div>

@@ -10,7 +10,7 @@
 
 @section('content')
 <div class="form-card">
-    <h2 class="mb-1">Promote students for {{ $academicYear }}</h2>
+    <h2 class="h4 mb-1">Promote students for {{ $academicYear }}</h2>
     <p class="text-muted">
         Moves every active student up one form, keeping their stream letter (3C becomes 4C).
         Students in Form {{ \App\Models\Student::MAX_FORM }} are marked as graduated.
@@ -26,7 +26,7 @@
     @endif
 
     @if($alreadyRan && !$lastRun)
-        <div class="alert alert-danger">
+        <div class="alert alert-success">
             <i class="fas fa-check-circle me-1"></i>
             <strong>Classes already match {{ $academicYear }}.</strong>
             {{ $alignment['aligned'] }} students are in the form their intake year implies for this year, so there is nothing to promote yet.
@@ -88,7 +88,7 @@
         <button type="submit" class="btn btn-primary" {{ empty($preview) || $alreadyRan ? 'disabled' : '' }}>
             <i class="fas fa-level-up-alt me-1"></i> Run promotion
         </button>
-        <a href="{{ route('students.index') }}" class="btn btn-secondary ms-2">Cancel</a>
+        <a href="{{ route('students.index') }}" class="btn btn-outline-secondary ms-2">Cancel</a>
     </form>
 </div>
 @endsection

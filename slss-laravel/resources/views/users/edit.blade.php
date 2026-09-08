@@ -35,10 +35,10 @@
 <div class="form-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-1">Edit User Account</h2>
+            <h2 class="h4 mb-1">Edit User Account</h2>
             <p class="text-muted mb-0">User ID: {{ $user->id }} | {{ $user->email }}</p>
         </div>
-        <a href="{{ route('users.index') }}" class="btn btn-secondary">
+        <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Users
         </a>
     </div>
@@ -128,9 +128,9 @@
                         <i class="fas fa-shield-alt me-1"></i>Password Requirements:
                     </strong>
                     <ul class="mt-2 mb-0">
-                        <li>Minimum 8 characters long</li>
-                        <li>Mix of uppercase and lowercase letters recommended</li>
-                        <li>Include numbers and special characters for stronger security</li>
+                        <li>At least 12 characters</li>
+                        <li>Both uppercase and lowercase letters</li>
+                        <li>At least one number (symbols are welcome)</li>
                     </ul>
                 </div>
             </div>
@@ -146,7 +146,7 @@
         </div>
 
         <div class="d-flex justify-content-end gap-2 mt-4">
-            <a href="{{ route('users.index') }}" class="btn btn-secondary">
+            <a href="{{ route('users.index') }}" class="btn btn-outline-secondary">
                 <i class="fas fa-times me-1"></i> Cancel
             </a>
             <button type="submit" class="btn btn-primary">
