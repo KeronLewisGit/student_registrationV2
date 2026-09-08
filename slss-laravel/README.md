@@ -260,6 +260,10 @@ Every student has a completeness score, the share of the eleven **essential item
 
 Reports → Printables offers per-class (or whole-school) sheets that open in a new tab ready to print: Class Register, Emergency Contact Sheet, Medical Alert List, Birthday List and Outstanding Items.
 
+### My Profile
+
+Every signed-in user can open **My profile** from the user block at the bottom of the sidebar to edit their first and last name (the display name follows), job title, phone and email address. Changing the email or the password requires the current password; a new password must meet the 12-character policy and signs the account out of every other device. The page also lists the account's recent sign-ins and offers a "Sign out of other devices" action. Roles can only be changed by an administrator, and every change is written to the Activity Log.
+
 ### Audit Trail
 
 The **Activity Log** (admin only, in the sidebar) records who did what, when, and from which address, across the whole app:

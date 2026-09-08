@@ -13,6 +13,7 @@ use App\Http\Controllers\PrintableController;
 use App\Http\Controllers\ActivityController;
 use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\ProfileController;
 
 // Deployment Routes: admin login AND the deploy token are both required.
 Route::middleware(['auth', 'can:admin'])->group(function () {
@@ -36,6 +37,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/', function () {
         return redirect()->route('students.index');
     });
+
+    // Own profile (every signed-in user)
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->middleware('throttle:10,1')->name('profile.password');
+    Route::post('/profile/sign-out-others', [ProfileController::class, 'signOutOtherDevices'])->middleware('throttle:10,1')->name('profile.sign-out-others');
 
     // Student Management Routes
     // (registered before the resource so "students-trash" isn't captured by students/{student})

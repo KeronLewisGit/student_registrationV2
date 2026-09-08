@@ -68,6 +68,9 @@ class ActivityLog extends Model
         'user-updated'    => 'User updated',
         'user-deleted'    => 'User deleted',
         'password-reset'  => 'Password reset',
+        'profile-updated' => 'Profile updated',
+        'password-changed' => 'Password changed',
+        'sessions-revoked' => 'Other devices signed out',
         // promotion / system
         'run'    => 'Run',
         'deploy' => 'Deployment',

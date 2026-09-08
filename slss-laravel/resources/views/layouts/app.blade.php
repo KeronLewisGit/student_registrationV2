@@ -1246,13 +1246,13 @@
 
         <div class="sidebar-user">
             <div class="sidebar-user-info">
-                <div class="sidebar-user-avatar">
-                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                </div>
-                <div class="sidebar-user-details">
+                <a href="{{ route('profile.edit') }}" class="sidebar-user-avatar text-decoration-none" title="My profile">
+                    {{ Auth::user()->initials }}
+                </a>
+                <a href="{{ route('profile.edit') }}" class="sidebar-user-details text-decoration-none" title="Edit my profile">
                     <p class="sidebar-user-name">{{ Auth::user()->name }}</p>
-                    <p class="sidebar-user-role">{{ ucfirst(Auth::user()->role) }}</p>
-                </div>
+                    <p class="sidebar-user-role">{{ ucfirst(Auth::user()->role) }} &middot; My profile</p>
+                </a>
                 <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
                     @csrf
                     <button type="submit" class="sidebar-logout" title="Logout" aria-label="Log out">
