@@ -27,7 +27,7 @@
     /* Compact select in the card header: keep clear of the chevron and the bold header text */
     .name-sort-select {
         width: auto;
-        min-width: 8.5rem;
+        min-width: 10.5rem;
         padding-right: 2.25rem;
         font-weight: 400;
     }
@@ -411,10 +411,12 @@
             <span class="badge bg-primary ms-2">{{ $students->count() }} {{ $students->count() === 1 ? 'student' : 'students' }}</span>
         </span>
         <label class="d-flex align-items-center gap-2 mb-0 small text-muted fw-normal" for="nameSortMode">
-            Sort names by
-            <select id="nameSortMode" class="form-select form-select-sm name-sort-select" title="Choose whether the Student Name column sorts by first name or by last name">
-                <option value="first">First name</option>
-                <option value="last">Last name</option>
+            Sort names
+            <select id="nameSortMode" class="form-select form-select-sm name-sort-select" title="Order the Student Name column by first or last name, ascending or descending">
+                <option value="first-asc">First name A &rarr; Z</option>
+                <option value="first-desc">First name Z &rarr; A</option>
+                <option value="last-asc">Last name A &rarr; Z</option>
+                <option value="last-desc">Last name Z &rarr; A</option>
             </select>
         </label>
     </div>
@@ -602,9 +604,15 @@ $(document).ready(function() {
         // Adjust page length based on screen size
         var pageLength = $(window).width() < 768 ? 10 : 25;
 
-        // Student Name column: sort by first or last name, chosen with #nameSortMode and remembered per browser
+        // Student Name column: sort by first or last name, ascending or descending.
+        // Chosen with #nameSortMode and remembered per browser.
         var nameSortMode = 'first';
-        try { nameSortMode = localStorage.getItem('studentsNameSort') === 'last' ? 'last' : 'first'; } catch (e) {}
+        var nameSortDir = 'asc';
+        try {
+            var savedSort = (localStorage.getItem('studentsNameSort') || 'first-asc').split('-');
+            nameSortMode = savedSort[0] === 'last' ? 'last' : 'first';
+            nameSortDir = savedSort[1] === 'desc' ? 'desc' : 'asc';
+        } catch (e) {}
         $.fn.dataTable.ext.order['name-mode'] = function (settings, col) {
             return this.api().column(col, { order: 'index' }).nodes().map(function (td) {
                 return td.getAttribute('data-sort-' + nameSortMode) || '';
@@ -641,23 +649,44 @@ $(document).ready(function() {
             }
         });
 
-        // Name sort mode switch
+        // Name sort control: keeps the select, the column header and the hint in step
         (function () {
             var select = document.getElementById('nameSortMode');
             var hint = document.getElementById('nameSortHint');
             if (!select) { return; }
-            function apply(mode, redraw) {
-                nameSortMode = mode;
-                select.value = mode;
-                hint.textContent = mode === 'last' ? '(by last name)' : '';
-                try { localStorage.setItem('studentsNameSort', mode); } catch (e) {}
-                if (redraw) {
-                    var table = $('#studentsTable').DataTable();
-                    table.rows().invalidate().order([1, 'asc']).draw();
-                }
+            var table = $('#studentsTable').DataTable();
+
+            function describe() {
+                return (nameSortMode === 'last' ? 'by last name' : 'by first name') + ', ' + (nameSortDir === 'desc' ? 'Z to A' : 'A to Z');
             }
-            apply(nameSortMode, false);
-            select.addEventListener('change', function () { apply(this.value, true); });
+            function remember() {
+                select.value = nameSortMode + '-' + nameSortDir;
+                try { localStorage.setItem('studentsNameSort', select.value); } catch (e) {}
+            }
+
+            // Changing the select re-sorts the name column
+            select.addEventListener('change', function () {
+                var parts = this.value.split('-');
+                nameSortMode = parts[0];
+                nameSortDir = parts[1];
+                remember();
+                table.rows().invalidate().order([1, nameSortDir]).draw();
+            });
+
+            // Clicking the column header flips direction; reflect that in the select and the hint
+            table.on('order.dt', function () {
+                var order = table.order()[0] || [];
+                if (order[0] === 1) {
+                    nameSortDir = order[1] === 'desc' ? 'desc' : 'asc';
+                    remember();
+                    hint.textContent = '(' + describe() + ')';
+                } else {
+                    hint.textContent = nameSortMode === 'last' ? '(by last name)' : '';
+                }
+            });
+
+            remember();
+            hint.textContent = nameSortMode === 'last' ? '(by last name)' : '';
         })();
 
         // Handle responsive page length on window resize
