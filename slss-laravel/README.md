@@ -195,7 +195,7 @@ Reports → All Students exports a spreadsheet using the same filters as the stu
 
 ### Printed Documents
 
-The browser print view, the single and bulk PDF downloads, and the Printables sheets share one design: school letterhead, uppercase section titles over a hairline, a four-column field grid, "Not recorded" in grey italics for missing data, and a footer line. The student record's sections and fields are defined once in `app/Support/ProfileLayout.php`, which both the HTML print view and the PDF render from, so the two documents always contain the same data.
+The browser print view, the single and bulk PDF downloads, and the Printables sheets share one design: school letterhead, uppercase section titles over a hairline, a four-column field grid, "Not recorded" in grey italics for missing data, and a footer line. The student record's sections and fields are defined once in `app/Support/ProfileLayout.php`, and the browser print view, the bulk print and the PDF download all render the **same template and stylesheet** (`students/partials/print-profile` and `print-styles`, table-based so the PDF engine lays it out exactly like the browser). The only difference is the PDF's Helvetica font in place of the browser's system font.
 
 ### Importing Students from CSV
 

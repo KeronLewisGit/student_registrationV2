@@ -1,11 +1,11 @@
 {{-- All sections of a printed student profile, rendered from App\Support\ProfileLayout
-     (the PDF uses the same definition). Every value goes through students.partials.field
-     so that nothing is ever left blank. --}}
-@php($spanClass = [1 => 'col-md-3', 2 => 'col-md-6', 3 => 'col-md-9', 4 => 'col-md-12'])
+     as table rows so the browser and dompdf lay them out the same way. Every value
+     goes through students.partials.field so nothing is ever left blank. --}}
+@php($forPdf = $forPdf ?? false)
 @foreach(\App\Support\ProfileLayout::sections($student) as $section)
-    @if($section['compact'] !== null)
-        <div class="section-card section-card-compact">
-            <div class="fw-bold">
+    <div class="section-card">
+        @if($section['compact'] !== null)
+            <div class="section-title">
                 {{ $section['title'] }}
                 <span class="compact-value">
                     @if($section['compact'] !== '')
@@ -15,22 +15,28 @@
                     @endif
                 </span>
             </div>
-        </div>
-    @else
-        <div class="section-card">
-            <div class="fw-bold mb-3 pb-2 border-bottom">{{ $section['title'] }}</div>
-            @foreach($section['rows'] as $i => $row)
-                <div class="row g-3 {{ $i > 0 ? 'mt-2' : '' }}">
-                    @foreach($row as $field)
-                        @include('students.partials.field', [
-                            'label' => $field['label'],
-                            'value' => $field['value'],
-                            'format' => $field['format'],
-                            'col' => $spanClass[$field['span']] ?? 'col-md-3',
-                        ])
-                    @endforeach
-                </div>
-            @endforeach
-        </div>
-    @endif
+        @else
+            <div class="section-title">{{ $section['title'] }}</div>
+            <table class="grid">
+                @foreach($section['rows'] as $row)
+                    <tr>
+                        @php($used = 0)
+                        @foreach($row as $field)
+                            @php($used += $field['span'])
+                            @include('students.partials.field', [
+                                'label' => $field['label'],
+                                'value' => $field['value'],
+                                'format' => $field['format'],
+                                'span' => $field['span'],
+                                'forPdf' => $forPdf,
+                            ])
+                        @endforeach
+                        @if($used < 4)
+                            <td colspan="{{ 4 - $used }}"></td>
+                        @endif
+                    </tr>
+                @endforeach
+            </table>
+        @endif
+    </div>
 @endforeach

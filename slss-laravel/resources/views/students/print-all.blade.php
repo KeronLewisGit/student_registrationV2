@@ -9,14 +9,8 @@
     @include('students.partials.print-styles')
     <style>
         /* One profile per printed page */
-        .profile-card {
-            page-break-after: always;
-            break-after: page;
-        }
-        .profile-card:last-of-type {
-            page-break-after: auto;
-            break-after: auto;
-        }
+        .profile-card { page-break-after: always; break-after: page; }
+        .profile-card:last-of-type { page-break-after: auto; break-after: auto; }
 
         .print-toolbar {
             position: sticky;
@@ -34,7 +28,7 @@
         }
     </style>
 </head>
-<body>
+<body class="preview">
     <div class="print-toolbar no-print">
         <div>
             <strong><i class="fas fa-print me-2"></i>{{ $students->count() }} {{ $students->count() === 1 ? 'student profile' : 'student profiles' }}</strong>
